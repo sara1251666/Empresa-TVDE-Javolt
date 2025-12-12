@@ -19,14 +19,14 @@ public class Clientes {
 
     /**
      * Construtor Clientes
-     * @param cartaocid tipo int - Dado de Cartão de Cidadão (identificador único)
-     * @param nome  tipo string - Nome do Cliente
-     * @param nif   tipo int - Contribuinte Cliente
-     * @param tel   tipo int - Telemóvel do Cliente
-     * @param morada    tipo string - Morada do Cliente
+     * @param cartaocid Dado de Cartão de Cidadão (identificador único)
+     * @param nome Nome do Cliente
+     * @param nif Dado do NIF (Contribuinte) Cliente
+     * @param tel Dado do Número de Telemóvel do Cliente
+     * @param morada Morada do Cliente
      */
     public Clientes(int cartaocid, String nome, int nif, int tel, String morada) {
-        this.cartaocid = cartaocid; // Atribui a nova
+        this.cartaocid = cartaocid;
         this.nome = nome;
         this.nif = nif;
         this.tel = tel;
@@ -51,7 +51,7 @@ public class Clientes {
 
     /**
      * Obtém o Nome do Cliente
-     * @return Retorna o nome do Cliente
+     * @return Retorna o Nome do Cliente
      */
     public String getNome() {
         return nome;
@@ -67,7 +67,7 @@ public class Clientes {
 
     /**
      * Obtém o Nif (Contribuinte) do Cliente
-     * @return Retorna o nome do Cliente
+     * @return Retorna o Nif (Contribuinte) do Cliente
      */
     public int getNif() {
         return nif;
@@ -106,7 +106,7 @@ public class Clientes {
     }
 
     /**
-     * Define uma Nova Morada ao CLiente
+     * Define uma Nova Morada ao Cliente
      * @param morada Atribui uma Nova Morada ao Cliente
      */
     public void setMorada(String morada) {
