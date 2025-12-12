@@ -5,7 +5,7 @@
  * @since 2025-12-12
  */
 public class Clientes {
-    private int cartaocid;  // Número de Cartão de Cidadão
+    private int cartaoCid;  // Número de Cartão de Cidadão
     private String nome;    // Nome do Cliente
     private int nif;        // Nif do CLiente
     private int tel;        // Número do Telemóvel
@@ -19,14 +19,14 @@ public class Clientes {
 
     /**
      * Construtor Clientes
-     * @param cartaocid Dado de Cartão de Cidadão (identificador único)
+     * @param cartaoCid Dado de Cartão de Cidadão (identificador único)
      * @param nome Nome do Cliente
      * @param nif Dado do NIF (Contribuinte) Cliente
      * @param tel Dado do Número de Telemóvel do Cliente
      * @param morada Morada do Cliente
      */
-    public Clientes(int cartaocid, String nome, int nif, int tel, String morada) {
-        this.cartaocid = cartaocid;
+    public Clientes(int cartaoCid, String nome, int nif, int tel, String morada) {
+        this.cartaoCid = cartaoCid;
         this.nome = nome;
         this.nif = nif;
         this.tel = tel;
@@ -37,16 +37,16 @@ public class Clientes {
      * Obtém o Número do Cartão de Cidadão
      * @return Retorna o número do Cartão de Cidadão
      */
-    public int getCartaocid() {
-        return cartaocid;
+    public int getCartaoCid() {
+        return cartaoCid;
     }
 
     /**
      * Define um Novo Número de Cartão de Cidadão
-     * @param cartaocid Atribui o novo valor ao Cartão de Cidadão
+     * @param cartaoCid Atribui o novo valor ao Cartão de Cidadão
      */
-    public void setCartaocid(int cartaocid) {
-        this.cartaocid = cartaocid;
+    public void setCartaoCid(int cartaoCid) {
+        this.cartaoCid = cartaoCid;
     }
 
     /**
