@@ -1,2 +1,115 @@
+/**
+ * Representa um Cliente
+ * @author Levi e Sara
+ * @version 1
+ * @since 2025-12-12
+ */
 public class Clientes {
+    private int cartaocid;  // Número de Cartão de Cidadão
+    private String nome;    // Nome do Cliente
+    private int nif;        // Nif do CLiente
+    private int tel;        // Número do Telemóvel
+    private String morada;  // Morada do Cliente
+
+    /**
+     * Construtor Vazio
+     */
+    public Clientes() {
+    }
+
+    /**
+     * Construtor Clientes
+     * @param cartaocid tipo int - Dado de Cartão de Cidadão (identificador único)
+     * @param nome  tipo string - Nome do Cliente
+     * @param nif   tipo int - Contribuinte Cliente
+     * @param tel   tipo int - Telemóvel do Cliente
+     * @param morada    tipo string - Morada do Cliente
+     */
+    public Clientes(int cartaocid, String nome, int nif, int tel, String morada) {
+        this.cartaocid = cartaocid; // Atribui a nova
+        this.nome = nome;
+        this.nif = nif;
+        this.tel = tel;
+        this.morada = morada;
+    }
+
+    /**
+     * Obtém o Número do Cartão de Cidadão
+     * @return Retorna o número do Cartão de Cidadão
+     */
+    public int getCartaocid() {
+        return cartaocid;
+    }
+
+    /**
+     * Define um Novo Número de Cartão de Cidadão
+     * @param cartaocid Atribui o novo valor ao Cartão de Cidadão
+     */
+    public void setCartaocid(int cartaocid) {
+        this.cartaocid = cartaocid;
+    }
+
+    /**
+     * Obtém o Nome do Cliente
+     * @return Retorna o nome do Cliente
+     */
+    public String getNome() {
+        return nome;
+    }
+
+    /**
+     * Define um Novo Nome ao CLiente
+     * @param nome Atribui o novo nome ao Cliente
+     */
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    /**
+     * Obtém o Nif (Contribuinte) do Cliente
+     * @return Retorna o nome do Cliente
+     */
+    public int getNif() {
+        return nif;
+    }
+
+    /**
+     * Define um Novo NIF ao CLiente
+     * @param nif Atribui o novo NIF (Contribuinte) ao Cliente
+     */
+    public void setNif(int nif) {
+        this.nif = nif;
+    }
+
+    /**
+     * Obtém o Número do Telemóvel do Cliente
+     * @return Retorna o Número de Telemóvel do Cliente
+     */
+    public int getTel() {
+        return tel;
+    }
+
+    /**
+     * Define um Novo Número de Telemóvel ao CLiente
+     * @param tel Atribui o novo Número de Telemóvel ao Cliente
+     */
+    public void setTel(int tel) {
+        this.tel = tel;
+    }
+
+    /**
+     * Obtém a Morada do Cliente
+     * @return Retorna a Morada do Cliente
+     */
+    public String getMorada() {
+        return morada;
+    }
+
+    /**
+     * Define uma Nova Morada ao CLiente
+     * @param morada Atribui uma Nova Morada ao Cliente
+     */
+    public void setMorada(String morada) {
+        this.morada = morada;
+    }
 }
