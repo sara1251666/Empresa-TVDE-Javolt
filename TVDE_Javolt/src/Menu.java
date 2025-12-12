@@ -1,3 +1,10 @@
+/**
+ * Menu
+ * @author Leonardo
+ * @version 1
+ * @since 12/12/2025
+ */
+
 import java.util.Scanner;
 
 public class Menu {
@@ -15,7 +22,6 @@ public class Menu {
         Escolha uma opção (1-5): """);
     }
 
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int choice = 0;
@@ -23,7 +29,7 @@ public class Menu {
         do {
             displayMenu();
 
-            // Garante que o usuário digite um número
+            // Garante que o utilizador digite um número
             while (!scanner.hasNextInt()) {
                 System.out.println("Entrada inválida! Digite um número entre 1 e 5.");
                 scanner.nextLine(); // limpa entrada inválida

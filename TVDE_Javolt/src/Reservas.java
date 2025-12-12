@@ -1,2 +1,3 @@
-public class Reservas {
+public class Reserva {
 }
+
