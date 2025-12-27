@@ -6,7 +6,7 @@
  * @version 1
  * @since 12/12/2025
  */
-public class Viaturas {
+public class Viatura {
 
     // Matrícula do carro
     private String matricula;
@@ -28,7 +28,7 @@ public class Viaturas {
      * @param modelo modelo do carro
      * @param anoFabrico ano de fabrico do carro
      */
-    public Viaturas(String matricula, String marca, String modelo, int anoFabrico) {
+    public Viatura(String matricula, String marca, String modelo, int anoFabrico) {
         this.matricula = matricula;
         this.marca = marca;
         this.modelo = modelo;

@@ -4,7 +4,7 @@
  * @version 1
  * @since 2025-12-12
  */
-public class Condutores {
+public class Condutor {
     private int cartaoCid;  // Número de Cartão de Cidadão
     private String nome;    // Nome do Cliente
     private String cartaCond;  // Número de Cartão de Condução
@@ -16,7 +16,7 @@ public class Condutores {
     /**
      * Construtor Vazio
      */
-    public Condutores() {
+    public Condutor() {
     }
 
     /**
@@ -29,7 +29,7 @@ public class Condutores {
      * @param tel Número de Telemóvel do Condutor
      * @param morada Morada do Condutor
      */
-    public Condutores(int cartaoCid, String nome, String cartaCond, int nif, int segSocial, int tel, String morada) {
+    public Condutor(int cartaoCid, String nome, String cartaCond, int nif, int segSocial, int tel, String morada) {
         this.cartaoCid = cartaoCid;
         this.nome = nome;
         this.cartaCond = cartaCond;

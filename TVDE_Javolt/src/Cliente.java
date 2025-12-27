@@ -4,7 +4,7 @@
  * @version 1
  * @since 2025-12-12
  */
-public class Clientes {
+public class Cliente {
     private int cartaoCid;  // Número de Cartão de Cidadão
     private String nome;    // Nome do Cliente
     private int nif;        // Nif do CLiente
@@ -14,7 +14,7 @@ public class Clientes {
     /**
      * Construtor Vazio
      */
-    public Clientes() {
+    public Cliente() {
     }
 
     /**
@@ -25,7 +25,7 @@ public class Clientes {
      * @param tel Dado do Número de Telemóvel do Cliente
      * @param morada Morada do Cliente
      */
-    public Clientes(int cartaoCid, String nome, int nif, int tel, String morada) {
+    public Cliente(int cartaoCid, String nome, int nif, int tel, String morada) {
         this.cartaoCid = cartaoCid;
         this.nome = nome;
         this.nif = nif;
