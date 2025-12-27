@@ -113,4 +113,8 @@ public abstract class Pessoa {
     public void setCartaoCid(int cartaoCid) {
         this.cartaoCid = cartaoCid;
     }
+
+    public String toString(){
+        return "Nome: " + nome + " | NIF: " + nif + " | Tel: " + tel;
+    }
 }
