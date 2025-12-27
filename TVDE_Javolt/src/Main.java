@@ -4,7 +4,6 @@ public class Main {
         Menu.displayMenu();
     }
 
-    Cliente cliente = new Cliente(12, "", 13, 14, "");
 
 
 }
