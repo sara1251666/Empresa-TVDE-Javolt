@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="7778648c-976b-48f0-80f3-e44ef7e36dce" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Reservas.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Reservas.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Viatura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Viatura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Viagens.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Viagem.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,7 +36,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Sara__ClasseViaturas",
+    "git-widget-placeholder": "Sara__ClasseViagem",
     "kotlin-language-version-configured": "true",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
