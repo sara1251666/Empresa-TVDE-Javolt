@@ -8,25 +8,18 @@
  */
 public class Viatura {
 
-    // Matrícula do carro
     private String matricula;
-
-    // Marca do carro
     private String marca;
-
-    // Modelo do carro
     private String modelo;
-
-    // Ano em que o carro foi fabricado
     private int anoFabrico;
 
     /**
-     * Construtor da classe Viaturas.
-     * Cria um carro com todos os seus dados.
-     * @param matricula matrícula do carro
-     * @param marca marca do carro
-     * @param modelo modelo do carro
-     * @param anoFabrico ano de fabrico do carro
+     * Construtor da Classe Viaturas.
+     * Cria um Carro com Todos os Seus Dados.
+     * @param matricula Matrícula do Carro.
+     * @param marca Marca do Carro.
+     * @param modelo Modelo do Carro.
+     * @param anoFabrico Ano de Fabrico do Carro.
      */
     public Viatura(String matricula, String marca, String modelo, int anoFabrico) {
         this.matricula = matricula;
@@ -105,11 +98,6 @@ public class Viatura {
      */
     @Override
     public String toString() {
-        return "Veiculo {" +
-                "matricula='" + matricula + '\'' +
-                ", marca='" + marca + '\'' +
-                ", modelo='" + modelo + '\'' +
-                ", anoFabrico=" + anoFabrico +
-                '}';
+        return "Viatura [" + matricula + " | " + marca + " | " + modelo + " | " + anoFabrico + "|";
     }
 }
