@@ -1,3 +1,6 @@
+package Entidades;
+import Gestao.Empresa;
+
 /**
  * Classe Viaturas
  * Representa um carro da empresa TVDE.
@@ -98,6 +101,6 @@ public class Viatura {
      */
     @Override
     public String toString() {
-        return "Viatura [" + matricula + " | " + marca + " | " + modelo + " | " + anoFabrico + "|";
+        return "Entidades.Viatura [" + matricula + " | " + marca + " | " + modelo + " | " + anoFabrico + "|";
     }
 }

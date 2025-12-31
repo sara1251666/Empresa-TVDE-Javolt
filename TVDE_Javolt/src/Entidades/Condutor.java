@@ -1,7 +1,7 @@
-import java.text.ParsePosition;
+package Entidades;
 
 /**
- * Representa um Condutor
+ * Representa um Entidades.Condutor
  * @author Levi e Sara
  * @version 1
  * @since 2025-12-12
@@ -11,21 +11,21 @@ public class Condutor extends Pessoa {
     private int segSocial;
 
     /**
-     * Construtor Condutor Vazio.
+     * Construtor Entidades.Condutor Vazio.
      */
-    public Condutor() {
+    public Condutor(String nome, String nif, String carta) {
     }
 
     /**
-     * Constroi um novo Condutor com os dados fornecidos.
-     * Invoca o Construtor da Superclasse (Pessoa).
-     * @param nome Nome do Condutor.
-     * @param nif Nif do Condutor.
-     * @param tel Telemóvel do Condutor.
-     * @param morada Morada do Condutor.
-     * @param cartaoCid Cartão de Cidadão do Condutor.
-     * @param cartaCond Carta de Condução do Condutor.
-     * @param segSocial Número de Segurança Social do Condutor.
+     * Constroi um novo Entidades.Condutor com os dados fornecidos.
+     * Invoca o Construtor da Superclasse (Entidades.Pessoa).
+     * @param nome Nome do Entidades.Condutor.
+     * @param nif Nif do Entidades.Condutor.
+     * @param tel Telemóvel do Entidades.Condutor.
+     * @param morada Morada do Entidades.Condutor.
+     * @param cartaoCid Cartão de Cidadão do Entidades.Condutor.
+     * @param cartaCond Carta de Condução do Entidades.Condutor.
+     * @param segSocial Número de Segurança Social do Entidades.Condutor.
      */
     public Condutor(String nome, int nif, int tel, String morada, int cartaoCid, String cartaCond, int segSocial) {
         super(nome, nif, tel, morada, cartaoCid);
@@ -66,13 +66,13 @@ public class Condutor extends Pessoa {
     }
 
     /**
-     * Devolve a Representação em Texto do Condutor
+     * Devolve a Representação em Texto do Entidades.Condutor
      * Junta os dados de PEssoa com os dados especifícos do condutor.
-     * @return String com os Dados do Condutor.
+     * @return String com os Dados do Entidades.Condutor.
      */
     @Override
     public String toString() {
-        return "Condutor [" + super.toString() + " | Carta: " +cartaCond + " | SegSocial: " + segSocial + "]";
+        return "Entidades.Condutor [" + super.toString() + " | Carta: " +cartaCond + " | SegSocial: " + segSocial + "]";
     }
 }
 
