@@ -30,7 +30,8 @@ public abstract class Pessoa {
      */
     public Pessoa(String nome, int nif, int tel, String morada, int cartaoCid) {
         this.nome = nome;
-        this.nif = nif;
+        //this.nif = nif;
+        setNif(nif);
         this.tel = tel;
         this.morada = morada;
         this.cartaoCid = cartaoCid;
@@ -71,7 +72,8 @@ public abstract class Pessoa {
         if (nifTexto.length() == 9) {
             this.nif = nif;
         } else {
-            System.out.println("Erro: O NIF deve ter 9 digitos.");
+            //System.out.println("Erro: O NIF deve ter 9 digitos.");
+            throw new IllegalArgumentException("NIF invaldo! tem de ter exatamente 9 digitos (ecebido: " + nif + ").");
         }
     }
 

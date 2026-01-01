@@ -133,19 +133,32 @@ public class Menu {
     private static void processarCondutores(int opcao) {
         switch (opcao) {
             case 1 -> { // CREATE
-                int nif = lerInteiro("NIF: ");
-                String nome = lerTexto("Nome: ");
-                int tel = lerInteiro("Telemóvel: ");
-                String morada = lerTexto("Morada: ");
-                int cc = lerInteiro("Cartão Cidadão: ");
-                String carta = lerTexto("Carta Condução: ");
-                int ss = lerInteiro("Segurança Social: ");
+                System.out.println("--- Novo Condutor ---");
+                try {
+                    //Pedimos os dados
+                    int nif = lerInteiro("NIF (9 digitos): ");
+                    String nome = lerTexto("Nome: ");
+                    int tel = lerInteiro("Telemóvel: ");
+                    String morada = lerTexto("Morada: ");
+                    int cc = lerInteiro("Cartão Cidadão: ");
+                    String carta = lerTexto("Carta Condução: ");
+                    int ss = lerInteiro("Segurança Social: ");
 
-                Condutor c = new Condutor(nome, nif, tel, morada, cc, carta, ss);
-                if (empresa.adicionarCondutor(c)) {
-                    System.out.println("Condutor adicionado.");
-                } else {
-                    System.out.println("Erro: Condutor com este NIF já existe.");
+
+                    // Tenta criar o objeto.
+                    // Se o NIF tiver menos/mais de 9 digitos, o ´new condutor´lança o erro
+                    // e salta para o ´catch´, ignora o 'empresa.adicionar'
+                    Condutor c = new Condutor(nome, nif, tel, morada, cc, carta, ss);
+                    if (empresa.adicionarCondutor(c)) {
+                        System.out.println("Condutor adicionado.");
+                    } else {
+                        System.out.println("Erro: Condutor com este NIF já existe.");
+                    }
+                } catch (IllegalArgumentException e) {
+                    //Aqui apanhamos o erro do NIF
+                    System.out.println(" !!ERRO DE VALIDAÇÃO !!!");
+                    System.out.println(e.getMessage());
+                    System.out.println("O registo foi cancelado , tente novamente");
                 }
             }
             case 2 -> { // READ
@@ -176,17 +189,27 @@ public class Menu {
     private static void processarClientes(int opcao) {
         switch (opcao) {
             case 1 -> { // CREATE
+                System.out.println("--- Novo Cliente ---");
+                try {
                 int nif = lerInteiro("NIF: ");
                 String nome = lerTexto("Nome: ");
                 int tel = lerInteiro("Telemóvel: ");
                 String morada = lerTexto("Morada: ");
                 int cc = lerInteiro("Cartão Cidadão: ");
 
+                    // Tenta criar o cliente. Se o NIF for mau, explode aqui e vai para o catch.
                 Cliente c = new Cliente(nome, nif, tel, morada, cc);
+
                 if (empresa.adicionarCliente(c)) {
                     System.out.println("Cliente adicionado.");
                 } else {
                     System.out.println("Erro: Cliente com este NIF já existe.");
+                    }
+
+                } catch (IllegalArgumentException e) {
+                    System.out.println("\n!!! ERRO DE VALIDAÇÃO !!!");
+                    System.out.println(e.getMessage());
+                    System.out.println("O registo foi cancelado.");
                 }
             }
             case 2 -> { // READ
@@ -203,6 +226,7 @@ public class Menu {
                 } else {
                     System.out.println("Cliente não encontrado.");
                 }
+
             }
             case 4 -> { // DELETE
                 int nif = lerInteiro("NIF a eliminar: ");
