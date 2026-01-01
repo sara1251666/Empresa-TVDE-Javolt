@@ -361,7 +361,7 @@ public class Menu {
      * Preenche o sistema com dados iniciais (mock data) para facilitar testes.
      * Cria 1 Viatura, 1 Cliente e 1 Condutor.
      */
-    private static void inicializarDadosTeste() {
+    public static void inicializarDadosTeste() {
         empresa.adicionarViatura(new Viatura("AA-00-BB", "Toyota", "Corolla", 2020));
 
         try {
