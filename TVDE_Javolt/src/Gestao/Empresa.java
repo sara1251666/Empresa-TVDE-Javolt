@@ -88,10 +88,13 @@ public class Empresa {
      * CREATE: Adiciona cliente se o NIF não existir.
      */
     public boolean adicionarCliente(Cliente c) {
+        // 1. Procura se já existe alguém com este NIF na lista
         if (procurarCliente(c.getNif()) == null) {
+            // 2. Se devolver null (não encontrou), adiciona.
             clientes.add(c);
             return true;
         }
+        // 3. Se encontrou, devolve falso e não adiciona.
         return false;
     }
 
@@ -182,7 +185,7 @@ public class Empresa {
     // ==========================================================
 
     public void adicionarViagem(Viagem v) {
-        // Aqui poderias adicionar validação de sobreposição [cite: 2971]
+        // Aqui poderias adicionar validação de sobreposição
         viagens.add(v);
     }
 
@@ -198,7 +201,7 @@ public class Empresa {
         return reservas;
     }
 
-    // Método auxiliar para converter Reserva em Viagem (Critério de valorização [cite: 2964])
+    //Metodo auxiliar para converter Reserva em viagem  ----  falta testar
     public boolean converterReservaEmViagem(Reserva r, Condutor condutor, Viatura viatura, double custo) {
         if (reservas.contains(r)) {
             // Lógica simplificada: A viagem assume os dados da reserva + dados operacionais

@@ -65,7 +65,14 @@ public abstract class Pessoa {
      * @param nif Atribui o novo NIF.
      */
     public void setNif(int nif) {
-        this.nif = nif;
+        //Converte para texto para contar o tamanho
+        String nifTexto = String.valueOf(nif);
+
+        if (nifTexto.length() == 9) {
+            this.nif = nif;
+        } else {
+            System.out.println("Erro: O NIF deve ter 9 digitos.");
+        }
     }
 
     /**

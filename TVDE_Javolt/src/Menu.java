@@ -5,26 +5,6 @@
  * @since 12/12/2025
  */
 
-/*IMPORTAÇÕES NECESSÁRIAS
-import Entidades.*;
-import Gestao.Empresa;
-import java.util.Scanner;
-
-public class Menu {
-    public static void displayMenu() {
-        System.out.println("""
-                |-------------------------------|
-                |    MENU PRINCIPAL             |
-                |-------------------------------|
-                |    1 - Create                 |
-                |    2 - Read                   |
-                |    3 - Update                 |
-                |    4 - Delete                 |
-                |    5 - Exit                   |
-                |-------------------------------|
-                Escolha uma opção (1-5): """);
-    }
-}*/
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -318,7 +298,8 @@ public class Menu {
         }
     }
 
-    private static void inicializarDadosTeste() {
+// PARA TESTES ----- CLIENTE / CONDUTOR / VIATURA
+    public static void inicializarDadosTeste() {
         // Dados dummy para testar sem ter de criar tudo do zero
         empresa.adicionarViatura(new Viatura("AA-00-BB", "Toyota", "Corolla", 2020));
         empresa.adicionarCliente(new Cliente("Joao Silva", 123456789, 910000000, "Porto", 111222333));
