@@ -1,9 +1,3 @@
-/**
- * Menu
- * @author Leonardo
- * @version 1
- * @since 12/12/2025
- */
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,25 +8,41 @@ import Gestao.Empresa;
 import Entidades.*;
 
 /**
- * Classe de Interface com o Utilizador.
- * Gere os menus e a recolha de dados.
+ * Classe responsável pela Interface com o Utilizador (UI) via consola.
+ * <p>
+ * Gere a navegação entre menus, a recolha de dados do utilizador
+ * e a invocação dos métodos da classe {@link Empresa}.
+ * </p>
+ *
+ * @author
+ * @version 1.0
+ * @since 2026-01-01
  */
 public class Menu {
 
-    // Instância única da Empresa (Base de Dados em Memória) [cite: 9]
+    /** Instância única da Empresa que armazena os dados do programa. */
     private static Empresa empresa = new Empresa();
+
+    /** Objeto Scanner partilhado para leitura de inputs. */
     private static Scanner scanner = new Scanner(System.in);
+
+    /** Formatador de data padrão para o sistema (dd-MM-yyyy HH:mm). */
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
+    /**
+     * Ponto de entrada da aplicação.
+     * Inicializa dados de teste e exibe o menu principal.
+     *
+     * @param args Argumentos da linha de comandos (não utilizados).
+     */
     public static void main(String[] args) {
-        // Dados de teste para não começar vazio (Opcional)
         inicializarDadosTeste();
-
         displayMenuPrincipal();
     }
 
     /**
-     * Menu Principal - Seleção de Entidade
+     * Exibe o menu principal e gere o loop de execução do programa.
+     * Permite navegar para os submenus de Viaturas, Condutores, Clientes ou Viagens.
      */
     public static void displayMenuPrincipal() {
         int opcao = 0;
@@ -52,7 +62,7 @@ public class Menu {
                 case 1 -> menuCRUD("Viaturas");
                 case 2 -> menuCRUD("Condutores");
                 case 3 -> menuCRUD("Clientes");
-                case 4 -> menuViagens(); // Menu específico para viagens
+                case 4 -> menuViagens();
                 case 0 -> System.out.println("A encerrar sistema...");
                 default -> System.out.println("Opção inválida.");
             }
@@ -60,7 +70,10 @@ public class Menu {
     }
 
     /**
-     * Menu Genérico para CRUD (Viaturas, Condutores, Clientes)
+     * Menu genérico para operações CRUD (Create, Read, Update, Delete).
+     * Redireciona para o método de processamento específico consoante a entidade escolhida.
+     *
+     * @param entidade Nome da entidade a gerir (ex: "Viaturas", "Clientes").
      */
     private static void menuCRUD(String entidade) {
         int opcao = 0;
@@ -81,12 +94,14 @@ public class Menu {
         } while (opcao != 0);
     }
 
-    // =======================================================
-    // LÓGICA DE VIATURAS
-    // =======================================================
+    /**
+     * Processa as operações CRUD específicas para Viaturas.
+     *
+     * @param opcao A opção selecionada pelo utilizador no menu CRUD.
+     */
     private static void processarViaturas(int opcao) {
         switch (opcao) {
-            case 1 -> { // CREATE [cite: 25]
+            case 1 -> { // CREATE
                 String mat = lerTexto("Matrícula: ");
                 String marca = lerTexto("Marca: ");
                 String modelo = lerTexto("Modelo: ");
@@ -122,21 +137,22 @@ public class Menu {
                 if (empresa.removerViatura(mat)) {
                     System.out.println("Viatura removida.");
                 }
-                // As mensagens de erro de dependência já são impressas na classe Empresa
             }
         }
     }
 
-    // =======================================================
-    // LÓGICA DE CONDUTORES
-    // =======================================================
+    /**
+     * Processa as operações CRUD específicas para Condutores.
+     * Inclui tratamento de exceções para validação de NIF.
+     *
+     * @param opcao A opção selecionada pelo utilizador.
+     */
     private static void processarCondutores(int opcao) {
         switch (opcao) {
             case 1 -> { // CREATE
                 System.out.println("--- Novo Condutor ---");
                 try {
-                    //Pedimos os dados
-                    int nif = lerInteiro("NIF (9 digitos): ");
+                    int nif = lerInteiro("NIF (9 dígitos): ");
                     String nome = lerTexto("Nome: ");
                     int tel = lerInteiro("Telemóvel: ");
                     String morada = lerTexto("Morada: ");
@@ -144,21 +160,18 @@ public class Menu {
                     String carta = lerTexto("Carta Condução: ");
                     int ss = lerInteiro("Segurança Social: ");
 
-
-                    // Tenta criar o objeto.
-                    // Se o NIF tiver menos/mais de 9 digitos, o ´new condutor´lança o erro
-                    // e salta para o ´catch´, ignora o 'empresa.adicionar'
                     Condutor c = new Condutor(nome, nif, tel, morada, cc, carta, ss);
+
                     if (empresa.adicionarCondutor(c)) {
-                        System.out.println("Condutor adicionado.");
+                        System.out.println("Sucesso: Condutor registado!");
                     } else {
-                        System.out.println("Erro: Condutor com este NIF já existe.");
+                        System.out.println("Erro: Já existe um condutor com esse NIF.");
                     }
+
                 } catch (IllegalArgumentException e) {
-                    //Aqui apanhamos o erro do NIF
-                    System.out.println(" !!ERRO DE VALIDAÇÃO !!!");
+                    System.out.println("\n!!! ERRO DE VALIDAÇÃO !!!");
                     System.out.println(e.getMessage());
-                    System.out.println("O registo foi cancelado , tente novamente");
+                    System.out.println("O registo foi cancelado. Tente novamente.");
                 }
             }
             case 2 -> { // READ
@@ -183,27 +196,29 @@ public class Menu {
         }
     }
 
-    // =======================================================
-    // LÓGICA DE CLIENTES
-    // =======================================================
+    /**
+     * Processa as operações CRUD específicas para Clientes.
+     * Inclui tratamento de exceções para validação de NIF.
+     *
+     * @param opcao A opção selecionada pelo utilizador.
+     */
     private static void processarClientes(int opcao) {
         switch (opcao) {
             case 1 -> { // CREATE
                 System.out.println("--- Novo Cliente ---");
                 try {
-                int nif = lerInteiro("NIF: ");
-                String nome = lerTexto("Nome: ");
-                int tel = lerInteiro("Telemóvel: ");
-                String morada = lerTexto("Morada: ");
-                int cc = lerInteiro("Cartão Cidadão: ");
+                    int nif = lerInteiro("NIF (9 dígitos): ");
+                    String nome = lerTexto("Nome: ");
+                    int tel = lerInteiro("Telemóvel: ");
+                    String morada = lerTexto("Morada: ");
+                    int cc = lerInteiro("Cartão Cidadão: ");
 
-                    // Tenta criar o cliente. Se o NIF for mau, explode aqui e vai para o catch.
-                Cliente c = new Cliente(nome, nif, tel, morada, cc);
+                    Cliente c = new Cliente(nome, nif, tel, morada, cc);
 
-                if (empresa.adicionarCliente(c)) {
-                    System.out.println("Cliente adicionado.");
-                } else {
-                    System.out.println("Erro: Cliente com este NIF já existe.");
+                    if (empresa.adicionarCliente(c)) {
+                        System.out.println("Sucesso: Cliente registado!");
+                    } else {
+                        System.out.println("Erro: Já existe um cliente com esse NIF.");
                     }
 
                 } catch (IllegalArgumentException e) {
@@ -226,7 +241,6 @@ public class Menu {
                 } else {
                     System.out.println("Cliente não encontrado.");
                 }
-
             }
             case 4 -> { // DELETE
                 int nif = lerInteiro("NIF a eliminar: ");
@@ -235,9 +249,10 @@ public class Menu {
         }
     }
 
-    // =======================================================
-    // LÓGICA DE VIAGENS (Simplificada) [cite: 28]
-    // =======================================================
+    /**
+     * Gere o submenu de Viagens, permitindo registar novas viagens e visualizar histórico.
+     * Verifica a existência de entidades (Condutor, Cliente, Viatura) antes de criar viagem.
+     */
     private static void menuViagens() {
         System.out.println("\n--- GESTÃO DE VIAGENS ---");
         System.out.println("1 - Registar Nova Viagem");
@@ -245,7 +260,6 @@ public class Menu {
         int op = lerInteiro("Opção: ");
 
         if (op == 1) {
-            // Para criar uma viagem, precisamos de associar objetos existentes
             int nifCondutor = lerInteiro("NIF do Condutor: ");
             Condutor condutor = empresa.procurarCondutor(nifCondutor);
 
@@ -256,7 +270,6 @@ public class Menu {
             Viatura viatura = empresa.procurarViatura(matricula);
 
             if (condutor != null && cliente != null && viatura != null) {
-                // Leitura de datas
                 LocalDateTime inicio = lerData("Início (dd-MM-yyyy HH:mm): ");
                 LocalDateTime fim = lerData("Fim (dd-MM-yyyy HH:mm): ");
 
@@ -283,11 +296,21 @@ public class Menu {
     // MÉTODOS AUXILIARES (Input)
     // =======================================================
 
+    /**
+     * Lê uma linha de texto do utilizador.
+     * @param msg A mensagem a apresentar antes da leitura.
+     * @return A String introduzida pelo utilizador.
+     */
     private static String lerTexto(String msg) {
         System.out.print(msg);
         return scanner.nextLine();
     }
 
+    /**
+     * Lê um número inteiro, garantindo que o input é válido.
+     * @param msg A mensagem a apresentar.
+     * @return O número inteiro introduzido.
+     */
     private static int lerInteiro(String msg) {
         System.out.print(msg);
         while (!scanner.hasNextInt()) {
@@ -299,6 +322,11 @@ public class Menu {
         return valor;
     }
 
+    /**
+     * Lê um valor decimal (double), garantindo que o input é válido.
+     * @param msg A mensagem a apresentar.
+     * @return O valor double introduzido.
+     */
     private static double lerDouble(String msg) {
         System.out.print(msg);
         while (!scanner.hasNextDouble()) {
@@ -310,6 +338,13 @@ public class Menu {
         return valor;
     }
 
+    /**
+     * Lê e converte uma data no formato "dd-MM-yyyy HH:mm".
+     * Pede novamente se o formato estiver errado.
+     *
+     * @param msg A mensagem a apresentar.
+     * @return O objeto LocalDateTime validado.
+     */
     private static LocalDateTime lerData(String msg) {
         while (true) {
             try {
@@ -322,11 +357,18 @@ public class Menu {
         }
     }
 
-// PARA TESTES ----- CLIENTE / CONDUTOR / VIATURA
-    public static void inicializarDadosTeste() {
-        // Dados dummy para testar sem ter de criar tudo do zero
+    /**
+     * Preenche o sistema com dados iniciais (mock data) para facilitar testes.
+     * Cria 1 Viatura, 1 Cliente e 1 Condutor.
+     */
+    private static void inicializarDadosTeste() {
         empresa.adicionarViatura(new Viatura("AA-00-BB", "Toyota", "Corolla", 2020));
-        empresa.adicionarCliente(new Cliente("Joao Silva", 123456789, 910000000, "Porto", 111222333));
-        empresa.adicionarCondutor(new Condutor("Maria Santos", 987654321, 930000000, "Lisboa", 444555666, "C-123", 123123123));
+
+        try {
+            empresa.adicionarCliente(new Cliente("Joao Silva", 123456789, 910000000, "Porto", 111222333));
+            empresa.adicionarCondutor(new Condutor("Maria Santos", 987654321, 930000000, "Lisboa", 444555666, "C-123", 123123123));
+        } catch (Exception e) {
+            System.out.println("Erro ao carregar dados de teste: " + e.getMessage());
+        }
     }
 }
