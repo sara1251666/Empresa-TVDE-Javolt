@@ -1,7 +1,16 @@
 package Gestao;
 
 import Entidades.*;
+
+import java.sql.SQLOutput;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Formatter;
+import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * A classe Empresa atua como o gestor central de dados do sistema TVDE.
@@ -12,14 +21,13 @@ import java.util.ArrayList;
  * referencial (não apagar entidades com dependências).
  * </p>
  *
- * @author O Teu Grupo
+ * @author LEvi
  * @version 1.0
  * @since 2026-01-01
  */
-
 public class Empresa {
 
-    /** Lista de viaturas registadas na empresa. */
+    /** Lista de viaturas registadas na empresa.*/
     private ArrayList<Viatura> viaturas;
 
     /** Lista de condutores que trabalham na empresa. */
@@ -38,7 +46,6 @@ public class Empresa {
      * Construtor da classe Empresa.
      * Inicializa todas as listas (ArrayLists) vazias prontas para armazenar dados.
      */
-
     public Empresa() {
         this.viaturas = new ArrayList<>();
         this.condutores = new ArrayList<>();
@@ -59,7 +66,6 @@ public class Empresa {
      * @return {@code true} se a viatura foi adicionada com sucesso;
      * {@code false} se já existir uma viatura com a mesma matrícula.
      */
-
     public boolean adicionarViatura(Viatura v) {
         if (procurarViatura(v.getMatricula()) == null) {
             viaturas.add(v);
@@ -273,21 +279,45 @@ public class Empresa {
     // ==========================================================
 
     /**
+     * Verifica se existe sobreposição de horários para a Viatura e Condutor.
+     * Regra: (InicioA < FimB) e (FimA > InicioB).
+     * @param v A Viatura da nova viagem.
+     * @param c O condutor da nova viagem.
+     * @param inicio Inicio Data/Hora de Inicio.
+     * @param fim Fim Data/Hora de fim.
+     * @return Se true (verdadeiro) Está Ocupado / Se False (Falso) Está livre.
+     */
+    public boolean verificarSobreposicao(Viatura v, Condutor c, LocalDateTime inicio, LocalDateTime fim) {
+        for(Viagem viagemExistente : viagens) {
+            boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equals(v.getMatricula());
+            boolean mesmoCondutor = viagemExistente.getCondutor().getNif() == c.getNif();
+
+            if (mesmaViatura || mesmoCondutor) {
+                if (inicio.isBefore(viagemExistente.getDataHoraFim()) && fim.isAfter(viagemExistente.getDataHoraInicio())) {}
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Regista uma nova viagem realizada.
-     *
      * @param v A viagem a adicionar ao histórico.
      */
-
-    public void adicionarViagem(Viagem v) {
-        // Aqui poderias adicionar validação de sobreposição
+    public boolean adicionarViagem(Viagem v) {
+        if (verificarSobreposicao(v.getViatura(), v.getCondutor(), v.getDataHoraInicio(), v.getDataHoraFim())) {
+            System.out.println("Erro: Sobreposição detetada." +
+                    "Viatura ou Condutor ocupados neste horário.");
+            return false;
+        }
         viagens.add(v);
+        return true;
     }
 
     /**
      * Obtém o histórico completo de viagens.
      * @return ArrayList de viagens.
      */
-
     public ArrayList<Viagem> getViagens() {
         return viagens;
     }
@@ -296,7 +326,6 @@ public class Empresa {
      * Regista uma nova reserva no sistema.
      * @param r A reserva a adicionar.
      */
-
     public void adicionarReserva(Reserva r) {
         reservas.add(r);
     }
@@ -335,5 +364,130 @@ public class Empresa {
             return true;
         }
         return false;
+    }
+
+    // ==========================================================
+    //                 RELATÓRIOS E ESTATÍSTICAS
+    // ==========================================================
+
+    public double calcularFaturacaoCondutor(int nifCondutor, LocalDateTime inicio, LocalDateTime fim) {
+        double total = 0.0;
+        for (Viagem viagem : viagens) {
+            if (viagem.getCondutor().getNif() == nifCondutor) {
+
+            }
+        }
+    }
+
+
+    // ==========================================================
+    //                        PERSISTÊNCIA
+    // ==========================================================
+
+    public void gravarDados(){
+        gravarViaturas();
+        gravarClientes();
+        gravarCondutores();
+        gravarViagens();
+    }
+
+    public void carregarDados(){
+        carregarViaturas();
+        carregarClientes();
+        carregarCondutores();
+        carregarViagens();
+    }
+    private void gravarViaturas() {
+        try (Formatter out = new Formatter(new File("viaturas.txt"))) {
+            for (Viatura v : viaturas){
+                out.format("%s;%s;%s;%d%n", v.getMatricula(), v.getMarca(), v.getModelo(), v.getAnoFabrico());
+                }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Erro ao carregar viaturas: " + ex.getMessage());
+        }
+    }
+
+    private void carregarViaturas() {
+        try (Scanner ler = new Scanner(new File("viaturas.txt"))){
+            while (ler.hasNextLine()) {
+                String linha = ler.nextLine();
+                String[] dados =  linha.split(";");
+
+                if (dados.length >= 4) {
+                    Viatura v = new Viatura(dados[0], dados[1], dados[2], Integer.parseInt(dados[3]));
+                    adicionarViatura(v);
+                }
+            }
+        }catch (FileNotFoundException ex){
+
+        }
+    }
+    private void gravarClientes(){
+        try (Formatter out = new Formatter(new File("clientes.txt"))){
+            for (Cliente c : clientes){
+                out.format("%s;%d;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid());
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Erro ao carregar clientes: " + ex.getMessage());
+        }
+    }
+
+    private void carregarClientes(){
+        try (Scanner ler = new Scanner(new File("clientes.txt"))){
+            while (ler.hasNextLine()) {
+                String linha = ler.nextLine();
+                String[] dados =  linha.split(";");
+
+                if (dados.length >= 5) {
+                    Cliente c = new Cliente(dados[0], Integer.parseInt(dados[1]), Integer.parseInt(dados[2]), dados[3], Integer.parseInt(dados[4]));
+                    adicionarCliente(c);
+                }
+            }
+        } catch (FileNotFoundException ex){
+        }
+    }
+
+    private void gravarCondutores(){
+        try ( Formatter out = new Formatter(new File("condutores.txt"))){
+            for (Condutor c : condutores){
+                out.format("%s;%d;%d;%s;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid(), c.getCartaCond(), c.getSegSocial());
+            }
+        } catch (FileNotFoundException ex){
+            System.out.println("Erro ao carregar condutores: " + ex.getMessage());
+        }
+    }
+
+    private void carregarCondutores(){
+        try (Scanner ler = new Scanner(new File("condutores.txt"))){
+            while (ler.hasNextLine()) {
+                String linha = ler.nextLine();
+                String[] dados =  linha.split(";");
+
+                if (dados.length >= 7) {
+                    Condutor c = new Condutor(dados[0], Integer.parseInt(dados[1]), Integer.parseInt(dados[2]), dados[3], Integer.parseInt(dados[4]),dados[5], Integer.parseInt(dados[6]));
+                    adicionarCondutor(c);
+                }
+            }
+        }catch (FileNotFoundException ex){}
+    }
+    private void gravarViagens(){
+        try (Formatter out = new Formatter(new File("viagens.txt"))){
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+            for (Viagem v : viagens){
+                out.format("%d;%d;%s;%s;%s;%s,%s;%s;%s%n",
+                        v.getCondutor().getNif(),
+                        v.getCliente().getNif(),
+                        v.getViatura().getMatricula(),
+                        v.getDataHoraInicio().format(dtf),
+                        v.getDataHoraFim().format(dtf),
+                        v.getMoradaOrigem(),
+                        v.getMoradaDestino(),
+                        String.valueOf(v.getKms()).replace(',','.'),
+                        String.valueOf(v.getCusto()).replace(',','.'));
+            }
+        } catch (FileNotFoundException ex){
+            System.out.println("Erro ao carregar viagens: " + ex.getMessage());
+        }
     }
 }
