@@ -3,6 +3,7 @@ package Gestao;
 import Entidades.*;
 
 import java.sql.SQLOutput;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.io.File;
@@ -372,18 +373,97 @@ public class Empresa {
 
     public double calcularFaturacaoCondutor(int nifCondutor, LocalDateTime inicio, LocalDateTime fim) {
         double total = 0.0;
-        for (Viagem viagem : viagens) {
-            if (viagem.getCondutor().getNif() == nifCondutor) {
+        for (Viagem v : viagens) {
+            if (v.getCondutor().getNif() == nifCondutor) {
+                boolean depoisInicio = v.getDataHoraInicio().isAfter(inicio) || v.getDataHoraInicio().equals(inicio);
+                boolean antesFim = v.getDataHoraInicio().isAfter(fim) || v.getDataHoraInicio().equals(fim);
 
+                if (depoisInicio && antesFim) {
+                    total += v.getCusto();
+                }
             }
         }
+        return total;
     }
 
+    public ArrayList<Cliente> getClientesPorViatura(String matricula) {
+        ArrayList<Cliente> clientesViatura = new ArrayList<>();
+
+        for (Viagem v : viagens) {
+            if (v.getViatura().getMatricula().equalsIgnoreCase(matricula)) {
+                Cliente c = v.getCliente();
+
+                boolean jaExiste = false;
+                for (Cliente existente : clientesViatura) {
+                    if (existente.getNif() == c.getNif()) {
+                        jaExiste = true;
+                        break;
+                    }
+                }
+                if (!jaExiste) {
+                    clientesViatura.add(c);
+                }
+            }
+        }
+        return clientesViatura;
+    }
+
+    public String getDestinoMaisSolicitado() {
+        if (viagens.isEmpty() && reservas.isEmpty()){
+            return "Sem dados disponíveis";
+        }
+
+        ArrayList<String> nomesDestinos = new ArrayList<>();
+        ArrayList<Integer> contagens = new ArrayList<>();
+
+        for  (Viagem v : viagens) {
+            contabilizarDestino(v.getMoradaDestino(), nomesDestinos, contagens);
+        }
+
+        int maxIndex = -1;
+        int maxValor = -1;
+
+        for (int i = 0; i < contagens.size(); i++) {
+            if (contagens.get(i) > maxValor) {
+                maxValor = contagens.get(i);
+                maxIndex = i;
+            }
+        }
+
+        if (maxIndex != -1){
+            return nomesDestinos.get(maxIndex) + "(" + maxValor + " vezes)";
+        }
+        return "Nenhum destino encontrado!";
+    }
+
+    private void contabilizarDestino(String destino, ArrayList<String> nomesDestino, ArrayList<Integer> contagens) {
+        int index = -1;
+
+        for (int i = 0; i < nomesDestino.size(); i++) {
+            if (nomesDestino.get(i).equalsIgnoreCase(destino)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index != -1){
+            int valorAtual = contagens.get(index);
+            contagens.set(index, valorAtual + 1);
+        } else{
+            nomesDestino.add(destino);
+            contagens.add(1);
+        }
+    }
 
     // ==========================================================
     //                        PERSISTÊNCIA
     // ==========================================================
 
+    /**
+     * Coordena a gravação de toda a informação do sistema em ficheiros de texto.
+     * Este metodo deve ser chamado apenas no fecho da aplicação para garantir
+     * que os dados (Viaturas, Cleintes, Condutores e Viagens) não são perdidos.
+     */
     public void gravarDados(){
         gravarViaturas();
         gravarClientes();
@@ -391,22 +471,39 @@ public class Empresa {
         gravarViagens();
     }
 
+    /**
+     * Coordena o carregamento de toda a informação dos ficheiros para a memória.
+     * Este metodo deve ser chamado no arranque da aplicação.
+     * A ordem de carregamento é importante: as Viagens são as últimas
+     * porque depende da existencia de Condutores, Clientes e Viaturas.
+     */
     public void carregarDados(){
         carregarViaturas();
         carregarClientes();
         carregarCondutores();
         carregarViagens();
     }
+
+    /**
+     * Escreve a lista de viaturas no ficheiro "viaturas.txt".
+     * Usa {@code Formatter} com try-with-resources para garantir o fecho do ficheiro.
+     * o formato de escrita é: matricula;marca;modelo;ano
+     */
     private void gravarViaturas() {
         try (Formatter out = new Formatter(new File("viaturas.txt"))) {
             for (Viatura v : viaturas){
                 out.format("%s;%s;%s;%d%n", v.getMatricula(), v.getMarca(), v.getModelo(), v.getAnoFabrico());
-                }
+            }
         } catch (FileNotFoundException ex) {
             System.out.println("Erro ao carregar viaturas: " + ex.getMessage());
         }
     }
 
+    /**
+     * Lê o ficheiro "viaturas.txt" e carrega as viaturas para o sistema.
+     * usa {@code Scanner} para ler linha a linha e {@code split} para separar os campos.
+     * Se o ficheiro não existir (primeira execução), a exceção é ignorada.
+     */
     private void carregarViaturas() {
         try (Scanner ler = new Scanner(new File("viaturas.txt"))){
             while (ler.hasNextLine()) {
@@ -418,10 +515,13 @@ public class Empresa {
                     adicionarViatura(v);
                 }
             }
-        }catch (FileNotFoundException ex){
-
-        }
+        }catch (FileNotFoundException ex){}
     }
+
+    /**
+     * Escreve a lista de clientes no ficheiro "clientes.txt"
+     * O formato de escrita é: nome;nif;tel;morada;cartaoCidadao
+     */
     private void gravarClientes(){
         try (Formatter out = new Formatter(new File("clientes.txt"))){
             for (Cliente c : clientes){
@@ -432,6 +532,9 @@ public class Empresa {
         }
     }
 
+    /**
+     * Lê o ficheiro "clientes.txt" e carrega os clientes para o sistema.
+     */
     private void carregarClientes(){
         try (Scanner ler = new Scanner(new File("clientes.txt"))){
             while (ler.hasNextLine()) {
@@ -447,6 +550,10 @@ public class Empresa {
         }
     }
 
+    /**
+     * Escreve a lista de condutores no ficheiro "condutores.txt".
+     * O formato de escrita é: nome;nif;tel;morada;cartaoCidadao;cartaConducao;segSocial
+     */
     private void gravarCondutores(){
         try ( Formatter out = new Formatter(new File("condutores.txt"))){
             for (Condutor c : condutores){
@@ -457,6 +564,9 @@ public class Empresa {
         }
     }
 
+    /**
+     * LÊ o ficheiro "condutores.txt" e carrega os condutores para o sistema.
+     */
     private void carregarCondutores(){
         try (Scanner ler = new Scanner(new File("condutores.txt"))){
             while (ler.hasNextLine()) {
@@ -470,6 +580,12 @@ public class Empresa {
             }
         }catch (FileNotFoundException ex){}
     }
+
+    /**
+     * Escreve o histórico de viagens no ficheiro "viagens.txt".
+     * Guarda apenas os identificadores (NIFs e Matrícula) para manter a integridade referencial.
+     * Converte ps valores decimais (kms e custo) substituindo vírguklas por pontos para garantir compatibilidade.
+     */
     private void gravarViagens(){
         try (Formatter out = new Formatter(new File("viagens.txt"))){
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
@@ -487,7 +603,43 @@ public class Empresa {
                         String.valueOf(v.getCusto()).replace(',','.'));
             }
         } catch (FileNotFoundException ex){
-            System.out.println("Erro ao carregar viagens: " + ex.getMessage());
+            System.out.println("Erro ao gravar viagens: " + ex.getMessage());
         }
+    }
+
+    /**
+     * Lê o ficheiro "viagens.txt" e reconstrói o historico de viagens.
+     * Utiliza os metodos de pesquisa ({@code procurarCondutor}, {@code procurarCliente}, etc.)
+     * para associar a viagem aos objetos corretos que já estão em memória.
+     */
+    private void carregarViagens(){
+        try (Scanner ler = new Scanner(new File("viagens.txt"))){
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+            while (ler.hasNextLine()) {
+                String linha = ler.nextLine();
+                String[] dados =  linha.split(";");
+
+                if (dados.length >= 9) {
+                    Condutor condutor = procurarCondutor(Integer.parseInt(dados[0]));
+                    Cliente  cliente = procurarCliente(Integer.parseInt(dados[1]));
+                    Viatura viatura = procurarViatura(dados[2]);
+
+                    if (condutor != null && cliente != null && viatura != null) {
+                        try {
+                            LocalDateTime dataHoraInicio = LocalDateTime.parse(dados[3], dtf);
+                            LocalDateTime dataHoraFim = LocalDateTime.parse(dados[4], dtf);
+                            double kms = Double.parseDouble(dados[7]);
+                            double custo = Double.parseDouble(dados[8]);
+
+                            Viagem v = new Viagem(condutor, cliente, viatura, dataHoraInicio, dataHoraFim, dados[5], dados[6], kms, custo);
+                            viagens.add(v);
+                        } catch (ParseException e) {
+                            System.out.println("Erro ao carregar viagens: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException ex){}
     }
 }
