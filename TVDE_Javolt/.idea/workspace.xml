@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="7778648c-976b-48f0-80f3-e44ef7e36dce" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Viagens.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Viagem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Gestao/Empresa.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Gestao/Empresa.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,17 +27,23 @@
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="36fQiiaRWrrHzeQHbtYxKyiCo3Z" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.Main.executor": "Run",
+    "Application.Menu.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Sara__ClasseViagem",
+    "git-widget-placeholder": "Sara__LerGravarFicheiros",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/maste/Desktop/Empresa-TVDE-Javolt/TVDE_Javolt",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
@@ -47,7 +53,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
       </set>
     </attachedChunks>
   </component>

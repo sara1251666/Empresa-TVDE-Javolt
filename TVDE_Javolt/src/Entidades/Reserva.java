@@ -1,8 +1,10 @@
+package Entidades;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Representa uma Intenção de Viagem Solicitada por um Cliente.
+ * Representa uma Intenção de Entidades.Viagem Solicitada por um Entidades.Cliente.
  * Contém os Dados do Serviço Solicitado Antes de ser Realizado.
  * @author Levi e Sara
  * @version 1
@@ -16,14 +18,14 @@ public class Reserva {
     private double kms;
 
     /**
-     * Construtor Reserva Vazio.
+     * Construtor Entidades.Reserva Vazio.
      */
     public Reserva() {
     }
 
     /**
-     * Constrói uma Nova Reserva de um Determinado Cliente.
-     * @param cliente O cliente Que Fez a Reserva.
+     * Constrói uma Nova Entidades.Reserva de um Determinado Entidades.Cliente.
+     * @param cliente O cliente Que Fez a Entidades.Reserva.
      * @param dataHoraInicio A Data e Hora Pretendida.
      * @param moradaOrigem Local de Recolha.
      * @param moradaDestino Local de Destino.
@@ -38,32 +40,32 @@ public class Reserva {
     }
 
     /**
-     * Obtém o Cliente Associado à Reserva.
-     * @return Retorna o Cliente.
+     * Obtém o Entidades.Cliente Associado à Entidades.Reserva.
+     * @return Retorna o Entidades.Cliente.
      */
     public Cliente getCliente() {
         return cliente;
     }
 
     /**
-     * Define o Cliente Associado à Reserva.
-     * @param cliente Atribui o Cliente à Reserva.
+     * Define o Entidades.Cliente Associado à Entidades.Reserva.
+     * @param cliente Atribui o Entidades.Cliente à Entidades.Reserva.
      */
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
 
     /**
-     * Obtém a Data e a Hora do Inicio da Reserva.
-     * @return Retorna a Data e Hora da Reserva.
+     * Obtém a Data e a Hora do Inicio da Entidades.Reserva.
+     * @return Retorna a Data e Hora da Entidades.Reserva.
      */
     public LocalDateTime getDataHoraInicio() {
         return dataHoraInicio;
     }
 
     /**
-     * Define a Data e a Hora de Inicio da Reserva.
-     * @param dataHoraInicio Atribui a Nova data e a Hora de Início da Reserva.
+     * Define a Data e a Hora de Inicio da Entidades.Reserva.
+     * @param dataHoraInicio Atribui a Nova data e a Hora de Início da Entidades.Reserva.
      */
     public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
         this.dataHoraInicio = dataHoraInicio;
@@ -102,30 +104,30 @@ public class Reserva {
     }
 
     /**
-     * Obtém a Disância da Reserva em Kms.
-     * @return Retorna a Distância da Viagem em Kms.
+     * Obtém a Disância da Entidades.Reserva em Kms.
+     * @return Retorna a Distância da Entidades.Viagem em Kms.
      */
     public double getKms() {
         return kms;
     }
 
     /**
-     * Defime a Nova Distância da Reserva em Kms.
-     * @param kms Agtribui a Nova Distância da Reserva em Kms.
+     * Defime a Nova Distância da Entidades.Reserva em Kms.
+     * @param kms Agtribui a Nova Distância da Entidades.Reserva em Kms.
      */
     public void setKms(double kms) {
         this.kms = kms;
     }
 
     /**
-     * Representação em Texto da Reserva.
+     * Representação em Texto da Entidades.Reserva.
      * Formata a data para ser legível.
-     * @return Detalhes da Reserva.
+     * @return Detalhes da Entidades.Reserva.
      */
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        return " Reserva [Cliente: " + cliente.getNome() +
+        return " Entidades.Reserva [Entidades.Cliente: " + cliente.getNome() +
                 " | Data: " + getDataHoraInicio().format(formatter) +
                 " | De: " + moradaOrigem + " Para: " + moradaDestino + "]";
     }

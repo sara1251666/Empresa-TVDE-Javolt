@@ -1,9 +1,11 @@
+package Entidades;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Representa uma Viagem Realizada pela Empresa TVDE.
- * Esta Classe Agrega as Entidades Condutor, Cliente e Viatura,
+ * Representa uma Entidades.Viagem Realizada pela Gestao.Empresa TVDE.
+ * Esta Classe Agrega as Entidades Entidades.Condutor, Entidades.Cliente e Entidades.Viatura,
  * Além de Registar o Tempo, Distância e o Custo Financeiro.
  * @author Levi e Sara
  * @version 1
@@ -21,22 +23,22 @@ public class Viagem {
     private double custo;
 
     /**
-     * Constutor Viagem Vazio.
+     * Constutor Entidades.Viagem Vazio.
      */
     public Viagem() {
     }
 
     /**
-     * Constutor Completo da CLasse Viagem.
-     * @param condutor O Motorista que Realizou a Viagem.
+     * Constutor Completo da CLasse Entidades.Viagem.
+     * @param condutor O Motorista que Realizou a Entidades.Viagem.
      * @param cliente O CLiente Transportado.
      * @param viatura O Carro Utilizado.
-     * @param dataHoraInicio Data e Hora do Inicio da Viagem.
-     * @param dataHoraFim Data e Hora do Fim da Viagem.
+     * @param dataHoraInicio Data e Hora do Inicio da Entidades.Viagem.
+     * @param dataHoraFim Data e Hora do Fim da Entidades.Viagem.
      * @param moradaOrigem Local de Partida.
      * @param moradaDestino Local de Chegada.
      * @param kms Distância Percorrida em Kms.
-     * @param custo Valor Final Cobrado Pela Viagem (em euros);
+     * @param custo Valor Final Cobrado Pela Entidades.Viagem (em euros);
      */
     public Viagem(Condutor condutor, Cliente cliente, Viatura viatura, LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim, String moradaOrigem, String moradaDestino, double kms, double custo) {
         this.condutor = condutor;
@@ -51,144 +53,144 @@ public class Viagem {
     }
 
     /**
-     * Obtém o Condutor da Viagem.
-     * @return Retorna o Condutor da Viagem.
+     * Obtém o Entidades.Condutor da Entidades.Viagem.
+     * @return Retorna o Entidades.Condutor da Entidades.Viagem.
      */
     public Condutor getCondutor() {
         return condutor;
     }
 
     /**
-     * Define Novo o Condutor da Viagem.
-     * @param condutor Atribui o Novo Condutor da Viagem.
+     * Define Novo o Entidades.Condutor da Entidades.Viagem.
+     * @param condutor Atribui o Novo Entidades.Condutor da Entidades.Viagem.
      */
     public void setCondutor(Condutor condutor) {
         this.condutor = condutor;
     }
 
     /**
-     * Obtém o Cliente da Viagem.
-     * @return Retorna o Cliente.
+     * Obtém o Entidades.Cliente da Entidades.Viagem.
+     * @return Retorna o Entidades.Cliente.
      */
     public Cliente getCliente() {
         return cliente;
     }
 
     /**
-     * Define o Novo CLiente da Viagem.
-     * @param cliente Atribui o Novo Cliente da Viagem.
+     * Define o Novo CLiente da Entidades.Viagem.
+     * @param cliente Atribui o Novo Entidades.Cliente da Entidades.Viagem.
      */
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
 
     /**
-     * Obtém a Viatura Usada na Viagem.
-     * @return Retorna a Viatura Usada na Viagem.
+     * Obtém a Entidades.Viatura Usada na Entidades.Viagem.
+     * @return Retorna a Entidades.Viatura Usada na Entidades.Viagem.
      */
     public Viatura getViatura() {
         return viatura;
     }
 
     /**
-     * Define a Nova Viatura Para a Viagem.
-     * @param viatura Atribui a Nova Viatura para a Viagem.
+     * Define a Nova Entidades.Viatura Para a Entidades.Viagem.
+     * @param viatura Atribui a Nova Entidades.Viatura para a Entidades.Viagem.
      */
     public void setViatura(Viatura viatura) {
         this.viatura = viatura;
     }
 
     /**
-     * Obtém a Data e Hora do Inicio da Viagem.
-     * @return Retorna a Data e Hora do Inicio da Viagem.
+     * Obtém a Data e Hora do Inicio da Entidades.Viagem.
+     * @return Retorna a Data e Hora do Inicio da Entidades.Viagem.
      */
     public LocalDateTime getDataHoraInicio() {
         return dataHoraInicio;
     }
 
     /**
-     * Define a Nova data e Hora de Início da Viagem.
-     * @param dataHoraInicio Atribui a Nova Data e Hora do Inicio da Viagem.
+     * Define a Nova data e Hora de Início da Entidades.Viagem.
+     * @param dataHoraInicio Atribui a Nova Data e Hora do Inicio da Entidades.Viagem.
      */
     public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
         this.dataHoraInicio = dataHoraInicio;
     }
 
     /**
-     * Obtém a Data e Hora do Fim da Viagem.
-     * @return Retorna a Data e Hora do Fim da Viagem.
+     * Obtém a Data e Hora do Fim da Entidades.Viagem.
+     * @return Retorna a Data e Hora do Fim da Entidades.Viagem.
      */
     public LocalDateTime getDataHoraFim() {
         return dataHoraFim;
     }
 
     /**
-     * Define a Nova Data e Hora do Fim da Viagem.
-     * @param dataHoraFim Atribui a Nova Data e Hora do Fim da Viagem.
+     * Define a Nova Data e Hora do Fim da Entidades.Viagem.
+     * @param dataHoraFim Atribui a Nova Data e Hora do Fim da Entidades.Viagem.
      */
     public void setDataHoraFim(LocalDateTime dataHoraFim) {
         this.dataHoraFim = dataHoraFim;
     }
 
     /**
-     * Obtém a Morada de Origem da Viagem.
-     * @return Retorma a Morada de Origem da Viagem .
+     * Obtém a Morada de Origem da Entidades.Viagem.
+     * @return Retorma a Morada de Origem da Entidades.Viagem .
      */
     public String getMoradaOrigem() {
         return moradaOrigem;
     }
 
     /**
-     * Define a Nova Morada de Origem da Viagem.
-     * @param moradaOrigem Atribui a Nova Morada de Origem da Viagem.
+     * Define a Nova Morada de Origem da Entidades.Viagem.
+     * @param moradaOrigem Atribui a Nova Morada de Origem da Entidades.Viagem.
      */
     public void setMoradaOrigem(String moradaOrigem) {
         this.moradaOrigem = moradaOrigem;
     }
 
     /**
-     * Obtém a Morada de Destino da Viagem.
-     * @return Retorna a Morada de Destino da Viagem.
+     * Obtém a Morada de Destino da Entidades.Viagem.
+     * @return Retorna a Morada de Destino da Entidades.Viagem.
      */
     public String getMoradaDestino() {
         return moradaDestino;
     }
 
     /**
-     * Define a Nova Morada de Destino da Viagem.
-     * @param moradaDestino Atribui a Nova Morada de Destino da Viagem.
+     * Define a Nova Morada de Destino da Entidades.Viagem.
+     * @param moradaDestino Atribui a Nova Morada de Destino da Entidades.Viagem.
      */
     public void setMoradaDestino(String moradaDestino) {
         this.moradaDestino = moradaDestino;
     }
 
     /**
-     * Obtém a Distâmncia Percorrida na Viagem em Kms.
-     * @return Retorna a Distância Percorrida na Viagem em Kms.
+     * Obtém a Distâmncia Percorrida na Entidades.Viagem em Kms.
+     * @return Retorna a Distância Percorrida na Entidades.Viagem em Kms.
      */
     public double getKms() {
         return kms;
     }
 
     /**
-     * Define a Distância Percorrida na Viagem em Kms.
-     * @param kms Atribui a Distância Percorrida na Viagem em Kms.
+     * Define a Distância Percorrida na Entidades.Viagem em Kms.
+     * @param kms Atribui a Distância Percorrida na Entidades.Viagem em Kms.
      */
     public void setKms(double kms) {
         this.kms = kms;
     }
 
     /**
-     * Obtém o Custo da Viagem (em Euros).
-     * @return Retorna o Valor da Viagem (em Euros).
+     * Obtém o Custo da Entidades.Viagem (em Euros).
+     * @return Retorna o Valor da Entidades.Viagem (em Euros).
      */
     public double getCusto() {
         return custo;
     }
 
     /**
-     * Define o Custo da Viagem (em Euros).
-     * @param custo Atribui o Valor da Viagem (em Euros).
+     * Define o Custo da Entidades.Viagem (em Euros).
+     * @param custo Atribui o Valor da Entidades.Viagem (em Euros).
      */
     public void setCusto(double custo) {
         this.custo = custo;
@@ -198,15 +200,17 @@ public class Viagem {
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
-        return String.format(String.format(String.format(String.format("Viagem {" +
-                "Condutor: " + condutor.getNome() +
-                " | Cliente: " + cliente.getNome() +
-                " | Viatura: " + viatura.getMatricula() +
+        return String.format(String.format(String.format(String.format("Entidades.Viagem {" +
+                "Entidades.Condutor: " + condutor.getNome() +
+                " | Entidades.Cliente: " + cliente.getNome() +
+                " | Entidades.Viatura: " + viatura.getMatricula() +
                 "\n Início: " + dataHoraInicio.format(formatter) +
                 " | Fim: " + dataHoraFim.format(formatter) +
                 "\n Trajeto: " +moradaOrigem + " -> " + moradaDestino +
                 " | Distância: " + kms + " km | Custo: "+ custo + "€" +
-                "}";
+                "}"
         )
-    }
+                )
+        ))
+    ;}
 }

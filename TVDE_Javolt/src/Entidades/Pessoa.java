@@ -1,5 +1,7 @@
+package Entidades;
+
 /**
- * Classe abstrata que representa uma Pessoa Genérica.
+ * Classe abstrata que representa uma Entidades.Pessoa Genérica.
  * Agrupa dados comuns a Clientes e Condutores.
  * @author Sara
  * @version 1
@@ -13,37 +15,38 @@ public abstract class Pessoa {
     private int cartaoCid;
 
     /**
-     * Construtor Pessoa vazio.
+     * Construtor Entidades.Pessoa vazio.
      */
     public Pessoa() {
     }
 
     /**
-     * Construtor completo de Pessoa.
-     * @param nome Nome da Pessoa.
+     * Construtor completo de Entidades.Pessoa.
+     * @param nome Nome da Entidades.Pessoa.
      * @param nif Número de Identificação Fiscal.
-     * @param tel Número de Telemóvel da Pessoa.
+     * @param tel Número de Telemóvel da Entidades.Pessoa.
      * @param morada Morada Completa
      * @param cartaoCid Número de Cartão do Cidadão.
      */
     public Pessoa(String nome, int nif, int tel, String morada, int cartaoCid) {
         this.nome = nome;
-        this.nif = nif;
+        //this.nif = nif;
+        setNif(nif);
         this.tel = tel;
         this.morada = morada;
         this.cartaoCid = cartaoCid;
     }
 
     /**
-     * Obtém o Nome da Pessoa.
-     * @return Retorna o Nome da Pessoa
+     * Obtém o Nome da Entidades.Pessoa.
+     * @return Retorna o Nome da Entidades.Pessoa
      */
     public String getNome() {
         return nome;
     }
 
     /**
-     * Define um Novo Nome da Pessoa
+     * Define um Novo Nome da Entidades.Pessoa
      * @param nome Atribui o novo nome.
      */
     public void setNome(String nome) {
@@ -51,8 +54,8 @@ public abstract class Pessoa {
     }
 
     /**
-     * Obtém o NIF da Pessoa.
-     * @return Retorna o NIF da Pessoa.
+     * Obtém o NIF da Entidades.Pessoa.
+     * @return Retorna o NIF da Entidades.Pessoa.
      */
     public int getNif() {
         return nif;
@@ -63,11 +66,19 @@ public abstract class Pessoa {
      * @param nif Atribui o novo NIF.
      */
     public void setNif(int nif) {
-        this.nif = nif;
+        //Converte para texto para contar o tamanho
+        String nifTexto = String.valueOf(nif);
+
+        if (nifTexto.length() == 9) {
+            this.nif = nif;
+        } else {
+            //System.out.println("Erro: O NIF deve ter 9 digitos.");
+            throw new IllegalArgumentException("NIF invaldo! tem de ter exatamente 9 digitos (ecebido: " + nif + ").");
+        }
     }
 
     /**
-     * Obtém o Telemóvel da Pessoa.
+     * Obtém o Telemóvel da Entidades.Pessoa.
      * @return Retorna o Número de Telemóvel.
      */
     public int getTel() {
@@ -83,8 +94,8 @@ public abstract class Pessoa {
     }
 
     /**
-     * Obtém a Morada da Pessoa.
-     * @return Retorna a Morada da Pessoa.
+     * Obtém a Morada da Entidades.Pessoa.
+     * @return Retorna a Morada da Entidades.Pessoa.
      */
     public String getMorada() {
         return morada;
