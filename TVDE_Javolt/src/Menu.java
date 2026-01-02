@@ -14,7 +14,7 @@ import Entidades.*;
  * e a invocação dos métodos da classe {@link Empresa}.
  * </p>
  *
- * @author
+ * @author Levi
  * @version 1.0
  * @since 2026-01-01
  */
@@ -47,15 +47,16 @@ public class Menu {
     public static void displayMenuPrincipal() {
         int opcao = 0;
         do {
-            System.out.println("\n|-------------------------------|");
-            System.out.println("|    TVDE - MENU PRINCIPAL      |");
-            System.out.println("|-------------------------------|");
-            System.out.println("|    1 - Gerir Viaturas         |");
-            System.out.println("|    2 - Gerir Condutores       |");
-            System.out.println("|    3 - Gerir Clientes         |");
-            System.out.println("|    4 - Gerir Viagens          |");
-            System.out.println("|    0 - Sair                   |");
-            System.out.println("|-------------------------------|");
+            System.out.println("\n|--------------------------------|");
+            System.out.println("|    TVDE - MENU PRINCIPAL       |");
+            System.out.println("|--------------------------------|");
+            System.out.println("|    1 - Gerir Viaturas          |");
+            System.out.println("|    2 - Gerir Condutores        |");
+            System.out.println("|    3 - Gerir Clientes          |");
+            System.out.println("|    4 - Gerir Viagens           |");
+            System.out.println("|    5 - Relatórios/Estatísticas |");
+            System.out.println("|    0 - Sair                    |");
+            System.out.println("|--------------------------------|");
             opcao = lerInteiro("Escolha uma opção: ");
 
             switch (opcao) {
@@ -63,6 +64,7 @@ public class Menu {
                 case 2 -> menuCRUD("Condutores");
                 case 3 -> menuCRUD("Clientes");
                 case 4 -> menuViagens();
+                case 5 -> menuEstatisticas();
                 case 0 -> System.out.println("A encerrar sistema...");
                 default -> System.out.println("Opção inválida.");
             }
@@ -370,5 +372,57 @@ public class Menu {
         } catch (Exception e) {
             System.out.println("Erro ao carregar dados de teste: " + e.getMessage());
         }
+    }
+
+    private static void menuPrincipal() {
+        int op = 0;
+
+        do {
+            System.out.println("\n--- RELATÓRIOS E ESTATÍSTICAS ---");
+            System.out.println("1 - Total faturado por condutor (intervalo de datas)");
+            System.out.println("2 - Lista de clientes de uma viatura");
+            System.out.println("3 - Destino mais solicitado");
+            System.out.println("0 - Voltar");
+            op = lerInteiro("Opção: ");
+
+            switch (op){
+                case 1 -> {
+                    // Faturação Condutor
+                    int nif = lerInteiro("NIF do Condutor: ");
+                    Condutor condutor = empresa.procurarCondutor(nif);
+                    if (condutor != null) {
+                        LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
+                        LocalDateTime fim = lerData("Data fim (dd-MM-yyyy HH:mm): ");
+
+                        double total = empresa.calcularFaturacaoCondutor(nif, inicio, fim);
+                        System.out.println("O Condutor " + condutor.getNome() + " faturou: " + total + " € nesse periodo.");
+                    } else {
+                        System.out.println("Condutor não encontrado.");
+                    }
+                }
+                case 2 -> {
+                    String matricula = lerTexto("Matricula da Viatura: ");
+                    Viatura viatura = empresa.procurarViatura(matricula);
+
+                    if (viatura != null) {
+                        ArrayList<Cliente> lista = empresa.getClientesPorViatura(matricula);
+                        if (lista.isEmpty()) {
+                            System.out.println("Esta viatura ainda não transportou clientes.");
+                        } else {
+                            System.out.println("--- Clientes da Viatura " + matricula + "---");
+                            for (Cliente cliente : lista) {
+                                System.out.println("- " + cliente.getNome() + " (NIF: " + cliente.getNif() + ")");
+                            }
+                        }
+                    } else {
+                        System.out.println("Viatura não encontrada.");
+                    }
+                }
+                case 3 -> {
+                    String topDestino = empresa.getDestinoMaisSolicitado();
+                    System.out.println("Destino mais popular: " +  topDestino);
+                }
+            }
+        } while (op != 0);
     }
 }
