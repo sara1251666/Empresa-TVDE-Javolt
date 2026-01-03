@@ -340,7 +340,7 @@ public class Menu {
                 case 2 -> tratarListarViagens();
                 case 3 -> tratarCriarReserva();
                 case 4 -> tratarListarReservas();
-                case 5 ->
+                case 5 -> tratarAlterarReserva();
                 case 6 -> tratarConverterReserva();
                 case 7 -> tratarConsultarReservasCliente();
                 case 8 -> tratarEliminarReserva();
@@ -428,7 +428,82 @@ public class Menu {
         }
     }
 
-    
+    /**
+     *
+     */
+    private static void tratarAlterarReserva(){
+        System.out.println("--- Altera Reserva de Cliente ---");
+
+        //1.Pedir o NIF para filtrar
+        int nifCliente = lerInteiro("NIF Cliente: ");
+        Cliente cliente = empresa.procurarCliente(nifCliente);
+
+        if (cliente != null) {
+            System.out.println("Cliente não encontrado.");
+            return;
+        }
+
+        //2. Obyer apenas as reservas deste cliente
+        ArrayList<Reserva> reservasCliente = empresa.getReservasDoCliente(nifCliente);
+
+        if (reservasCliente.isEmpty()) {
+            System.out.println("Este cliente não tem reservas pendentes para alterar.");
+            return;
+        }
+        //3. Listar para escolher
+        System.out.println("--- Reservas de " + cliente.getNome() + " ---");
+        for (int i = 0; i < reservasCliente.size(); i++) {
+            System.out.println((i + 1) + ". " + reservasCliente.get(i));
+        }
+
+        //4. Selecionar
+        int index = lerInteiro("Escolha a Reserva a Alterar (0 para voltar)?") - 1;
+        if (index >= 0 && index < reservasCliente.size()) {
+            Reserva res = reservasCliente.get(index);
+
+            System.out.println("--- O que deseja alterar? ---");
+            System.out.println("1 - Data e Hora");
+            System.out.println("2 - Origem");
+            System.out.println("3 - Destino");
+            System.out.println("4 - Distância (Kms)");
+            System.out.println("0 - Cancelar");
+
+            int opcao = lerInteiro("Escolha a opção: ");
+            switch (opcao) {
+                case 1 -> {
+                    LocalDateTime novaData = lerData("Nova Data/Hora (dd-MM-yyyy HH:mm): ");
+                    res.setDataHoraInicio(novaData);
+                    System.out.println("Data atualizada com sucesso!");
+                }
+                case 2 -> {
+                    String novaOrigem = lerTexto("Nova Origem: ");
+                    res.setMoradaOrigem(novaOrigem);
+                    System.out.println("Morada origem atualizada com sucesso!");
+                }
+                case 3 -> {
+                    String novoDestino = lerTexto("Novo Destino: ");
+                    res.setMoradaDestino(novoDestino);
+                    System.out.println("Morada destino atualizada com sucesso!");
+
+                }
+                case 4 -> {
+                    double novosKms = lerDouble("Novos Kms: ");
+                    res.setKms(novosKms);
+                    System.out.println("Distância atualizada com sucesso!");
+                }
+                case 0 -> {
+                    System.out.println("Alteração Cancelada.");
+                }
+                default -> {
+                    System.out.println("Opção Inválida.");
+                }
+            }
+        } else {
+            if (index != -1) {
+                System.out.println("Opção inválida.");
+            }
+        }
+    }
 
     private static void tratarConverterReserva(){
         ArrayList<Reserva> reservas = empresa.getReservas();
