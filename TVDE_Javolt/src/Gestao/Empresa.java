@@ -404,34 +404,6 @@ public class Empresa {
         return clientesViatura;
     }
 
-    public String getDestinoMaisSolicitado() {
-        if (viagens.isEmpty() && reservas.isEmpty()){
-            return "Sem dados disponíveis";
-        }
-
-        ArrayList<String> nomesDestinos = new ArrayList<>();
-        ArrayList<Integer> contagens = new ArrayList<>();
-
-        for  (Viagem v : viagens) {
-            contabilizarDestino(v.getMoradaDestino(), nomesDestinos, contagens);
-        }
-
-        int maxIndex = -1;
-        int maxValor = -1;
-
-        for (int i = 0; i < contagens.size(); i++) {
-            if (contagens.get(i) > maxValor) {
-                maxValor = contagens.get(i);
-                maxIndex = i;
-            }
-        }
-
-        if (maxIndex != -1){
-            return nomesDestinos.get(maxIndex) + "(" + maxValor + " vezes)";
-        }
-        return "Nenhum destino encontrado!";
-    }
-
     private void contabilizarDestino(String destino, ArrayList<String> nomesDestino, ArrayList<Integer> contagens) {
         int index = -1;
 
@@ -456,22 +428,19 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Calcula a distância media das viagens realizadas num intervalo de datas.
+     * Calcula a media de quilómetros das viagens realizadas num determinado intervaki de tempo.
      * Requisito: Apresentar a distância media (em kms).
-     * @param inicio Data de inicio do intervalo.
-     * @param fim Data de fim do intervalo.
-     * @return Retorna a media de Kms, ou 0.0 se não houver viagens.
+     * @param inicio Data e hora de inicio do intervalo.
+     * @param fim Data e hora de fim do intervalo.
+     * @return Retorna o valor médio da distância em Kms
+     * ou 0.0 se não existirem viagens realizadas num intervalo de datas.
      */
     public double calcularDistanciaMedia(LocalDateTime inicio, LocalDateTime fim) {
         double totalKms = 0;
         int contador = 0;
 
         for (Viagem v : viagens) {
-            //Verifica se a viagem está dentro do intervalo
-            boolean dentroDoPrazo = (v.getDataHoraInicio().isAfter(inicio) || v.getDataHoraInicio().equals(inicio)) &&
-                    (v.getDataHoraFim().isAfter(fim) || v.getDataHoraFim().equals(fim));
-
-            if (dentroDoPrazo) {
+            if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
                 totalKms += v.getCusto();
                 contador++;
             }
@@ -483,11 +452,12 @@ public class Empresa {
     }
 
     /**
-     * Devolve uma lista de clientes que fizeram viagens dentro de um intervaki de Kms.
-     * Requisito: Clientes com viagens cuja distância se encontra num intervalo.
-     * @param minKms Distância minima.
-     * @param maxKms Distância máxima.
-     * @return Retorna a lista de condutores que cumprem o critério.
+     * Obtém uma lista de clientes que realizaram viagens cuja distância se encontra dentro de um intervalo.
+     * Garante que não existem clientes duplicados na lista devolvida.
+     * Requisito: Apresentar uma lista dos clientes com viagens cuja distância se encontra dentro de um intervalo.
+     * @param minKms Distância minima (limite inferior).
+     * @param maxKms Distância máxima (limite superior).
+     * @return Retorna a lista de clientes únicos que cumprem o critério.
      */
     public ArrayList<Cliente> getClientesPorIntervaloKms(double minKms, double maxKms) {
         ArrayList<Cliente> resultado = new ArrayList<>();
@@ -495,8 +465,16 @@ public class Empresa {
         for (Viagem v : viagens) {
             if (v.getKms() >= minKms && v.getKms() <= maxKms) {
                 Cliente cliente = v.getCliente();
+
                 //Verificar duplicados para não listar o mesmo cliente duas vezes.
-                if (!resultado.contains(cliente)) {
+                boolean jaExiste = false;
+                for (Cliente existente : resultado) {
+                    if (existente.getNif() == cliente.getNif()) {
+                        jaExiste = true;
+                        break;
+                    }
+                }
+                if (!jaExiste) {
                     resultado.add(cliente);
                 }
             }
@@ -505,8 +483,8 @@ public class Empresa {
     }
 
     /**
-     * Pesquisa as viagens de um cliente específico num intervalo de datas.
-     * Requisito: Pesquisar as viagens de cliente num intervalo de datas.
+     * Pesquisa o histórico de viagens de um cliente específico dentro de um intervalo de datas.
+     * Requisito: Pesquisar as viagens de cliente num intervalo de datas indicado pelo utilizador.
      * @param nifCliente Nif do Cliente a pesquisar.
      * @param inicio Data de inicio.
      * @param fim Data de fim.
@@ -517,15 +495,82 @@ public class Empresa {
 
         for (Viagem v : viagens) {
             if (v.getCliente().getNif() == nifCliente) {
-                boolean dentroDoPrazo = (v.getDataHoraInicio().isAfter(inicio) || v.getDataHoraInicio().equals(inicio)) &&
-                        (v.getDataHoraFim().isAfter(fim) || v.getDataHoraFim().equals(fim));
-
-                if (dentroDoPrazo) {
+                if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)){
                     resultado.add(v);
                 }
             }
         }
         return resultado;
+    }
+
+    /**
+     * Obtém a lista de todas as reservas pendentes associadas a um determinado cliente.
+     * Requisito: Consultar lista de reservas de um cliente.
+     * @param nifCliente Nif do Cliente.
+     * @return Lista contendo as reservas desse cliente.
+     */
+    public ArrayList<Reserva> getReservasDoCliente(int nifCliente){
+        ArrayList<Reserva> resultado = new ArrayList<>();
+        for (Reserva r : reservas) {
+            if (r.getCliente().getNif() == nifCliente) {
+                resultado.add(r);
+            }
+        }
+        return resultado;
+    }
+
+    /**
+     * Determina o destino mais solicitado considerando tamto o histórico de Viagems como as Reservas pendentes.
+     * A contagem é efetuada apenas dentro do intervalo de datas especificado.
+     * Requisito: Apresentar o destino mais solicitado (reservas e viagens) durante um intervalo de datas.
+     * @param inicio Data e hora de ínicio do intervalo.
+     * @param fim Data e hora de fim do intervalo.
+     * @return Retorna uma lista com o nome do destino e o número de ocorrências, ou uma mensagem se não houver dados.
+     */
+    public String getDestinoMaisSolicitado(LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<String> destinos = new ArrayList<>();
+        ArrayList<Integer> contagens = new ArrayList<>();
+
+        //1. Verificar em Viagens
+        for (Viagem v : viagens) {
+            if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
+                contabilizarDestino(v.getMoradaDestino(), destinos, contagens);
+            }
+        }
+
+        //2. Verificar em Reservas
+        for (Reserva r : reservas) {
+            if(isDentroDoPrazo(r.getDataHoraInicio(), inicio, fim)){
+                contabilizarDestino(r.getMoradaDestino(), destinos, contagens);
+            }
+        }
+
+        if(destinos.isEmpty()){
+            return "Sem dados neste período."
+        }
+
+        //Encontrar o maior
+        int maxIndex = -1;
+        int maxValor = -1;
+        for (int i = 0; i < contagens.size(); i++) {
+            if (contagens.get(i) > maxValor) {
+                maxValor = contagens.get(i);
+                maxIndex = i;
+            }
+        }
+        return destinos.get(maxIndex); + " (" + maxValor + " vezes)"
+    }
+
+    /**
+     * Metodo auxiliar privado para verificar se uma data se encontra dentro de um intervalo fechado [inicio, fim].*
+     * @param data A data a veridicar.
+     * @param inicio O limite inferior do intervalo.
+     * @param fim O limite superior do intervalo.
+     * @return {@code true} se a data for igual ou posterior ao início e igual ou anterior ao fim.
+     */
+    private boolean isDentroDoPrazo (LocalDateTime data, LocalDateTime inicio, LocalDateTime fim) {
+        //Verifica se é (Depois ou Igual ao Início) e (Antes ou Igual ao Fim)
+        return (data.isAfter(inicio) || data.equals(inicio)) && (data.isBefore(fim) || data.equals(fim));
     }
 
     // ==========================================================
