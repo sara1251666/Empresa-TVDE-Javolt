@@ -528,19 +528,6 @@ public class Empresa {
         return resultado;
     }
 
-    public ArrayList<Cliente> getClientesPorViatura(String matricula){
-        ArrayList<Cliente> clientesViatura = new ArrayList<>();
-
-        //1. Verifica o histórico de viagens.
-        for (Viagem v : viagens) {
-            if (v.getViatura().getMatricula().equalsIgnoreCase(matricula)) {
-                if (!clientesViatura.contains(v.getCliente())) {
-                    clientesViatura.add(v.getCliente());
-                }
-            }
-        }
-    }
-
     // ==========================================================
     //                        PERSISTÊNCIA
     // ==========================================================
