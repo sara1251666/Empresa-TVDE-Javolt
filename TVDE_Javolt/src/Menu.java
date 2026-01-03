@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -326,150 +327,224 @@ public class Menu {
             System.out.println("2 - Listar Histórico de Viagens");
             System.out.println("3 - Criar Nova Reserva");
             System.out.println("4 - Listar Reservas Pendentes");
-            System.out.println("5 - Converter Reserva em Viagem");
-            System.out.println("6 - Consultar Reservas de um Cliente");
+            System.out.println("5 - Alterar uma Reserva");
+            System.out.println("6 - Converter Reserva em Viagem");
+            System.out.println("7 - Consultar Reservas de um Cliente");
+            System.out.println("8 - Cancelar/Apagar uma Reserva");
+            System.out.println("9 - Apagar uma Viagem do Histórico");
             System.out.println("0 - Voltar");
             op = lerInteiro("Opção: ");
 
             switch (op) {
-                case 1 -> {
-                    // Registar Viagem
-                    int nifCondutor = lerInteiro("NIF do Condutor: ");
-                    Condutor condutor = empresa.procurarCondutor(nifCondutor);
-                    int nifCliente = lerInteiro("NIF do Cliente: ");
-                    Cliente cliente = empresa.procurarCliente(nifCliente);
-                    String matricula = lerTexto("Matrícula da Viatura: ");
-                    Viatura viatura = empresa.procurarViatura(matricula);
-
-                    if (condutor != null && cliente != null && viatura != null) {
-                        LocalDateTime inicio = lerData("Início (dd-MM-yyyy HH:mm): ");
-                        LocalDateTime fim = lerData("Fim (dd-MM-yyyy HH:mm): ");
-
-                        if (empresa.verificarSobreposicao(viatura, condutor, inicio, fim)) {
-                            System.out.println("Erro: Sobreposição detetada (Condutor ou Viatura ocupados).");
-                        } else {
-                            String origem = lerTexto("Origem: ");
-                            String destino = lerTexto("Destino: ");
-                            double kms = lerDouble("Kms: ");
-                            double custo = lerDouble("Custo (€): ");
-
-                            Viagem novaViagem = new Viagem(condutor, cliente, viatura, inicio, fim, origem, destino, kms, custo);
-                            empresa.adicionarViagem(novaViagem);
-                            System.out.println("Viagem registada com sucesso!");
-                        }
-                    }else{
-                        System.out.println("Erro: Condutor, Cliente ou Viatura não encontrados. Crie-os primeiro.");
-                    }
-                }
-                case 2 -> {
-                    //Listar Viagens
-                    if (empresa.getViagens().isEmpty()) {
-                        System.out.println("Sem nenhuma viagens!");
-                    }
-                    for (Viagem v : empresa.getViagens()) {
-                        System.out.println(v);
-                    }
-                }
-                case 3 -> {
-                    //Criar Reserva
-                    int nifCliente = lerInteiro("NIF Cliente: ");
-                    Cliente cliente = empresa.procurarCliente(nifCliente);
-                    if (cliente != null) {
-                        LocalDateTime inicio = lerData("Data/Hora Reserva (dd-MM-yyyy HH:mm): ");
-                        String origem = lerTexto("Origem: ");
-                        String destino = lerTexto("Destino: ");
-                        double kms = lerDouble("Kms estimados: ");
-
-                        Reserva reserva = new Reserva(cliente, inicio, origem, destino, kms);
-                        empresa.adicionarReserva(reserva);
-                        System.out.println("Reserva registada com sucesso!");
-                    } else {
-                        System.out.println("Cliente não encontrado");
-                    }
-                }
-                case 4 -> {
-                    //Listar Reservas
-                    ArrayList<Reserva> reservas = empresa.getReservas();
-                    if (reservas.isEmpty()) {
-                        System.out.println("Sem nenhuma reserva pendente!");
-                    }
-                    int i = 1;
-                    for (Reserva reserva : reservas) {
-                        System.out.println(i + ". " + reserva);
-                        i++;
-                    }
-                }
-                case 5 -> {
-                    //Converter Reserva -> Viagem
-                    ArrayList<Reserva> reservas = empresa.getReservas();
-                    if (reservas.isEmpty()) {
-                        System.out.println("Sem nenhuma reserva para converter em viagem");
-                    } else {
-                        // 1. Listar para escolher
-                        System.out.println("--- Escolha a Reserva a converter");
-                        int i = 1;
-                        for (Reserva reserva : reservas) {
-                            System.out.println(i + ". " + reserva);
-                            i++;
-                        }
-
-                        //2. Selecionar
-                        int index = lerInteiro("Número da reserva: ") - 1;
-
-                        if (index >= 0 && index < reservas.size()) {
-                            Reserva resSelecionada = reservas.get(index);
-
-                            //3. Pedir dafdos em falta (Condutor, Viatura e Custo)
-                            System.out.println("Reserva Selecionada: " + resSelecionada.getCliente().getNome() + " - " + resSelecionada.getDataHoraInicio().format(dateTimeFormatter));
-
-                            int nifCondutor = lerInteiro("Atribuir Condutor (NIF): ");
-                            Condutor condutor = empresa.procurarCondutor(nifCondutor);
-
-                            String matricula = lerTexto("Atribuir Viatura (Matrícula): ");
-                            Viatura viatura = empresa.procurarViatura(matricula);
-
-                            double custo = lerDouble("Custo Final (€): ");
-
-                            if (condutor != null && viatura != null) {
-                                //4. Converter
-                                boolean sucesso = empresa.converterReservaEmViagem(resSelecionada, condutor, viatura, custo);
-
-                                if (sucesso){
-                                    System.out.println("Reserva convertida com sucesso!");
-                                } else {
-                                    System.out.println("Erro ao converter Reserva.");
-                                }
-                            } else {
-                                System.out.println("Condutor ou Viatura inválidos.");
-                            }
-                        } else {
-                            System.out.println("Opção inválida!");
-                        }
-                    }
-                }
-                case 6 -> {
-                    // Consultar reservas de um cliente especifico.
-                    int nif = lerInteiro("NIF do Cliente: ");
-                    Cliente cliente = empresa.procurarCliente(nif);
-                    if (cliente != null) {
-                        ArrayList<Reserva> reservas = empresa.getReservasDoCliente(nif);
-                        if (reservas.isEmpty()) {
-                            System.out.println("Este cliente não tem reservas pendentes.");
-                        } else {
-                            System.out.println("--- Reservas de " + cliente.getNome() + " ---");
-                            for (Reserva reserva : reservas) {
-                                System.out.println(reserva);
-                            }
-                        }
-                    } else {
-                        System.out.println("Cliente não encontrado.");
-                    }
-                }
+                case 1 -> tratarRegistarViagem();
+                case 2 -> tratarListarViagens();
+                case 3 -> tratarCriarReserva();
+                case 4 -> tratarListarReservas();
+                case 5 ->
+                case 6 -> tratarConverterReserva();
+                case 7 -> tratarConsultarReservasCliente();
+                case 8 -> tratarEliminarReserva();
+                case 9 -> tratarEliminarViagem();
             }
         }while  (op != 0);
     }
+
     // =======================================================
-    // MÉTODOS AUXILIARES (Input)
+    //        MÉTODOS AUXILIARES - VIAGENS E RESERVAS
+    // =======================================================
+
+    private static void tratarRegistarViagem() {
+        System.out.println("--- Nova viagem ---");
+        int nifCondutor = lerInteiro("NIF do Condutor: ");
+        Condutor condutor = empresa.procurarCondutor(nifCondutor);
+
+        int nifCliente = lerInteiro("NIF do Cliente: ");
+        Cliente cliente = empresa.procurarCliente(nifCliente);
+
+        String matricula = lerTexto("Matrícula da Viatura: ");
+        Viatura viatura = empresa.procurarViatura(matricula);
+
+        if (condutor != null && cliente != null && viatura != null) {
+            LocalDateTime inicio = lerData("Início (dd-MM-yyyy HH:mm): ");
+            LocalDateTime fim = lerData("Fim (dd-MM-yyyy HH:mm): ");
+
+            if (empresa.verificarSobreposicao(viatura, condutor, inicio, fim)) {
+                System.out.println("Erro: Sobreposição detetada (Condutor ou Viatura ocupados).");
+            } else {
+                String origem = lerTexto("Origem: ");
+                String destino = lerTexto("Destino: ");
+                double kms = lerDouble("Kms: ");
+                double custo = lerDouble("Custo (€): ");
+
+                Viagem novaViagem = new Viagem(condutor, cliente, viatura, inicio, fim, origem, destino, kms, custo);
+                empresa.adicionarViagem(novaViagem);
+                System.out.println("Viagem registada com sucesso!");
+            }
+        } else {
+            System.out.println("Erro: Condutor, Cliente ou Viatura não encontrados. Crie-os primeiro.");
+        }
+    }
+
+    private static void tratarListarViagens(){
+        if (empresa.getViagens().isEmpty()) {
+                System.out.println("Sem viagens registadas!");
+        } else {
+                System.out.println("--- Histórico de Viagens ---");
+                for (Viagem v : empresa.getViagens()) {
+                    System.out.println(v);
+                }
+        }
+    }
+
+    private static void tratarCriarReserva(){
+        System.out.println("--- Nova Reserva ---");
+        int nifCliente = lerInteiro("NIF Cliente: ");
+        Cliente cliente = empresa.procurarCliente(nifCliente);
+
+        if (cliente != null) {
+            LocalDateTime inicio = lerData("Data/Hora Reserva (dd-MM-yyyy HH:mm): ");
+            String origem = lerTexto("Origem: ");
+            String destino = lerTexto("Destino: ");
+            double kms = lerDouble("Kms estimados: ");
+
+            Reserva reserva = new Reserva(cliente, inicio, origem, destino, kms);
+            empresa.adicionarReserva(reserva);
+            System.out.println("Reserva registada com sucesso!");
+        } else {
+            System.out.println("Cliente não encontrado");
+        }
+    }
+
+    private static void tratarListarReservas(){
+        ArrayList<Reserva> reservas = empresa.getReservas();
+        if (reservas.isEmpty()) {
+            System.out.println("Sem nenhuma reserva pendente!");
+        } else{
+            int i = 1;
+            for (Reserva reserva : reservas) {
+                System.out.println(i + ". " + reserva);
+                i++;
+            }
+        }
+    }
+
+    
+
+    private static void tratarConverterReserva(){
+        ArrayList<Reserva> reservas = empresa.getReservas();
+        if (reservas.isEmpty()) {
+            System.out.println("Sem nenhuma reserva para converter em viagem");
+            return;
+        }
+        // 1. Listar para escolher
+        System.out.println("--- Escolha a Reserva a converter");
+        for (int i= 0; i< reservas.size(); i++) {
+            System.out.println((i + 1) + ". " + reservas.get(i));
+        }
+        //2. Selecionar
+        int index = lerInteiro("Número da reserva: ") - 1;
+        if (index >= 0 && index < reservas.size()) {
+            Reserva resSelecionada = reservas.get(index);
+            System.out.println("Reserva Selecionada: " + resSelecionada.getCliente().getNome() + " - " + resSelecionada.getDataHoraInicio().format(dateTimeFormatter));
+
+            int nifCondutor = lerInteiro("Atribuir Condutor (NIF): ");
+            Condutor condutor = empresa.procurarCondutor(nifCondutor);
+
+            String matricula = lerTexto("Atribuir Viatura (Matrícula): ");
+            Viatura viatura = empresa.procurarViatura(matricula);
+
+            double custo = lerDouble("Custo Final (€): ");
+
+            if (condutor != null && viatura != null) {
+                boolean sucesso = empresa.converterReservaEmViagem(resSelecionada, condutor, viatura, custo);
+                if (sucesso){
+                    System.out.println("Reserva convertida com sucesso!");
+                } else {
+                    System.out.println("Erro ao converter Reserva.");
+                }
+            } else {
+                System.out.println("Condutor ou Viatura inválidos.");
+            }
+        } else {
+            System.out.println("Opção inválida!");
+        }
+    }
+
+    private static void tratarConsultarReservasCliente(){
+        int nif = lerInteiro("NIF do Cliente: ");
+        Cliente cliente = empresa.procurarCliente(nif);
+
+        if (cliente != null) {
+            ArrayList<Reserva> reservas = empresa.getReservasDoCliente(nif);
+            if (reservas.isEmpty()) {
+                System.out.println("Este cliente não tem reservas pendentes.");
+            } else {
+                System.out.println("--- Reservas de " + cliente.getNome() + " ---");
+                for (Reserva reserva : reservas) {
+                    System.out.println(reserva);
+                }
+            }
+        } else {
+            System.out.println("Cliente não encontrado.");
+        }
+    }
+
+        /**
+         *
+         */
+        private static void tratarEliminarReserva () {
+            ArrayList<Reserva> reservas = empresa.getReservas();
+            if (reservas.isEmpty()) {
+                System.out.println("Não existem reservas para eliminar.");
+            } else {
+                System.out.println("--- Escolha a Reserva a Eliminar ---");
+                for (int i = 0; i < reservas.size(); i++) {
+                    System.out.println((i + 1) + ". " + reservas.get(i));
+                }
+                int index = lerInteiro("Numero da reserva a apagar (0 para cancelar): ") - 1;
+
+                if (index >= 0 && index < reservas.size()) {
+                    Reserva res = reservas.get(index);
+                    if (empresa.removerReserva(res)) {
+                        System.out.println("Reserva removida com sucesso!");
+                    } else {
+                        System.out.println("Erro ao remover Reserva.");
+                    }
+                } else {
+                    System.out.println("Operação cancelada.");
+                }
+            }
+        }
+
+    private static void tratarEliminarViagem(){
+        ArrayList<Viagem> viagens = empresa.getViagens();
+        if (viagens.isEmpty()) {
+            System.out.println("Não existem viagens no histórico para eliminar.");
+        } else {
+            System.out.println("--- Escolha a Viagem a Eliminar ---");
+            //Listar as viagens para o utilizador saber qual o número escolher.
+            for (int i = 0; i < viagens.size(); i++) {
+                System.out.println((i + 1) + ". " + viagens.get(i));
+            }
+
+            int index = lerInteiro("Número da viagem a apagar (0 para cancelar): ") - 1;
+
+            if (index >= 0 && index < viagens.size()) {
+                Viagem viagem = viagens.get(index);
+                if (empresa.removerViagens(viagem)) {
+                    System.out.println("Viagem removida com sucesso!");
+                } else {
+                    System.out.println("Erro ao remover Viagem.");
+                }
+            } else {
+                System.out.println("Operação Cancelada.");
+            }
+
+        }
+    }
+
+    // =======================================================
+    //                MÉTODOS AUXILIARES (Input)
     // =======================================================
 
     /**

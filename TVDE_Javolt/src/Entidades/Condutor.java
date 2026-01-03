@@ -75,5 +75,3 @@ public class Condutor extends Pessoa {
         return "[" + super.toString() + " | Carta: " +cartaCond + " | SegSocial: " + segSocial + "]";
     }
 }
-
-

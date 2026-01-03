@@ -362,6 +362,24 @@ public class Empresa {
         return false; //Devolve false se houver sobreposicção ou se a reserva não existir
     }
 
+    /**
+     * Remove uma reserva específica da lista de reservas.
+     * @param r A reserva a remover.
+     * @return True se foi removida com sucesso.
+     */
+    public boolean removerReserva(Reserva r) {
+        return reservas.remove(r);
+    }
+
+    /**
+     * Remove uma viagem específica do histórico.
+     * @param v A viagem a remover.
+     * @return true se foi removido com sucesso.
+     */
+    public boolean removerViagens(Viagem v) {
+        return viagens.remove(v);
+    }
+
     // ==========================================================
     //                 RELATÓRIOS E ESTATÍSTICAS
     // ==========================================================
