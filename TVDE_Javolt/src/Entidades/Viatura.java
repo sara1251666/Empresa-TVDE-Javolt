@@ -1,5 +1,4 @@
 package Entidades;
-import Gestao.Empresa;
 
 /**
  * Classe Viaturas

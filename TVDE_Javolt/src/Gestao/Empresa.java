@@ -353,7 +353,7 @@ public class Empresa {
                     custo
             );
 
-            if adicionarViagem(novaViagem);
+            if (adicionarViagem(novaViagem));
             {
                 reservas.remove(r); // Remove a reserva pois já foi efetuada
                 return true;
