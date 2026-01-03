@@ -36,6 +36,6 @@ public class Cliente extends Pessoa {
      */
     @Override
     public String toString() {
-        return "Entidades.Cliente [" + super.toString() + "]";
+        return "[" + super.toString() + "]";
     }
 }

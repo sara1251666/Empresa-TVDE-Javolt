@@ -72,7 +72,7 @@ public class Condutor extends Pessoa {
      */
     @Override
     public String toString() {
-        return "Entidades.Condutor [" + super.toString() + " | Carta: " +cartaCond + " | SegSocial: " + segSocial + "]";
+        return "[" + super.toString() + " | Carta: " +cartaCond + " | SegSocial: " + segSocial + "]";
     }
 }
 

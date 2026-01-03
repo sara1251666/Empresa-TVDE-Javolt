@@ -1,10 +1,6 @@
 package Gestao;
 
 import Entidades.*;
-
-import java.sql.SQLOutput;
-import java.text.ParseException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -456,8 +452,89 @@ public class Empresa {
     }
 
     // ==========================================================
+    //           NOVOS MÉTODOS DE ESTATÍSTICA/PESQUISA
+    // ==========================================================
+
+    /**
+     * Calcula a distância media das viagens realizadas num intervalo de datas.
+     * Requisito: Apresentar a distância media (em kms).
+     * @param inicio Data de inicio do intervalo.
+     * @param fim Data de fim do intervalo.
+     * @return Retorna a media de Kms, ou 0.0 se não houver viagens.
+     */
+    public double calcularDistanciaMedia(LocalDateTime inicio, LocalDateTime fim) {
+        double totalKms = 0;
+        int contador = 0;
+
+        for (Viagem v : viagens) {
+            //Verifica se a viagem está dentro do intervalo
+            boolean dentroDoPrazo = (v.getDataHoraInicio().isAfter(inicio) || v.getDataHoraInicio().equals(inicio)) &&
+                    (v.getDataHoraFim().isAfter(fim) || v.getDataHoraFim().equals(fim));
+
+            if (dentroDoPrazo) {
+                totalKms += v.getCusto();
+                contador++;
+            }
+        }
+        if (contador == 0){
+            return 0.0;
+        }
+        return totalKms / contador;
+    }
+
+    /**
+     * Devolve uma lista de clientes que fizeram viagens dentro de um intervaki de Kms.
+     * Requisito: Clientes com viagens cuja distância se encontra num intervalo.
+     * @param minKms Distância minima.
+     * @param maxKms Distância máxima.
+     * @return Retorna a lista de condutores que cumprem o critério.
+     */
+    public ArrayList<Cliente> getClientesPorIntervaloKms(double minKms, double maxKms) {
+        ArrayList<Cliente> resultado = new ArrayList<>();
+
+        for (Viagem v : viagens) {
+            if (v.getKms() >= minKms && v.getKms() <= maxKms) {
+                Cliente cliente = v.getCliente();
+                //Verificar duplicados para não listar o mesmo cliente duas vezes.
+                if (!resultado.contains(cliente)) {
+                    resultado.add(cliente);
+                }
+            }
+        }
+        return resultado;
+    }
+
+    /**
+     * Pesquisa as viagens de um cliente específico num intervalo de datas.
+     * Requisito: Pesquisar as viagens de cliente num intervalo de datas.
+     * @param nifCliente Nif do Cliente a pesquisar.
+     * @param inicio Data de inicio.
+     * @param fim Data de fim.
+     * @return Lista de Viagens encontradas.
+     */
+    public ArrayList<Viagem> getViagensClientePorDatas(int nifCliente, LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<Viagem> resultado = new ArrayList<>();
+
+        for (Viagem v : viagens) {
+            if (v.getCliente().getNif() == nifCliente) {
+                boolean dentroDoPrazo = (v.getDataHoraInicio().isAfter(inicio) || v.getDataHoraInicio().equals(inicio)) &&
+                        (v.getDataHoraFim().isAfter(fim) || v.getDataHoraFim().equals(fim));
+
+                if (dentroDoPrazo) {
+                    resultado.add(v);
+                }
+            }
+        }
+        return resultado;
+    }
+
+    // ==========================================================
     //                        PERSISTÊNCIA
     // ==========================================================
+    /**
+     * Nome da Pasta onde os ficheiros serão guardados.
+     */
+    private static final String NOME_PASTA = "Logs";
 
     /**
      * Coordena a gravação de toda a informação do sistema em ficheiros de texto.
@@ -465,6 +542,11 @@ public class Empresa {
      * que os dados (Viaturas, Cleintes, Condutores e Viagens) não são perdidos.
      */
     public void gravarDados(){
+        //1. Verifica a existência da pasta para guardar os dados, senão, cria-a.
+        File pasta = new File(NOME_PASTA);
+        if (!pasta.exists()) {
+            pasta.mkdir(); //Cria a diretoria/pasta
+        }
         gravarViaturas();
         gravarClientes();
         gravarCondutores();
@@ -490,7 +572,7 @@ public class Empresa {
      * o formato de escrita é: matricula;marca;modelo;ano
      */
     private void gravarViaturas() {
-        try (Formatter out = new Formatter(new File("viaturas.txt"))) {
+        try (Formatter out = new Formatter(new File("Logs/viaturas.txt"))) {
             for (Viatura v : viaturas){
                 out.format("%s;%s;%s;%d%n", v.getMatricula(), v.getMarca(), v.getModelo(), v.getAnoFabrico());
             }
@@ -505,7 +587,7 @@ public class Empresa {
      * Se o ficheiro não existir (primeira execução), a exceção é ignorada.
      */
     private void carregarViaturas() {
-        try (Scanner ler = new Scanner(new File("viaturas.txt"))){
+        try (Scanner ler = new Scanner(new File("Logs/viaturas.txt"))){
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados =  linha.split(";");
@@ -523,7 +605,7 @@ public class Empresa {
      * O formato de escrita é: nome;nif;tel;morada;cartaoCidadao
      */
     private void gravarClientes(){
-        try (Formatter out = new Formatter(new File("clientes.txt"))){
+        try (Formatter out = new Formatter(new File("Logs/clientes.txt"))){
             for (Cliente c : clientes){
                 out.format("%s;%d;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid());
             }
@@ -536,7 +618,7 @@ public class Empresa {
      * Lê o ficheiro "clientes.txt" e carrega os clientes para o sistema.
      */
     private void carregarClientes(){
-        try (Scanner ler = new Scanner(new File("clientes.txt"))){
+        try (Scanner ler = new Scanner(new File("Logs/clientes.txt"))){
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados =  linha.split(";");
@@ -555,7 +637,7 @@ public class Empresa {
      * O formato de escrita é: nome;nif;tel;morada;cartaoCidadao;cartaConducao;segSocial
      */
     private void gravarCondutores(){
-        try ( Formatter out = new Formatter(new File("condutores.txt"))){
+        try ( Formatter out = new Formatter(new File("Logs/condutores.txt"))){
             for (Condutor c : condutores){
                 out.format("%s;%d;%d;%s;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid(), c.getCartaCond(), c.getSegSocial());
             }
@@ -568,7 +650,7 @@ public class Empresa {
      * LÊ o ficheiro "condutores.txt" e carrega os condutores para o sistema.
      */
     private void carregarCondutores(){
-        try (Scanner ler = new Scanner(new File("condutores.txt"))){
+        try (Scanner ler = new Scanner(new File("Logs/condutores.txt"))){
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados =  linha.split(";");
@@ -587,11 +669,11 @@ public class Empresa {
      * Converte ps valores decimais (kms e custo) substituindo vírguklas por pontos para garantir compatibilidade.
      */
     private void gravarViagens(){
-        try (Formatter out = new Formatter(new File("viagens.txt"))){
+        try (Formatter out = new Formatter(new File("Logs/viagens.txt"))){
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             for (Viagem v : viagens){
-                out.format("%d;%d;%s;%s;%s;%s,%s;%s;%s%n",
+                out.format("%d;%d;%s;%s;%s;%s;%s;%s;%s%n",
                         v.getCondutor().getNif(),
                         v.getCliente().getNif(),
                         v.getViatura().getMatricula(),
@@ -613,7 +695,7 @@ public class Empresa {
      * para associar a viagem aos objetos corretos que já estão em memória.
      */
     private void carregarViagens(){
-        try (Scanner ler = new Scanner(new File("viagens.txt"))){
+        try (Scanner ler = new Scanner(new File("Logs/viagens.txt"))){
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             while (ler.hasNextLine()) {
@@ -634,7 +716,7 @@ public class Empresa {
 
                             Viagem v = new Viagem(condutor, cliente, viatura, dataHoraInicio, dataHoraFim, dados[5], dados[6], kms, custo);
                             viagens.add(v);
-                        } catch (ParseException e) {
+                        } catch (Exception e) {
                             System.out.println("Erro ao carregar viagens: " + e.getMessage());
                         }
                     }
