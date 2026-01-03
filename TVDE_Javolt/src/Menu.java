@@ -1,4 +1,3 @@
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -9,36 +8,28 @@ import Entidades.*;
 
 /**
  * Classe responsável pela Interface com o Utilizador (UI) via consola.
- * <p>
  * Gere a navegação entre menus, a recolha de dados do utilizador
  * e a invocação dos métodos da classe {@link Empresa}.
- * </p>
- *
- * @author Levi e Sara
+  * @author Levi e Sara
  * @version 1.0
  * @since 2026-01-01
  */
 public class Menu {
 
-    /** Instância única da Empresa que armazena os dados do programa. */
+    /**
+     * Instância única da Empresa que armazena os dados do programa.
+     * */
     private static Empresa empresa = new Empresa();
 
-    /** Objeto Scanner partilhado para leitura de inputs. */
+    /**
+     * Objeto Scanner partilhado para leitura de inputs.
+     * */
     private static Scanner scanner = new Scanner(System.in);
 
-    /** Formatador de data padrão para o sistema (dd-MM-yyyy HH:mm). */
+    /**
+     * Formatador de data padrão para o sistema (dd-MM-yyyy HH:mm).
+     * */
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
-    /*
-     * Ponto de entrada da aplicação.
-     * Inicializa dados de teste e exibe o menu principal.
-     *
-     * @param args Argumentos da linha de comandos (não utilizados).
-     */
-    /*public static void main(String[] args) {
-        inicializarDadosTeste();
-        displayMenuPrincipal();
-    }*/
 
     /**
      * Metodo responsável por iniciar o ciclo de vida da aplicação.
@@ -49,7 +40,7 @@ public class Menu {
      * 4. Grava ao sair.
      */
     public static void iniciar(){
-        //1. PErgunta ao utilizador se deseja carregar os dados guardados
+        //1. Pergunta ao utilizador se deseja carregar os dados guardados.
         String respostaCarregar = lerTexto("Deseja carregar os dados guardados? (S/N): ");
 
         if (respostaCarregar.equalsIgnoreCase("S")) {
@@ -116,8 +107,7 @@ public class Menu {
 
     /**
      * Menu genérico para operações CRUD (Create, Read, Update, Delete).
-     * Redireciona para o método de processamento específico consoante a entidade escolhida.
-     *
+     * Redireciona para o metodo de processamento específico consoante a entidade escolhida.
      * @param entidade Nome da entidade a gerir (ex: "Viaturas", "Clientes").
      */
     private static void menuCRUD(String entidade) {
@@ -141,7 +131,6 @@ public class Menu {
 
     /**
      * Processa as operações CRUD específicas para Viaturas.
-     *
      * @param opcao A opção selecionada pelo utilizador no menu CRUD.
      */
     private static void processarViaturas(int opcao) {
@@ -197,7 +186,6 @@ public class Menu {
     /**
      * Processa as operações CRUD específicas para Condutores.
      * Inclui tratamento de exceções para validação de NIF.
-     *
      * @param opcao A opção selecionada pelo utilizador.
      */
     private static void processarCondutores(int opcao) {
@@ -262,7 +250,6 @@ public class Menu {
     /**
      * Processa as operações CRUD específicas para Clientes.
      * Inclui tratamento de exceções para validação de NIF.
-     *
      * @param opcao A opção selecionada pelo utilizador.
      */
     private static void processarClientes(int opcao) {
@@ -433,7 +420,7 @@ public class Menu {
                             Reserva resSelecionada = reservas.get(index);
 
                             //3. Pedir dafdos em falta (Condutor, Viatura e Custo)
-                            System.out.println("Reserva Selecionada: " + resSelecionada.getCliente().getNome() + " - " + resSelecionada.getDataHoraInicio());
+                            System.out.println("Reserva Selecionada: " + resSelecionada.getCliente().getNome() + " - " + resSelecionada.getDataHoraInicio().format(dateTimeFormatter));
 
                             int nifCondutor = lerInteiro("Atribuir Condutor (NIF): ");
                             Condutor condutor = empresa.procurarCondutor(nifCondutor);
