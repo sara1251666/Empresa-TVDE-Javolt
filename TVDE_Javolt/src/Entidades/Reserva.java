@@ -127,9 +127,8 @@ public class Reserva {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        return " Entidades.Reserva [Entidades.Cliente: " + cliente.getNome() +
-                " | Data: " + getDataHoraInicio().format(formatter) +
-                " | De: " + moradaOrigem + " Para: " + moradaDestino + "]";
+        return "[" + getDataHoraInicio().format(formatter) + "] " + getCliente().getNome() + " | " +
+                getMoradaOrigem() + " -> " + getMoradaDestino() + " (" + getKms() + " km)";
     }
 }
 

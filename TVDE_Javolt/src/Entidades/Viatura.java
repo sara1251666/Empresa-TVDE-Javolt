@@ -101,6 +101,6 @@ public class Viatura {
      */
     @Override
     public String toString() {
-        return "Entidades.Viatura [" + matricula + " | " + marca + " | " + modelo + " | " + anoFabrico + "|";
+        return "[" + matricula + " | " + marca + " | " + modelo + " | " + anoFabrico + "]";
     }
 }

@@ -6,6 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="7778648c-976b-48f0-80f3-e44ef7e36dce" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entidades/Cliente.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entidades/Cliente.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entidades/Condutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entidades/Condutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entidades/Reserva.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entidades/Reserva.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entidades/Viagem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entidades/Viagem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entidades/Viatura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entidades/Viatura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Gestao/Empresa.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Gestao/Empresa.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Logger.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Menu.java" afterDir="false" />
     </list>
@@ -54,7 +61,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
       </set>
     </attachedChunks>
   </component>
