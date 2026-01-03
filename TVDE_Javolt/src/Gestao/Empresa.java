@@ -340,10 +340,7 @@ public class Empresa {
 
     public boolean converterReservaEmViagem(Reserva r, Condutor condutor, Viatura viatura, double custo) {
         if (reservas.contains(r)) {
-
-            // Lógica simplificada: A viagem assume os dados da reserva + dados operacionais
-            // O ideal seria passar também a dataHoraFim real
-
+            // Cria a viagem temporária com os dados da reserva.
             Viagem novaViagem = new Viagem(
                     condutor,
                     r.getCliente(),
@@ -356,11 +353,13 @@ public class Empresa {
                     custo
             );
 
-            adicionarViagem(novaViagem);
-            reservas.remove(r); // Remove a reserva pois já foi efetuada
-            return true;
+            if (adicionarViagem(novaViagem));
+            {
+                reservas.remove(r); // Remove a reserva pois já foi efetuada
+                return true;
+            }
         }
-        return false;
+        return false; //Devolve false se houver sobreposicção ou se a reserva não existir
     }
 
     // ==========================================================
