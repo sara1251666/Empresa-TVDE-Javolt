@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import Gestao.Empresa;
 import Entidades.*;
 
-import javax.sound.midi.SysexMessage;
-
 /**
  * Classe responsável pela Interface com o Utilizador (UI) via consola.
  * <p>
@@ -16,7 +14,7 @@ import javax.sound.midi.SysexMessage;
  * e a invocação dos métodos da classe {@link Empresa}.
  * </p>
  *
- * @author Levi
+ * @author Levi e Sara
  * @version 1.0
  * @since 2026-01-01
  */
@@ -342,6 +340,7 @@ public class Menu {
             System.out.println("3 - Criar Nova Reserva");
             System.out.println("4 - Listar Reservas Pendentes");
             System.out.println("5 - Converter Reserva em Viagem");
+            System.out.println("6 - Consultar Reservas de um Cliente");
             System.out.println("0 - Voltar");
             op = lerInteiro("Opção: ");
 
@@ -461,6 +460,24 @@ public class Menu {
                         }
                     }
                 }
+                case 6 -> {
+                    // Consultar reservas de um cliente especifico.
+                    int nif = lerInteiro("NIF do Cliente: ");
+                    Cliente cliente = empresa.procurarCliente(nif);
+                    if (cliente != null) {
+                        ArrayList<Reserva> reservas = empresa.getReservasDoCliente(nif);
+                        if (reservas.isEmpty()) {
+                            System.out.println("Este cliente não tem reservas pendentes.");
+                        } else {
+                            System.out.println("--- Reservas de " + cliente.getNome() + " ---");
+                            for (Reserva reserva : reservas) {
+                                System.out.println(reserva);
+                            }
+                        }
+                    } else {
+                        System.out.println("Cliente não encontrado.");
+                    }
+                }
             }
         }while  (op != 0);
     }
@@ -552,7 +569,10 @@ public class Menu {
             System.out.println("\n--- RELATÓRIOS E ESTATÍSTICAS ---");
             System.out.println("1 - Total faturado por condutor (intervalo de datas)");
             System.out.println("2 - Lista de clientes de uma viatura");
-            System.out.println("3 - Destino mais solicitado");
+            System.out.println("3 - Destino mais solicitado (intervalo de datas)");
+            System.out.println("4 - Distância média das viagens (intervalo de datas)");
+            System.out.println("5 - Clientes com viagens por intervalo de Kms");
+            System.out.println("6 - Histórico de Viagens de um Cliente (por datas)");
             System.out.println("0 - Voltar");
             op = lerInteiro("Opção: ");
 
@@ -590,8 +610,57 @@ public class Menu {
                     }
                 }
                 case 3 -> {
-                    String topDestino = empresa.getDestinoMaisSolicitado();
-                    System.out.println("Destino mais popular: " +  topDestino);
+                    //Destino mais popular.
+                    LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
+                    LocalDateTime fim = lerData("Data fim (dd-MM-yyyy HH:mm): ");
+
+                    String topDestino = empresa.getDestinoMaisSolicitado(inicio, fim);
+                    System.out.println(" O destino mais popular nesse período é: " + topDestino);
+                }
+                case 4 -> {
+                    //Diatância média.
+                    LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
+                    LocalDateTime fim = lerData("Data fim (dd-MM-yyyy HH:mm): ");
+
+                    double media = empresa.calcularDistanciaMedia(inicio, fim);
+                    System.out.println("A distância médias das viagens foi: " + String.format("%.2f", media) + " Kms");
+                }
+                case 5 -> {
+                    // Clientes por intervalo de Kms
+                    double min = lerDouble("Kms Mínimos: ");
+                    double max = lerDouble("Kms Maximos: ");
+
+                    ArrayList<Cliente> lista = empresa.getClientesPorIntervaloKms(min, max);
+                    if (lista.isEmpty()) {
+                        System.out.println("Nenhum cliente encontrado nesse intervalo");
+                    } else {
+                        System.out.println("-- Clientes com viagens entre " + min + " e " + max + " Kms ---");
+                        for (Cliente cliente : lista) {
+                            System.out.println("- " + cliente.getNome() + " (NIF: " + cliente.getNif() + ")");
+                        }
+                    }
+                }
+                case 6 -> {
+                    //Viagens de Cliente por Datas
+                    int nif = lerInteiro("NIF do Cliente: ");
+                    Cliente  cliente = empresa.procurarCliente(nif);
+
+                    if (cliente != null) {
+                        LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
+                        LocalDateTime fim = lerData("Data fim (dd-MM-yyyy HH:mm): ");
+
+                        ArrayList<Viagem> viagensCliente = empresa.getViagensClientePorDatas(nif, inicio, fim);
+                        if (viagensCliente.isEmpty()) {
+                            System.out.println("Nenhuma viagem registada nesse intervalo");
+                        } else {
+                            System.out.println("--- Histórico de " + cliente.getNome() + " ---");
+                            for (Viagem viagem : viagensCliente) {
+                                System.out.println(viagem);
+                            }
+                        }
+                    }else  {
+                        System.out.println("Nenhum cliente encontrado.");
+                    }
                 }
             }
         } while (op != 0);
