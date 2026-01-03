@@ -546,7 +546,7 @@ public class Empresa {
         }
 
         if(destinos.isEmpty()){
-            return "Sem dados neste período."
+            return "Sem dados neste período.";
         }
 
         //Encontrar o maior
@@ -558,7 +558,7 @@ public class Empresa {
                 maxIndex = i;
             }
         }
-        return destinos.get(maxIndex); + " (" + maxValor + " vezes)"
+        return destinos.get(maxIndex)+ " (" + maxValor + " vezes)";
     }
 
     /**
