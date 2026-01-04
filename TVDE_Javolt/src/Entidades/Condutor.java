@@ -24,12 +24,6 @@ public class Condutor extends Pessoa {
     private int segSocial;
 
     /**
-     * Construtor Condutor vazio.
-     */
-    public Condutor(String nome, String nif, String carta) {
-    }
-
-    /**
      * Constrói um novo Condutor com todos os dados completos.
      * Invoca o construtor da superclasse {@link Pessoa}.
      *

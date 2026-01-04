@@ -73,7 +73,7 @@ public abstract class Pessoa {
             this.nif = nif;
         } else {
             //System.out.println("Erro: O NIF deve ter 9 digitos.");
-            throw new IllegalArgumentException("NIF invaldo! tem de ter exatamente 9 digitos (ecebido: " + nif + ").");
+            throw new IllegalArgumentException("NIF invaldo! tem de ter exatamente 9 digitos (recebido: " + nif + ").");
         }
     }
 

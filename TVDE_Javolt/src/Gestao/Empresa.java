@@ -748,7 +748,7 @@ public class Empresa {
      */
     public void gravarDados() {
         //1. Criar a pasta principal "Empresas" se não existir
-        File pastaPrincipal = new File("Empresa");
+        File pastaPrincipal = new File("Empresas");
         if (!pastaPrincipal.exists()) {
             pastaPrincipal.mkdir(); //Cria a diretoria/pasta
         }
