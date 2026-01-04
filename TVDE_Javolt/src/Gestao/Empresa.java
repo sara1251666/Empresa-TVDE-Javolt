@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
  * (Viaturas, Condutores, Clientes, Viagens e Reservas) e executar
  * a lógica de negócio principal, incluindo validações de integridade
  * referencial e persistência de dados em ficheiros.
+ * Suporta Múltiplas empresas através da gestão de pastas de logs dinâmicas.
  * </p>
  *
  * @author Levi e Sara
@@ -40,20 +41,21 @@ public class Empresa {
     private ArrayList<Reserva> reservas;
 
     /**
-     * Nome da Pasta onde os ficheiros serão guardados.
+     * O nome da pasta onde os ficheiros desta empresa específica serão guardados.
      */
-    private static final String NOME_PASTA = "Logs";
+    private String nomePasta;
 
     /**
      * Construtor da classe Empresa.
      * Inicializa todas as listas (ArrayLists) vazias prontas para armazenar dados.
      */
-    public Empresa() {
+    public Empresa(String nomeEmpresa) {
         this.viaturas = new ArrayList<>();
         this.condutores = new ArrayList<>();
         this.clientes = new ArrayList<>();
         this.viagens = new ArrayList<>();
         this.reservas = new ArrayList<>();
+        this.nomePasta = "Logs_" + nomeEmpresa;
     }
 
     // ==========================================================
@@ -639,7 +641,7 @@ public class Empresa {
      */
     public void gravarDados(){
         //1. Verifica a existência da pasta para guardar os dados, senão, cria-a.
-        File pasta = new File(NOME_PASTA);
+        File pasta = new File(nomePasta);
         if (!pasta.exists()) {
             pasta.mkdir(); //Cria a diretoria/pasta
         }
@@ -664,7 +666,7 @@ public class Empresa {
      * Escreve a lista de viaturas no ficheiro "viaturas.txt".
      */
     private void gravarViaturas() {
-        try (Formatter out = new Formatter(new File("Logs/viaturas.txt"))) {
+        try (Formatter out = new Formatter(new File(nomePasta + "/viaturas.txt"))) {
             for (Viatura v : viaturas){
                 out.format("%s;%s;%s;%d%n", v.getMatricula(), v.getMarca(), v.getModelo(), v.getAnoFabrico());
             }
@@ -677,7 +679,7 @@ public class Empresa {
      * Lê o ficheiro "viaturas.txt" e carrega as viaturas para o sistema.
      */
     private void carregarViaturas() {
-        try (Scanner ler = new Scanner(new File("Logs/viaturas.txt"))){
+        try (Scanner ler = new Scanner(new File(nomePasta + "/viaturas.txt"))) {
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados =  linha.split(";");
@@ -694,7 +696,7 @@ public class Empresa {
      * Escreve a lista de clientes no ficheiro "clientes.txt".
      */
     private void gravarClientes(){
-        try (Formatter out = new Formatter(new File("Logs/clientes.txt"))){
+        try (Formatter out = new Formatter(new File(nomePasta + "/clientes.txt"))){
             for (Cliente c : clientes){
                 out.format("%s;%d;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid());
             }
@@ -707,7 +709,7 @@ public class Empresa {
      * Lê o ficheiro "clientes.txt" e carrega os clientes para o sistema.
      */
     private void carregarClientes(){
-        try (Scanner ler = new Scanner(new File("Logs/clientes.txt"))){
+        try (Scanner ler = new Scanner(new File(nomePasta + "/clientes.txt"))){
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados =  linha.split(";");
@@ -725,7 +727,7 @@ public class Empresa {
      * Escreve a lista de condutores no ficheiro "condutores.txt".
      */
     private void gravarCondutores(){
-        try ( Formatter out = new Formatter(new File("Logs/condutores.txt"))){
+        try ( Formatter out = new Formatter(new File(nomePasta + "/condutores.txt"))){
             for (Condutor c : condutores){
                 out.format("%s;%d;%d;%s;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid(), c.getCartaCond(), c.getSegSocial());
             }
@@ -738,7 +740,7 @@ public class Empresa {
      * Lê o ficheiro "condutores.txt" e carrega os condutores para o sistema.
      */
     private void carregarCondutores(){
-        try (Scanner ler = new Scanner(new File("Logs/condutores.txt"))){
+        try (Scanner ler = new Scanner(new File(nomePasta + "/condutores.txt"))){
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados =  linha.split(";");
@@ -755,7 +757,7 @@ public class Empresa {
      * Escreve o histórico de viagens no ficheiro "viagens.txt".
      */
     private void gravarViagens(){
-        try (Formatter out = new Formatter(new File("Logs/viagens.txt"))){
+        try (Formatter out = new Formatter(new File(nomePasta + "/viagens.txt"))){
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             for (Viagem v : viagens){
@@ -779,7 +781,7 @@ public class Empresa {
      * Lê o ficheiro "viagens.txt" e reconstrói o historico de viagens.
      */
     private void carregarViagens(){
-        try (Scanner ler = new Scanner(new File("Logs/viagens.txt"))){
+        try (Scanner ler = new Scanner(new File(nomePasta + "/viagens.txt"))){
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             while (ler.hasNextLine()) {

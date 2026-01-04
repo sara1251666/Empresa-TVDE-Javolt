@@ -1,3 +1,4 @@
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -22,7 +23,7 @@ public class Menu {
     /**
      * Instância única da Empresa que armazena os dados e a lógica de negócio do programa.
      */
-    private static Empresa empresa = new Empresa();
+    private static Empresa empresa;
 
     /**
      * Objeto Scanner partilhado para leitura de inputs.
@@ -45,7 +46,62 @@ public class Menu {
      * </p>
      */
     public static void iniciar(){
-        //1. Pergunta ao utilizador se deseja carregar os dados guardados.
+
+        System.out.println("\n|--------------------------------|");
+        System.out.println("|    SISTEMA DE GESTÃO TVDE      |");
+        System.out.println("|--------------------------------|");
+
+        String nomeEmpresaSelecionada = "";
+
+        //1. Procurar empresas existentes
+        ArrayList<String> empresasExistentes = listarEmpresasDetetadas();
+
+        if (empresasExistentes.isEmpty()){
+            System.out.println(">> Nenhuma empresa detetada no sistema.");
+            System.out.println("|----------------------------------|");
+            System.out.println("|      CRIAÇÃO DE NOVA EMPRESA     |");
+            System.out.println("|----------------------------------|");
+            nomeEmpresaSelecionada = lerTexto("Introduza o nome: ");
+        } else {
+            System.out.println("\n|----------------------------------|");
+            System.out.println("|        SELEÇÃO DE EMPRESA        |");
+            System.out.println("|----------------------------------|");
+            System.out.println("| 1 - Criar Nova Empresa           |");
+            System.out.println("| 2 - Carregar Empresa Existente   |");
+            System.out.println("|----------------------------------|");
+            int opcao = lerInteiro("Escolha uma opção: ");
+
+            if (opcao == 2){
+                System.out.println("\n|----------------------------------|");
+                System.out.println("|       EMPRESAS ENCONTRADAS       |");
+                System.out.println("|----------------------------------|");
+                for (int i = 0; i < empresasExistentes.size(); i++) {
+                    System.out.println((i + 1) + " - " +  empresasExistentes.get(i));
+                }
+
+                System.out.println("|----------------------------------|");
+                int index = lerInteiro("Escolha o número da empresa: ") - 1;
+
+                if (index >= 0 && index < empresasExistentes.size()) {
+                    nomeEmpresaSelecionada = empresasExistentes.get(index);
+                } else {
+                    System.out.println("Opção inválida. A criar nova empresa por defeito.");
+                    nomeEmpresaSelecionada = lerTexto("Nome da nova empresa: ");
+                }
+            } else {
+                System.out.println("\n|----------------------------------|");
+                System.out.println("|      CRIAÇÃO DE NOVA EMPRESA     |");
+                System.out.println("|----------------------------------|");
+                nomeEmpresaSelecionada = lerTexto("Nome da nova empresa: ");
+            }
+        }
+
+        //1. Pergunta ao utilizador qual é o nome da empresa a gerir.
+
+        empresa = new Empresa(nomeEmpresaSelecionada);
+        System.out.println("Bem vindo à gestão da empresa: "+ nomeEmpresaSelecionada.toUpperCase());
+
+        //2. Pergunta ao utilizador se deseja carregar os dados guardados.
         String respostaCarregar = lerTexto("Deseja carregar os dados guardados? (S/N): ");
 
         if (respostaCarregar.equalsIgnoreCase("S")) {
@@ -63,20 +119,42 @@ public class Menu {
             inicializarDadosTeste();
         }
 
-        //2. Loop do Menu da aplicação.
+        //3. Loop do Menu da aplicação.
         displayMenuPrincipal();
 
-        //3. Pergunta ao utilizador se quer gravar a base de dados.
+        //4. Pergunta ao utilizador se quer gravar a base de dados.
         //Só chega aqui quando o utilizador escolhe a opção "0-Sair".
         String respostaGravar = lerTexto("Deseja gravar os dados antes de sair? (S/N): ");
         if(respostaGravar.equalsIgnoreCase("S")) {
-            System.out.println("A gravar alterações...");
+            System.out.println("A gravar alterações em Logs_" + nomeEmpresaSelecionada + "...");
             empresa.gravarDados();
             System.out.println("Dados guardados com sucesso.");
         }else {
             System.out.println("As alterações não foram guardadas.");
         }
         System.out.println("Até logo!");
+    }
+
+    /**
+     * Procura na diretoria do projeto por pastas que comecem por "Logs_".
+     * * @return Uma lista com os nomes das empresas encontradas (sem o prefixo "Logs_").
+     */
+    private static ArrayList<String> listarEmpresasDetetadas() {
+        ArrayList<String> nomesEmpresas = new ArrayList<>();
+        File pastaAtual = new File("."); // "." Representa a pasta atual do projeto.
+        File[] ficheiros = pastaAtual.listFiles();
+
+        if (ficheiros != null) {
+            for (File ficheiro : ficheiros) {
+                //Verifica se é uma pasta e se começa por "Logs_"
+                if(ficheiro.isDirectory() && ficheiro.getName().startsWith("Logs_")){
+                    //Extrai o nome real (remove "Logs_")
+                    String nomeReal = ficheiro.getName().substring(5); // 5 é o tamanho de "Logs_".
+                    nomesEmpresas.add(nomeReal);
+                }
+            }
+        }
+        return nomesEmpresas;
     }
 
     /**
@@ -345,7 +423,7 @@ public class Menu {
             System.out.println("| 3 - Apagar uma Viagem do Histórico    |");
             System.out.println("| 0 - Voltar                            |");
             System.out.println("|---------------------------------------|");
-            op = lerInteiro("Escolha a opção: ");
+            op = lerInteiro("Escolha uma opção: ");
 
             switch (op) {
                 case 1 -> tratarRegistarViagem();
@@ -376,7 +454,7 @@ public class Menu {
             System.out.println("| 6 - Cancelar/Apagar uma Reserva       |");
             System.out.println("| 0 - Voltar                            |");
             System.out.println("|---------------------------------------|");
-            op = lerInteiro("Escolha a opção: ");
+            op = lerInteiro("Escolha uma opção: ");
 
             switch (op) {
                 case 1 -> tratarCriarReserva();
@@ -702,7 +780,7 @@ public class Menu {
             System.out.println("| 6 - Histórico de Viagens de Cliente (datas)  |");
             System.out.println("| 0 - Voltar                                   |");
             System.out.println("|----------------------------------------------|");
-            op = lerInteiro("Escolha a opção: ");
+            op = lerInteiro("Escolha uma opção: ");
 
             switch (op) {
                 case 1 -> tratarFaturacaoCondutor();
