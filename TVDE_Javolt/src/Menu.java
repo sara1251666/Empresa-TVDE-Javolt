@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 import java.util.ArrayList;
+
 import Gestao.Empresa;
 import Entidades.*;
 
@@ -27,12 +28,14 @@ public class Menu {
 
     /**
      * Objeto Scanner partilhado para leitura de inputs.
-     * */
+     *
+     */
     private static Scanner scanner = new Scanner(System.in);
 
     /**
      * Formatador de data padrão para o sistema (dd-MM-yyyy HH:mm).
-     * */
+     *
+     */
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     /**
@@ -43,7 +46,7 @@ public class Menu {
      * 3. Inicializa a Empresa e carrega dados.
      * </p>
      */
-    public static void iniciar(){
+    public static void iniciar() {
 
         System.out.println("\n|--------------------------------|");
         System.out.println("|    SISTEMA DE GESTÃO TVDE      |");
@@ -54,7 +57,7 @@ public class Menu {
         //1. Procurar empresas existentes (Pastas "Logs_")
         ArrayList<String> empresasExistentes = listarEmpresasDetetadas();
 
-        if (empresasExistentes.isEmpty()){
+        if (empresasExistentes.isEmpty()) {
             //Caso 1: Não existem empresas, força a criação de uma nova.
             System.out.println(">> Nenhuma empresa detetada no sistema.");
             System.out.println("|----------------------------------|");
@@ -71,13 +74,13 @@ public class Menu {
             System.out.println("|----------------------------------|");
             int opcao = lerInteiro("Escolha uma opção: ");
 
-            if (opcao == 2){
+            if (opcao == 2) {
                 //Listar opções para carregar
                 System.out.println("\n|----------------------------------|");
                 System.out.println("|       EMPRESAS ENCONTRADAS       |");
                 System.out.println("|----------------------------------|");
                 for (int i = 0; i < empresasExistentes.size(); i++) {
-                    System.out.println((i + 1) + " - " +  empresasExistentes.get(i));
+                    System.out.println((i + 1) + " - " + empresasExistentes.get(i));
                 }
 
                 System.out.println("|----------------------------------|");
@@ -100,23 +103,40 @@ public class Menu {
 
         //2. Inicializar a instância da Empresa com o nome definido
         empresa = new Empresa(nomeEmpresaSelecionada);
-        System.out.println("Bem vindo à gestão da empresa: "+ nomeEmpresaSelecionada.toUpperCase());
+        System.out.println("Bem vindo à gestão da empresa: " + nomeEmpresaSelecionada.toUpperCase());
 
-        // 3. Perguntar sobre o carregamento de dados (Persistência)
-        String respostaCarregar = lerTexto("Deseja carregar os dados guardados? (S/N): ");
+        // 3. Verificar se já existem dados antes de perguntar
+        File pastaEmpresa = new File("Logs_" + nomeEmpresaSelecionada);
 
-        if (respostaCarregar.equalsIgnoreCase("S")) {
-            System.out.println("A carregar dados...");
-            empresa.carregarDados();
+        //A lógica por trás: "A pasta existe?"/"É mesmo uma pasta?"/"Tem ficheiros lá dentro?"
+        boolean temDados = pastaEmpresa.exists() && pastaEmpresa.isDirectory() &&
+                pastaEmpresa.list() != null && pastaEmpresa.list().length > 0;
+        if (temDados) {
+            //Caso A: A pasta existe e não está vazia -> pergunta se quer carregar
+            System.out.println(">> ATENÇÃO: Foram encontrados registos anteriores desta empresa!");
+            String respostaCarregar = lerTexto("Deseja carregar os dados guardados? (S/N): ");
+            if (respostaCarregar.equalsIgnoreCase("S")) {
+                System.out.println("A carregar dados...");
+                empresa.carregarDados();
+            } else {
+                System.out.println("!!! AVISO: Optou por iniciar com a base de dados LIMPA. !!!");
+                System.out.println("Se gravar no final, os dados antigos serão sobrescritos.");
+            }
         } else {
-            System.out.println("A iniciar com uma base de dados limpa...");
+            //Caso B: PAsta não existe ou está vazia -> Pergunta se quer dados de teste
+            System.out.println(">> Primeira inicialização detetada (Sem histórico).");
         }
 
-        // 4. Verificação de dados iniciais
+        // 4. Verificação de dados iniciais em memória
         // Se a base de dados estiver vazia (nova empresa ou sem ficheiros), sugere dados de teste.
-        if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()){
-            System.out.println("Base de dados vazia. A gerar dados de teste...");
-            inicializarDadosTeste();
+        if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()) {
+            System.out.println("\n>> A base de dados está vazia.");
+            String respostaTeste = lerTexto("Deseja gerar dados de teste? (S/N): ");
+            if (respostaTeste.equalsIgnoreCase("S")) {
+                inicializarDadosTeste();
+            } else {
+                System.out.println("Sistema a iniciar com base de dados vazia.");
+            }
         }
 
         // 5. Executar o Loop do Menu Principal
@@ -125,11 +145,11 @@ public class Menu {
         // 6. Processo de Encerramento e Gravação
         //Só chega aqui quando o utilizador escolhe a opção "0-Sair".
         String respostaGravar = lerTexto("Deseja gravar os dados antes de sair? (S/N): ");
-        if(respostaGravar.equalsIgnoreCase("S")) {
+        if (respostaGravar.equalsIgnoreCase("S")) {
             System.out.println("A gravar alterações em Logs_" + nomeEmpresaSelecionada + "...");
             empresa.gravarDados();
             System.out.println("Dados guardados com sucesso.");
-        }else {
+        } else {
             System.out.println("As alterações não foram guardadas.");
         }
         System.out.println("Até logo!");
@@ -148,7 +168,7 @@ public class Menu {
         if (ficheiros != null) {
             for (File ficheiro : ficheiros) {
                 //Verifica se é uma pasta e se começa por "Logs_"
-                if(ficheiro.isDirectory() && ficheiro.getName().startsWith("Logs_")){
+                if (ficheiro.isDirectory() && ficheiro.getName().startsWith("Logs_")) {
                     //Extrai o nome real (remove "Logs_")
                     String nomeReal = ficheiro.getName().substring(5); // 5 é o tamanho de "Logs_".
                     nomesEmpresas.add(nomeReal);
@@ -431,13 +451,13 @@ public class Menu {
                 case 2 -> tratarListarViagens();
                 case 3 -> tratarEliminarViagem();
             }
-        }while  (op != 0);
+        } while (op != 0);
     }
 
     /**
      * Exibe o menu específico para gestão de Reservas.
      */
-    private static void menuReservas(){
+    private static void menuReservas() {
         int op = 0;
         do {
             System.out.println("\n|---------------------------------------|");
@@ -517,21 +537,21 @@ public class Menu {
     /**
      * Lista todas as viagens armazenadas no histórico da empresa.
      */
-    private static void tratarListarViagens(){
+    private static void tratarListarViagens() {
         if (empresa.getViagens().isEmpty()) {
-                System.out.println("Sem viagens registadas!");
+            System.out.println("Sem viagens registadas!");
         } else {
-                System.out.println("--- Histórico de Viagens ---");
-                for (Viagem v : empresa.getViagens()) {
-                    System.out.println(v);
-                }
+            System.out.println("--- Histórico de Viagens ---");
+            for (Viagem v : empresa.getViagens()) {
+                System.out.println(v);
+            }
         }
     }
 
     /**
      * Permite ao utilizador eliminar uma viagem do histórico.
      */
-    private static void tratarEliminarViagem(){
+    private static void tratarEliminarViagem() {
         ArrayList<Viagem> viagens = empresa.getViagens();
         if (viagens.isEmpty()) {
             System.out.println("Não existem viagens no histórico para eliminar.");
@@ -561,7 +581,7 @@ public class Menu {
     /**
      * Recolhe dados para criar uma nova {@link Reserva} e adiciona-a ao sistema.
      */
-    private static void tratarCriarReserva(){
+    private static void tratarCriarReserva() {
         System.out.println("--- Nova Reserva ---");
         int nifCliente = lerInteiro("NIF Cliente: ");
         Cliente cliente = empresa.procurarCliente(nifCliente);
@@ -583,11 +603,11 @@ public class Menu {
     /**
      * Lista todas as reservas pendentes.
      */
-    private static void tratarListarReservas(){
+    private static void tratarListarReservas() {
         ArrayList<Reserva> reservas = empresa.getReservas();
         if (reservas.isEmpty()) {
             System.out.println("Sem nenhuma reserva pendente!");
-        } else{
+        } else {
             int i = 1;
             for (Reserva reserva : reservas) {
                 System.out.println(i + ". " + reserva);
@@ -599,7 +619,7 @@ public class Menu {
     /**
      * Consulta e lista as reservas associadas a um cliente específico pelo NIF.
      */
-    private static void tratarConsultarReservasCliente(){
+    private static void tratarConsultarReservasCliente() {
         int nif = lerInteiro("NIF do Cliente: ");
         Cliente cliente = empresa.procurarCliente(nif);
 
@@ -621,7 +641,7 @@ public class Menu {
     /**
      * Permite alterar os dados de uma reserva existente de um determinado cliente.
      */
-    private static void tratarAlterarReserva(){
+    private static void tratarAlterarReserva() {
         System.out.println("--- Altera Reserva de Cliente ---");
 
         //1.Pedir o NIF para filtrar
@@ -698,7 +718,7 @@ public class Menu {
     /**
      * Converte uma reserva existente numa viagem efetiva, atribuindo condutor e viatura.
      */
-    private static void tratarConverterReserva(){
+    private static void tratarConverterReserva() {
         ArrayList<Reserva> reservas = empresa.getReservas();
         if (reservas.isEmpty()) {
             System.out.println("Sem nenhuma reserva para converter em viagem");
@@ -706,7 +726,7 @@ public class Menu {
         }
         // 1. Listar para escolher
         System.out.println("--- Escolha a Reserva a converter");
-        for (int i= 0; i< reservas.size(); i++) {
+        for (int i = 0; i < reservas.size(); i++) {
             System.out.println((i + 1) + ". " + reservas.get(i));
         }
         //2. Selecionar
@@ -725,7 +745,7 @@ public class Menu {
 
             if (condutor != null && viatura != null) {
                 boolean sucesso = empresa.converterReservaEmViagem(resSelecionada, condutor, viatura, custo);
-                if (sucesso){
+                if (sucesso) {
                     System.out.println("Reserva convertida com sucesso!");
                 } else {
                     System.out.println("Erro ao converter Reserva.");
@@ -741,7 +761,7 @@ public class Menu {
     /**
      * Permite eliminar uma reserva pendente.
      */
-    private static void tratarEliminarReserva () {
+    private static void tratarEliminarReserva() {
         ArrayList<Reserva> reservas = empresa.getReservas();
         if (reservas.isEmpty()) {
             System.out.println("Não existem reservas para eliminar.");
@@ -807,7 +827,7 @@ public class Menu {
     /**
      * Calcula e apresenta a faturação de um condutor num intervalo de datas.
      */
-    private static void tratarFaturacaoCondutor(){
+    private static void tratarFaturacaoCondutor() {
         int nif = lerInteiro("NIF do Condutor: ");
         Condutor condutor = empresa.procurarCondutor(nif);
         if (condutor != null) {
@@ -824,7 +844,7 @@ public class Menu {
     /**
      * Lista os clientes distintos que viajaram numa determinada viatura.
      */
-    private static void tratarClientesViatura(){
+    private static void tratarClientesViatura() {
         String matricula = lerTexto("Matricula da Viatura: ");
         Viatura viatura = empresa.procurarViatura(matricula);
 
@@ -846,7 +866,7 @@ public class Menu {
     /**
      * Apresenta o destino mais solicitado no sistema (considerando Viagens e Reservas) num intervalo de datas.
      */
-    private static void tratarDestinoMaisSolicitado(){
+    private static void tratarDestinoMaisSolicitado() {
         LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
         LocalDateTime fim = lerData("Data fim (dd-MM-yyyy HH:mm): ");
 
@@ -857,7 +877,7 @@ public class Menu {
     /**
      * Calcula e apresenta a média de Kms das viagens realizadas num intervalo de datas.
      */
-    private static void tratarDistanciaMedia(){
+    private static void tratarDistanciaMedia() {
         LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
         LocalDateTime fim = lerData("Data fim (dd-MM-yyyy HH:mm): ");
 
@@ -868,7 +888,7 @@ public class Menu {
     /**
      * Lista os clientes que efetuaram viagens com distância compreendida num determinado intervalo.
      */
-    private static void tratarClientesPorIntervaloKms(){
+    private static void tratarClientesPorIntervaloKms() {
         double min = lerDouble("Kms Mínimos: ");
         double max = lerDouble("Kms Maximos: ");
 
@@ -884,11 +904,11 @@ public class Menu {
     }
 
     /**
-    * Apresenta o histórico de viagens de um cliente filtrado por datas.
-    */
-    private static void tratarHistoricoClientePorDatas(){
+     * Apresenta o histórico de viagens de um cliente filtrado por datas.
+     */
+    private static void tratarHistoricoClientePorDatas() {
         int nif = lerInteiro("NIF do Cliente: ");
-        Cliente  cliente = empresa.procurarCliente(nif);
+        Cliente cliente = empresa.procurarCliente(nif);
 
         if (cliente != null) {
             LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
@@ -903,7 +923,7 @@ public class Menu {
                     System.out.println(viagem);
                 }
             }
-        }else  {
+        } else {
             System.out.println("Nenhum cliente encontrado.");
         }
     }
@@ -1008,13 +1028,14 @@ public class Menu {
 
         if (verViaturas.equalsIgnoreCase("S")) {
             for (Viatura viatura : viaturasLivres) {
-                System.out.println("- " + viatura.getMarca() + " " + viatura.getModelo() + " (" + viatura.getMatricula() + ")");            }
+                System.out.println("- " + viatura.getMarca() + " " + viatura.getModelo() + " (" + viatura.getMatricula() + ")");
+            }
         }
 
         String matricula = lerTexto("Matricula da Viatura: ");
         Viatura viatura = empresa.procurarViatura(matricula);
 
-        if (viatura == null){
+        if (viatura == null) {
             System.out.println("Erro: Nenhuma viatura encontrada.");
             return null;
         }
@@ -1039,6 +1060,7 @@ public class Menu {
 
     /**
      * Lê um número inteiro, garantindo que o input é válido.
+     *
      * @param msg A mensagem a apresentar.
      * @return O número inteiro introduzido.
      */
