@@ -6,7 +6,7 @@ package Entidades;
  * Guarda os dados principais que identificam e caracterizam o veículo.
  * </p>
  *
- * @author Levi e Sara e Leonardo
+ * @author Grupo 1 - Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */

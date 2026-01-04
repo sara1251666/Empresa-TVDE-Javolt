@@ -5,7 +5,7 @@
  * delegando todo o controlo de fluxo para a classe {@link Menu}.
  * </p>
  *
- * @author Equipa Javolt
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */

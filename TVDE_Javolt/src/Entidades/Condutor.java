@@ -7,7 +7,7 @@ package Entidades;
  * necessários para o exercício da condução profissional.
  * </p>
  *
- * @author Levi e Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */
@@ -22,12 +22,6 @@ public class Condutor extends Pessoa {
      * O número de Segurança Social do condutor.
      */
     private int segSocial;
-
-    /**
-     * Construtor Condutor vazio.
-     */
-    public Condutor(String nome, String nif, String carta) {
-    }
 
     /**
      * Constrói um novo Condutor com todos os dados completos.

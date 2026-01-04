@@ -3,7 +3,7 @@ package Entidades;
 /**
  * Classe abstrata que representa uma Entidades.Pessoa Genérica.
  * Agrupa dados comuns a Clientes e Condutores.
- * @author Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1
  * @since 2025-12-27
  */
@@ -73,7 +73,7 @@ public abstract class Pessoa {
             this.nif = nif;
         } else {
             //System.out.println("Erro: O NIF deve ter 9 digitos.");
-            throw new IllegalArgumentException("NIF invaldo! tem de ter exatamente 9 digitos (ecebido: " + nif + ").");
+            throw new IllegalArgumentException("NIF invaldo! tem de ter exatamente 9 digitos (recebido: " + nif + ").");
         }
     }
 

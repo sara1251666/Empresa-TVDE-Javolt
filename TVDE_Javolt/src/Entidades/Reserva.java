@@ -4,32 +4,59 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Representa uma Intenção de Entidades.Viagem Solicitada por um Entidades.Cliente.
- * Contém os Dados do Serviço Solicitado Antes de ser Realizado.
- * @author Levi e Sara
- * @version 1
- * @since 2025-12-27
+ * Representa uma intenção de viagem solicitada por um cliente.
+ * <p>
+ * Contém os dados do serviço solicitado (quem, quando, onde) antes de este ser efetivamente realizado
+ * ou atribuído a um condutor.
+ * </p>
+ *
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
+ * @version 1.0
+ * @since 2026-01-01
  */
 public class Reserva {
+    /**
+     * O cliente que efetuou a reserva.
+     */
     private Cliente cliente;
+
+    /**
+     * A data e hora pretendida para o início do serviço.
+     */
     private LocalDateTime dataHoraInicio;
+
+    /**
+     * A morada ou local de recolha do passageiro.
+     */
     private String moradaOrigem;
+
+    /**
+     * A morada ou local de destino da viagem.
+     */
     private String moradaDestino;
+
+    /**
+     * A distância estimada da viagem em quilómetros.
+     */
     private double kms;
 
     /**
-     * Construtor Entidades.Reserva Vazio.
+     * Construtor vazio.
+     * <p>
+     * Permite instanciar uma Reserva sem definir dados iniciais.
+     * </p>
      */
     public Reserva() {
     }
 
     /**
-     * Constrói uma Nova Entidades.Reserva de um Determinado Entidades.Cliente.
-     * @param cliente O cliente Que Fez a Entidades.Reserva.
-     * @param dataHoraInicio A Data e Hora Pretendida.
-     * @param moradaOrigem Local de Recolha.
-     * @param moradaDestino Local de Destino.
-     * @param kms Distância Estimada.
+     * Constrói uma nova Reserva com todos os dados necessários.
+     *
+     * @param cliente        O cliente que solicitou a reserva[cite: 98].
+     * @param dataHoraInicio A data e hora pretendida para a viagem.
+     * @param moradaOrigem   O local de recolha.
+     * @param moradaDestino  O local de destino.
+     * @param kms            A distância estimada em Kms.
      */
     public Reserva(Cliente cliente, LocalDateTime dataHoraInicio, String moradaOrigem, String moradaDestino, double kms) {
         this.cliente = cliente;
@@ -40,89 +67,102 @@ public class Reserva {
     }
 
     /**
-     * Obtém o Entidades.Cliente Associado à Entidades.Reserva.
-     * @return Retorna o Entidades.Cliente.
+     * Obtém o cliente associado à reserva.
+     *
+     * @return O objeto {@link Cliente} desta reserva[cite: 99].
      */
     public Cliente getCliente() {
         return cliente;
     }
 
     /**
-     * Define o Entidades.Cliente Associado à Entidades.Reserva.
-     * @param cliente Atribui o Entidades.Cliente à Entidades.Reserva.
+     * Define o cliente associado à reserva.
+     *
+     * @param cliente O novo cliente a atribuir.
      */
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
 
     /**
-     * Obtém a Data e a Hora do Inicio da Entidades.Reserva.
-     * @return Retorna a Data e Hora da Entidades.Reserva.
+     * Obtém a data e hora marcada para a reserva.
+     *
+     * @return A data e hora de início.
      */
     public LocalDateTime getDataHoraInicio() {
         return dataHoraInicio;
     }
 
     /**
-     * Define a Data e a Hora de Inicio da Entidades.Reserva.
-     * @param dataHoraInicio Atribui a Nova data e a Hora de Início da Entidades.Reserva.
+     * Define a data e hora de início da reserva.
+     *
+     * @param dataHoraInicio A nova data e hora de início.
      */
     public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
         this.dataHoraInicio = dataHoraInicio;
     }
 
     /**
-     * Obtém a Morada de Origem.
-     * @return Retorna a Morada de Origem.
+     * Obtém a morada de origem.
+     *
+     * @return O local de recolha.
      */
     public String getMoradaOrigem() {
         return moradaOrigem;
     }
 
     /**
-     * Define a Nova Morada de Origem.
-     * @param moradaOrigem Atribui a Nova Morada de Origem.
+     * Define a morada de origem.
+     *
+     * @param moradaOrigem O novo local de recolha.
      */
     public void setMoradaOrigem(String moradaOrigem) {
         this.moradaOrigem = moradaOrigem;
     }
 
     /**
-     * Obtém a Morada de Destino.
-     * @return Retorna a Morada de Destino.
+     * Obtém a morada de destino.
+     *
+     * @return O local de chegada.
      */
     public String getMoradaDestino() {
         return moradaDestino;
     }
 
     /**
-     * Define a Nova Morada de Destino.
-     * @param moradaDestino Atribui a Nova Morada de Destino.
+     * Define a morada de destino.
+     *
+     * @param moradaDestino O novo local de chegada.
      */
     public void setMoradaDestino(String moradaDestino) {
         this.moradaDestino = moradaDestino;
     }
 
     /**
-     * Obtém a Disância da Entidades.Reserva em Kms.
-     * @return Retorna a Distância da Entidades.Viagem em Kms.
+     * Obtém a distância estimada da reserva.
+     *
+     * @return A distância em quilómetros.
      */
     public double getKms() {
         return kms;
     }
 
     /**
-     * Defime a Nova Distância da Entidades.Reserva em Kms.
-     * @param kms Agtribui a Nova Distância da Entidades.Reserva em Kms.
+     * Define a distância da reserva.
+     *
+     * @param kms A nova distância em Kms.
      */
     public void setKms(double kms) {
         this.kms = kms;
     }
 
     /**
-     * Representação em Texto da Entidades.Reserva.
-     * Formata a data para ser legível.
-     * @return Detalhes da Entidades.Reserva.
+     * Devolve a representação textual da Reserva.
+     * <p>
+     * Formata a data para leitura fácil e apresenta um resumo do pedido.
+     * </p>
+     *
+     * @return Uma String formatada com os detalhes da reserva.
      */
     @Override
     public String toString() {
