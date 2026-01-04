@@ -14,14 +14,14 @@ import Entidades.*;
  * e a invocação dos métodos da classe {@link Empresa}.
  * </p>
  *
- * @author Levi e Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.3
  * @since 2026-01-03
  */
 public class Menu {
 
     /**
-     * Instância única da Empresa que armazena os dados e a lógica de negócio do programa.
+     * Instância da Empresa. Não é inicializada logo para permitir escolha do nome.
      */
     private static Empresa empresa;
 
@@ -36,13 +36,11 @@ public class Menu {
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     /**
-     * Metodo responsável por iniciar o ciclo de vida da aplicação.
+     * Inicia o ciclo de vida da aplicação.
      * <p>
-     * É invocado pela classe Main. Realiza as seguintes operações:
-     * 1. Pergunta se carrega dados de ficheiro.
-     * 2. Verifica se a base de dados está vazia e sugere dados de teste.
-     * 3. Inicia o loop do Menu Principal.
-     * 4. Pergunta se grava os dados ao sair.
+     * 1. Deteta empresas existentes (pastas Logs_).
+     * 2. Permite criar nova ou carregar existente (Menu Visual).
+     * 3. Inicializa a Empresa e carrega dados.
      * </p>
      */
     public static void iniciar(){
@@ -53,16 +51,18 @@ public class Menu {
 
         String nomeEmpresaSelecionada = "";
 
-        //1. Procurar empresas existentes
+        //1. Procurar empresas existentes (Pastas "Logs_")
         ArrayList<String> empresasExistentes = listarEmpresasDetetadas();
 
         if (empresasExistentes.isEmpty()){
+            //Caso 1: Não existem empresas, força a criação de uma nova.
             System.out.println(">> Nenhuma empresa detetada no sistema.");
             System.out.println("|----------------------------------|");
             System.out.println("|      CRIAÇÃO DE NOVA EMPRESA     |");
             System.out.println("|----------------------------------|");
             nomeEmpresaSelecionada = lerTexto("Introduza o nome: ");
         } else {
+            //Caso 2: Existem empresas, permite escolher ou criar uma nova.
             System.out.println("\n|----------------------------------|");
             System.out.println("|        SELEÇÃO DE EMPRESA        |");
             System.out.println("|----------------------------------|");
@@ -72,6 +72,7 @@ public class Menu {
             int opcao = lerInteiro("Escolha uma opção: ");
 
             if (opcao == 2){
+                //Listar opções para carregar
                 System.out.println("\n|----------------------------------|");
                 System.out.println("|       EMPRESAS ENCONTRADAS       |");
                 System.out.println("|----------------------------------|");
@@ -89,6 +90,7 @@ public class Menu {
                     nomeEmpresaSelecionada = lerTexto("Nome da nova empresa: ");
                 }
             } else {
+                //Opção 1 ou inválida: Criar nova.
                 System.out.println("\n|----------------------------------|");
                 System.out.println("|      CRIAÇÃO DE NOVA EMPRESA     |");
                 System.out.println("|----------------------------------|");
@@ -96,12 +98,11 @@ public class Menu {
             }
         }
 
-        //1. Pergunta ao utilizador qual é o nome da empresa a gerir.
-
+        //2. Inicializar a instância da Empresa com o nome definido
         empresa = new Empresa(nomeEmpresaSelecionada);
         System.out.println("Bem vindo à gestão da empresa: "+ nomeEmpresaSelecionada.toUpperCase());
 
-        //2. Pergunta ao utilizador se deseja carregar os dados guardados.
+        // 3. Perguntar sobre o carregamento de dados (Persistência)
         String respostaCarregar = lerTexto("Deseja carregar os dados guardados? (S/N): ");
 
         if (respostaCarregar.equalsIgnoreCase("S")) {
@@ -111,18 +112,17 @@ public class Menu {
             System.out.println("A iniciar com uma base de dados limpa...");
         }
 
-        // Se a base de dados estiver vazia (porque não carregou ou porque os ficheiros estão vazios)
-        // Podemos perguntar se quer gerar dados de teste ou gerar automaticamente.
-
+        // 4. Verificação de dados iniciais
+        // Se a base de dados estiver vazia (nova empresa ou sem ficheiros), sugere dados de teste.
         if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()){
             System.out.println("Base de dados vazia. A gerar dados de teste...");
             inicializarDadosTeste();
         }
 
-        //3. Loop do Menu da aplicação.
+        // 5. Executar o Loop do Menu Principal
         displayMenuPrincipal();
 
-        //4. Pergunta ao utilizador se quer gravar a base de dados.
+        // 6. Processo de Encerramento e Gravação
         //Só chega aqui quando o utilizador escolhe a opção "0-Sair".
         String respostaGravar = lerTexto("Deseja gravar os dados antes de sair? (S/N): ");
         if(respostaGravar.equalsIgnoreCase("S")) {
@@ -137,7 +137,8 @@ public class Menu {
 
     /**
      * Procura na diretoria do projeto por pastas que comecem por "Logs_".
-     * * @return Uma lista com os nomes das empresas encontradas (sem o prefixo "Logs_").
+     *
+     * @return Uma lista com os nomes das empresas encontradas (sem o prefixo "Logs_").
      */
     private static ArrayList<String> listarEmpresasDetetadas() {
         ArrayList<String> nomesEmpresas = new ArrayList<>();
@@ -181,8 +182,8 @@ public class Menu {
                 case 1 -> menuCRUD("Viaturas");
                 case 2 -> menuCRUD("Condutores");
                 case 3 -> menuCRUD("Clientes");
-                case 4 -> menuViagens();   // Só viagens
-                case 5 -> menuReservas();  // Só reservas
+                case 4 -> menuViagens();
+                case 5 -> menuReservas();
                 case 6 -> menuEstatisticas();
                 case 0 -> System.out.println("A encerrar sistema...");
                 default -> System.out.println("Opção inválida.");
@@ -406,11 +407,11 @@ public class Menu {
     }
 
     // =======================================================
-    //            MENU VIAGENS (Só Histórico e Registo)
+    //            MENU VIAGENS E RESERVAS
     // =======================================================
 
     /**
-     * Exibe o menu específico para gestão de Viagens (Histórico e Registo Imediato).
+     * Exibe o menu específico para gestão de Viagens.
      */
     private static void menuViagens() {
         int op = 0;
@@ -433,12 +434,8 @@ public class Menu {
         }while  (op != 0);
     }
 
-    // =======================================================
-    //            MENU RESERVAS (Planeamento)
-    // =======================================================
-
     /**
-     * Exibe o menu específico para gestão de Reservas (Planeamento Futuro).
+     * Exibe o menu específico para gestão de Reservas.
      */
     private static void menuReservas(){
         int op = 0;
@@ -472,37 +469,48 @@ public class Menu {
     // =======================================================
 
     /**
-     * Recolhe os dados necessários para registar uma nova {@link Viagem} e invoca a lógica na classe Empresa.
+     * Recolhe os dados para uma nova viagem.
+     * <p>
+     * Utiliza métodos auxiliares para selecionar Condutor, Cliente e Viatura,
+     * garantindo que apenas recursos disponíveis são escolhidos.
+     * </p>
      */
     private static void tratarRegistarViagem() {
-        System.out.println("--- Nova viagem ---");
-        int nifCondutor = lerInteiro("NIF do Condutor: ");
-        Condutor condutor = empresa.procurarCondutor(nifCondutor);
+        System.out.println("--- Nova Viagem ---");
 
-        int nifCliente = lerInteiro("NIF do Cliente: ");
-        Cliente cliente = empresa.procurarCliente(nifCliente);
+        //1. Pede ao utilizador as datas. É o filtro principal deste metodo.
+        LocalDateTime inicio = lerData("Início da Viagem(dd-MM-yyyy): ");
+        LocalDateTime fim = lerData("Fim da Viagem(dd-MM-yyyy): ");
 
-        String matricula = lerTexto("Matrícula da Viatura: ");
-        Viatura viatura = empresa.procurarViatura(matricula);
+        //2. Seleção de Condutor
+        Condutor condutor = selecionarCondutorDisponivel(inicio, fim);
+        if (condutor == null) {
+            return;
+        }
 
-        if (condutor != null && cliente != null && viatura != null) {
-            LocalDateTime inicio = lerData("Início (dd-MM-yyyy HH:mm): ");
-            LocalDateTime fim = lerData("Fim (dd-MM-yyyy HH:mm): ");
+        //3. Seleção de Cliente
+        Cliente cliente = selecionarClienteDisponivel(inicio, fim);
+        if (cliente == null) {
+            return;
+        }
 
-            if (empresa.verificarSobreposicao(viatura, condutor, inicio, fim)) {
-                System.out.println("Erro: Sobreposição detetada (Condutor ou Viatura ocupados).");
-            } else {
-                String origem = lerTexto("Origem: ");
-                String destino = lerTexto("Destino: ");
-                double kms = lerDouble("Kms: ");
-                double custo = lerDouble("Custo (€): ");
+        //4. Seleção de Viatura
+        Viatura viatura = selecionarViaturaDisponivel(inicio, fim);
+        if (viatura == null) {
+            return;
+        }
 
-                Viagem novaViagem = new Viagem(condutor, cliente, viatura, inicio, fim, origem, destino, kms, custo);
-                empresa.adicionarViagem(novaViagem);
-                System.out.println("Viagem registada com sucesso!");
-            }
-        } else {
-            System.out.println("Erro: Condutor, Cliente ou Viatura não encontrados. Crie-os primeiro.");
+        //5.Dados finais.
+        String origem = lerTexto("Origem: ");
+        String destino = lerTexto("Destino: ");
+        double kms = lerDouble("Kms: ");
+        double custo = lerDouble("Custo: ");
+
+        Viagem novaViagem = new Viagem(condutor, cliente, viatura, inicio, fim, origem, destino, kms, custo);
+
+        //A validação final
+        if (empresa.adicionarViagem(novaViagem)) {
+            System.out.println("Viagem adicionada com sucesso.");
         }
     }
 
@@ -625,7 +633,7 @@ public class Menu {
             return;
         }
 
-        //2. Obyer apenas as reservas deste cliente
+        //2. Obter apenas as reservas deste cliente
         ArrayList<Reserva> reservasCliente = empresa.getReservasDoCliente(nifCliente);
 
         if (reservasCliente.isEmpty()) {
@@ -730,7 +738,6 @@ public class Menu {
         }
     }
 
-
     /**
      * Permite eliminar uma reserva pendente.
      */
@@ -793,7 +800,9 @@ public class Menu {
         } while (op != 0);
     }
 
-    // Métodos Auxiliares de Estatísticas
+    // =======================================================
+    //        MÉTODOS AUXILIARES DE ESTATÍSTICAS
+    // =======================================================
 
     /**
      * Calcula e apresenta a faturação de um condutor num intervalo de datas.
@@ -900,9 +909,122 @@ public class Menu {
     }
 
 
-// =======================================================
-//                MÉTODOS AUXILIARES (Input)
-// =======================================================
+    // =======================================================
+    //                MÉTODOS AUXILIARES (SELEÇÃO)
+    // =======================================================
+
+    /**
+     * Metodo auxiliar para selecionar um condutor disponível.
+     *
+     * @param inicio Data início.
+     * @param fim    Data fim.
+     * @return Condutor selecionado ou null.
+     */
+    private static Condutor selecionarCondutorDisponivel(LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<Condutor> condutoresLivres = empresa.getCondutoresDisponiveis(inicio, fim);
+
+        if (condutoresLivres.isEmpty()) {
+            System.out.println("Sem condutores disponíveis para este horário.");
+            return null;
+        }
+
+        System.out.println(">> Existem " + condutoresLivres.size() + " condutores livres.");
+        String verListaCondutores = lerTexto("Ver lista? (S/N): ");
+        if (verListaCondutores.equalsIgnoreCase("S")) {
+            for (Condutor condutor : condutoresLivres) {
+                System.out.println("- " + condutor.getNome() + " | NIF: " + condutor.getNif());
+            }
+        }
+
+        int nifCondutor = lerInteiro("NIF do Condutor: ");
+        Condutor condutor = empresa.procurarCondutor(nifCondutor);
+
+        if (condutor == null) {
+            System.out.println("Erro: Nenhum condutor encontrado.");
+            return null;
+        }
+        if (!condutoresLivres.contains(condutor)) {
+            System.out.println("Erro: Condutor " + condutor.getNome() + " já tem uma viagem nesse horário.");
+            return null;
+        }
+        return condutor;
+    }
+
+    /**
+     * Metodo auxiliar para selecionar um cliente disponível.
+     *
+     * @param inicio Data início.
+     * @param fim    Data fim.
+     * @return Cliente selecionado ou null.
+     */
+    private static Cliente selecionarClienteDisponivel(LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<Cliente> clientesLivres = empresa.getClientesDisponiveis(inicio, fim);
+
+        if (clientesLivres.isEmpty()) {
+            System.out.println("Sem clientes disponíveis.");
+            return null;
+        }
+
+        System.out.println(">> Existem " + clientesLivres.size() + " clientes livres.");
+        String verListaClientes = lerTexto("Ver lista? (S/N): ");
+        if (verListaClientes.equalsIgnoreCase("S")) {
+            for (Cliente cliente : clientesLivres) {
+                System.out.println("- " + cliente.getNome() + " | NIF: " + cliente.getNif());
+            }
+        }
+
+        int nifCliente = lerInteiro("NIF do Cliente: ");
+        Cliente cliente = empresa.procurarCliente(nifCliente);
+
+        if (cliente == null) {
+            System.out.println("Erro: Nenhum cliente encontrado.");
+            return null;
+        }
+
+        if (!clientesLivres.contains(cliente)) {
+            System.out.println("Erro: " + cliente.getNome() + "já tem uma viagem nesse horário.");
+            return null;
+        }
+        return cliente;
+    }
+
+    /**
+     * Metodo auxiliar para selecionar uma viatura disponível.
+     *
+     * @param inicio Data início.
+     * @param fim    Data fim.
+     * @return Viatura selecionada ou null.
+     */
+    private static Viatura selecionarViaturaDisponivel(LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<Viatura> viaturasLivres = empresa.getViaturasDisponiveis(inicio, fim);
+
+        if (viaturasLivres.isEmpty()) {
+            System.out.println("Sem viaturas disponíveis para este horário.");
+            return null;
+        }
+
+        System.out.println(">> Existem " + viaturasLivres.size() + " viaturas livres.");
+        String verViaturas = lerTexto("Ver lista? (S/N): ");
+
+        if (verViaturas.equalsIgnoreCase("S")) {
+            for (Viatura viatura : viaturasLivres) {
+                System.out.println("- " + viatura.getMarca() + " " + viatura.getModelo() + " (" + viatura.getMatricula() + ")");            }
+        }
+
+        String matricula = lerTexto("Matricula da Viatura: ");
+        Viatura viatura = empresa.procurarViatura(matricula);
+
+        if (viatura == null){
+            System.out.println("Erro: Nenhuma viatura encontrada.");
+            return null;
+        }
+
+        if (!viaturasLivres.contains(viatura)) {
+            System.out.println("Erro: A viatura (" + viatura.getMatricula() + ") já tem uma viagem nesse horário.");
+            return null;
+        }
+        return viatura;
+    }
 
     /**
      * Lê uma linha de texto do utilizador.
@@ -968,15 +1090,59 @@ public class Menu {
     }
 
     /**
-     * Preenche o sistema com dados iniciais (mock data) para facilitar testes.
-     * Cria 1 Viatura, 1 Cliente e 1 Condutor.
+     * Preenche o sistema com um conjunto robusto de dados de teste.
+     * Cria 3 Viaturas, 3 Clientes, 3 Condutores e 2 Viagens históricas.
      */
     public static void inicializarDadosTeste() {
-        empresa.adicionarViatura(new Viatura("AA-00-BB", "Toyota", "Corolla", 2020));
-
+        System.out.println("A gerar dados de teste completos...");
         try {
-            empresa.adicionarCliente(new Cliente("Joao Silva", 123456789, 910000000, "Porto", 111222333));
-            empresa.adicionarCondutor(new Condutor("Maria Santos", 987654321, 930000000, "Lisboa", 444555666, "C-123", 123123123));
+            // --- 1. VIATURAS ---
+            Viatura viatura1 = new Viatura("AA-00-BB", "Toyota", "Corolla", 2020);
+            Viatura viatura2 = new Viatura("XX-99-ZZ", "Tesla", "Model 3", 2024);
+            Viatura viatura3 = new Viatura("CC-11-DD", "Renault", "Clio", 2018);
+
+            empresa.adicionarViatura(viatura1);
+            empresa.adicionarViatura(viatura2);
+            empresa.adicionarViatura(viatura3);
+
+            // --- 2. CLIENTES ---
+            Cliente cliente1 = new Cliente("Joao Silva", 100000001, 910000001, "Porto", 11111111);
+            Cliente cliente2 = new Cliente("Ana Pereira", 100000002, 910000002, "Lisboa", 22222222);
+            Cliente cliente3 = new Cliente("Carlos Sousa", 100000003, 910000003, "Braga", 33333333);
+
+            empresa.adicionarCliente(cliente1);
+            empresa.adicionarCliente(cliente2);
+            empresa.adicionarCliente(cliente3);
+
+            // --- 3. CONDUTORES ---
+            Condutor motorista1 = new Condutor("Maria Santos", 200000001, 930000001, "Porto", 44444444, "C-001", 12345);
+            Condutor motorista2 = new Condutor("Pedro Gomes", 200000002, 930000002, "Gaia", 55555555, "C-002", 67890);
+            Condutor motorista3 = new Condutor("Luisa Lima", 200000003, 930000003, "Matosinhos", 66666666, "C-003", 11223);
+
+            empresa.adicionarCondutor(motorista1);
+            empresa.adicionarCondutor(motorista2);
+            empresa.adicionarCondutor(motorista3);
+
+            // --- 4. VIAGENS (Histórico - Ontem) ---
+            LocalDateTime ontem = LocalDateTime.now().minusDays(1);
+
+            // Viagem 1: Maria (motorista1) levou o João (cliente1) no Toyota (viatura1)
+            Viagem v1 = new Viagem(motorista1, cliente1, viatura1,
+                    ontem.withHour(10).withMinute(0),
+                    ontem.withHour(10).withMinute(30),
+                    "Casa da Música", "Ribeira", 5.5, 8.50);
+
+            // Viagem 2: Pedro (motorista2) levou a Ana (cliente2) no Tesla (viatura2)
+            Viagem v2 = new Viagem(motorista2, cliente2, viatura2,
+                    ontem.withHour(14).withMinute(0),
+                    ontem.withHour(15).withMinute(0),
+                    "Aeroporto", "Hotel", 20.0, 25.00);
+
+            empresa.adicionarViagem(v1);
+            empresa.adicionarViagem(v2);
+
+            System.out.println(">> Dados carregados: 3 Viaturas, 3 Clientes, 3 Condutores, 2 Viagens");
+
         } catch (Exception e) {
             System.out.println("Erro ao carregar dados de teste: " + e.getMessage());
         }

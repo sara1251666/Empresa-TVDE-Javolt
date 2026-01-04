@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
  * Suporta Múltiplas empresas através da gestão de pastas de logs dinâmicas.
  * </p>
  *
- * @author Levi e Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */
@@ -273,6 +273,100 @@ public class Empresa {
     // ==========================================================
 
     /**
+     * Obtém uma lista de condutores que não têm viagens marcadas no intervalo de tempo fornecido.
+     * <p>
+     * Percorre a lista de condutores e, para cada um, verifica se existe alguma sobreposição
+     * com as viagens já registadas no sistema.
+     * </p>
+     *
+     * @param inicio Data e Hora de início pretendida para o serviço.
+     * @param fim    Data e Hora de fim pretendida para o serviço.
+     * @return Uma lista (ArrayList) contendo apenas os condutores disponíveis.
+     */
+    public ArrayList<Condutor> getCondutoresDisponiveis(LocalDateTime inicio, LocalDateTime fim){
+        ArrayList<Condutor> condutoresDisponiveis = new ArrayList<>();
+
+        for (Condutor condutor : condutores) {
+            boolean estaOcupado = false;
+            //Verifica se este condutor tem alguma viagem que colida com o horário.
+            for (Viagem viagem : viagens) {
+                if (viagem.getCondutor().getNif() == condutor.getNif()) {
+                    //Lógica de sobreposição (InicioA < FimB) && (FimA > InicioB)
+                    if(inicio.isBefore(viagem.getDataHoraFim()) && fim.isAfter(viagem.getDataHoraInicio())){
+                        estaOcupado = true;
+                        break; //Já sabemos que o condutor está ocupado, então paramos a verificação.
+                    }
+                }
+            }
+            //Se correu as viagens todas e não encontrou conflito, adicionamos o condutor à lista
+            if (!estaOcupado){
+                condutoresDisponiveis.add(condutor);
+            }
+        }
+        return condutoresDisponiveis;
+    }
+
+    /**
+     * Obtém uma lista de viaturas que não estão a ser usadas em nenhuma viagem no intervalo.
+     *
+     * @param inicio Data/Hora de início.
+     * @param fim    Data/Hora de fim.
+     * @return Lista de viaturas disponíveis.
+     */
+    public ArrayList<Viatura> getViaturasDisponiveis(LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<Viatura> viaturasDisponiveis = new ArrayList<>();
+
+        for (Viatura viatura : viaturas){
+            //Verifica se esta Viatura tem alguma viagem que colida com o horário.
+            boolean estaOcupado = false;
+            for (Viagem viagem : viagens) {
+                if (viagem.getViatura().getMatricula().equalsIgnoreCase(viatura.getMatricula())){
+                    //Lógica de sobreposição (InicioA < FimB) && (FimA > InicioB)
+                    if (inicio.isBefore(viagem.getDataHoraFim()) && fim.isAfter(viagem.getDataHoraInicio())){
+                        estaOcupado = true;
+                        break;
+                    }
+                }
+            }
+            //Se correu as viagens todas e não encontrou conflito, adicionamos a viatura à lista
+            if(!estaOcupado){
+                viaturasDisponiveis.add(viatura);
+            }
+        }
+        return viaturasDisponiveis;
+    }
+
+    /**
+     * Obtém uma lista de clientes que não têm viagens marcadas no intervalo.
+     *
+     * @param inicio Data/Hora de início.
+     * @param fim    Data/Hora de fim.
+     * @return Lista de clientes disponíveis (livres).
+     */
+    public ArrayList<Cliente> getClientesDisponiveis(LocalDateTime inicio, LocalDateTime fim) {
+        ArrayList<Cliente> clientesDisponiveis = new ArrayList<>();
+
+        //Verifica se o Cliente tem alguma viagem que colia com o horário.
+        for (Cliente cliente : clientes) {
+            boolean estaOcupado = false;
+            for (Viagem viagem : viagens) {
+                if (viagem.getCliente().getNif() == cliente.getNif()) {
+                    //Lógica de sobreposição (InicioA < FimB) && (FimA > InicioB)
+                    if(inicio.isBefore(viagem.getDataHoraFim()) && fim.isAfter(viagem.getDataHoraInicio())){
+                        estaOcupado = true;
+                        break;
+                    }
+                }
+            }
+            if(!estaOcupado){
+                clientesDisponiveis.add(cliente);
+            }
+        }
+        //Se correu as viagens todas e não encontrou conflito, adicionamos o Cliente à lista
+        return clientesDisponiveis;
+    }
+
+    /**
      * Verifica se existe sobreposição de horários para a Viatura ou Condutor.
      * <p>
      * A sobreposição é detetada se o intervalo de tempo da nova viagem colidir
@@ -286,7 +380,7 @@ public class Empresa {
      * @return {@code true} se houver sobreposição (ocupado); {@code false} se estiver livre.
      */
     public boolean verificarSobreposicao(Viatura v, Condutor c, LocalDateTime inicio, LocalDateTime fim) {
-        for(Viagem viagemExistente : viagens) {
+        for (Viagem viagemExistente : viagens) {
             boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equalsIgnoreCase(v.getMatricula());
             boolean mesmoCondutor = viagemExistente.getCondutor().getNif() == c.getNif();
 

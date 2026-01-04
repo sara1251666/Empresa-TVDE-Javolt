@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
  * ou atribuído a um condutor.
  * </p>
  *
- * @author Levi e Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */

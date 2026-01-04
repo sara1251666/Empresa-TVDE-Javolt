@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
  * espaciais e financeiros do serviço.
  * </p>
  *
- * @author Levi e Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */

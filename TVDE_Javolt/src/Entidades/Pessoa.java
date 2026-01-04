@@ -3,7 +3,7 @@ package Entidades;
 /**
  * Classe abstrata que representa uma Entidades.Pessoa Genérica.
  * Agrupa dados comuns a Clientes e Condutores.
- * @author Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1
  * @since 2025-12-27
  */

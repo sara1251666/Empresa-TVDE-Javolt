@@ -7,7 +7,7 @@ package Entidades;
  * necessários para o exercício da condução profissional.
  * </p>
  *
- * @author Levi e Sara
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
  * @since 2026-01-01
  */
