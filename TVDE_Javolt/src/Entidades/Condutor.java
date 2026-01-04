@@ -1,31 +1,45 @@
 package Entidades;
 
 /**
- * Representa um Entidades.Condutor
+ * Representa um Condutor da empresa TVDE.
+ * <p>
+ * Esta classe herda de {@link Pessoa} e adiciona atributos específicos
+ * necessários para o exercício da condução profissional.
+ * </p>
+ *
  * @author Levi e Sara
- * @version 1
- * @since 2025-12-12
+ * @version 1.0
+ * @since 2026-01-01
  */
 public class Condutor extends Pessoa {
+
+    /**
+     * O número da carta de condução do condutor.
+     */
     private String cartaCond;
+
+    /**
+     * O número de Segurança Social do condutor.
+     */
     private int segSocial;
 
     /**
-     * Construtor Entidades.Condutor Vazio.
+     * Construtor Condutor vazio.
      */
     public Condutor(String nome, String nif, String carta) {
     }
 
     /**
-     * Constroi um novo Entidades.Condutor com os dados fornecidos.
-     * Invoca o Construtor da Superclasse (Entidades.Pessoa).
-     * @param nome Nome do Entidades.Condutor.
-     * @param nif Nif do Entidades.Condutor.
-     * @param tel Telemóvel do Entidades.Condutor.
-     * @param morada Morada do Entidades.Condutor.
-     * @param cartaoCid Cartão de Cidadão do Entidades.Condutor.
-     * @param cartaCond Carta de Condução do Entidades.Condutor.
-     * @param segSocial Número de Segurança Social do Entidades.Condutor.
+     * Constrói um novo Condutor com todos os dados completos.
+     * Invoca o construtor da superclasse {@link Pessoa}.
+     *
+     * @param nome      Nome do Condutor.
+     * @param nif       NIF do Condutor.
+     * @param tel       Telemóvel do Condutor.
+     * @param morada    Morada do Condutor.
+     * @param cartaoCid Cartão de Cidadão do Condutor.
+     * @param cartaCond Carta de Condução do Condutor.
+     * @param segSocial Número de Segurança Social do Condutor.
      */
     public Condutor(String nome, int nif, int tel, String morada, int cartaoCid, String cartaCond, int segSocial) {
         super(nome, nif, tel, morada, cartaoCid);
@@ -34,46 +48,49 @@ public class Condutor extends Pessoa {
     }
 
     /**
-     * Obtém a Carta de Condução
-     * @return Retorna a Carta de Condução.
+     * Obtém o número da carta de condução.
+     *
+     * @return A carta de condução.
      */
     public String getCartaCond() {
         return cartaCond;
     }
 
     /**
-     * Define um Novo valor para a Carta de Condução.
-     * @param cartaCond Atribui a Nova Carta de Condução.
+     * Define um novo valor para a carta de condução.
+     *
+     * @param cartaCond A nova carta de condução a atribuir.
      */
     public void setCartaCond(String cartaCond) {
         this.cartaCond = cartaCond;
     }
 
     /**
-     * Obtém o Número da Segurança Social.
-     * @return Retorna o Número da Segurança Social.
+     * Obtém o número da Segurança Social.
+     *
+     * @return O número da Segurança Social.
      */
     public int getSegSocial() {
         return segSocial;
     }
 
     /**
-     * Define um Novo Número da Segurança Social.
-      * @param segSocial Atribui o Novo Número da Segurança Social.
+     * Define um novo número de Segurança Social.
+     *
+     * @param segSocial O novo número de Segurança Social.
      */
     public void setSegSocial(int segSocial) {
         this.segSocial = segSocial;
     }
 
     /**
-     * Devolve a Representação em Texto do Entidades.Condutor
-     * Junta os dados de PEssoa com os dados especifícos do condutor.
-     * @return String com os Dados do Entidades.Condutor.
+     * Devolve a representação em texto do Condutor.
+     * Junta os dados da classe {@link Pessoa} com os dados específicos do condutor.
+     *
+     * @return Uma String formatada com os dados do Condutor.
      */
     @Override
     public String toString() {
         return "[" + super.toString() + " | Carta: " +cartaCond + " | SegSocial: " + segSocial + "]";
     }
 }
-
-

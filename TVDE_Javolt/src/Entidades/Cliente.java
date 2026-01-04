@@ -1,41 +1,50 @@
 package Entidades;
 
 /**
- * Representa um Entidades.Cliente de uma Gestao.Empresa TVDE
- * Herda de Entidades.Pessoa
+ * Representa um Cliente da empresa TVDE.
+ * <p>
+ * Esta classe herda de {@link Pessoa} e representa os utilizadores
+ * que utilizam os serviços de transporte da empresa.
+ * </p>
+ *
  * @author Levi e Sara
- * @version 2
- * @since 2025-12-12
+ * @version 1.0
+ * @since 2026-01-01
  */
 public class Cliente extends Pessoa {
 
     /**
-     * Construtor Entidades.Cliente Vazio.
+     * Construtor vazio.
+     * <p>
+     * Permite instanciar um Cliente sem definir dados iniciais,
+     * sendo necessário preenchê-los posteriormente via métodos <i>set</i>.
+     * </p>
      */
     public Cliente() {
     }
 
     /**
-     * Constrói um Novo Entidades.Cliente com os Dados Fornecidos.
-     * Invoca o Construtor da Supercclasse (Entidades.Pessoa).
+     * Constrói um novo Cliente com todos os dados fornecidos.
+     * Invoca o construtor da superclasse {@link Pessoa}.
      *
-     * @param nome      Nome do Entidades.Cliente.
-     * @param nif       Número de Identificação Fiscal.
-     * @param tel       Número de Telemóvel.
-     * @param morada    Morada Completa.
-     * @param cartaoCid Número do Cartão do Cidadão.
+     * @param nome      O nome completo do Cliente.
+     * @param nif       O Número de Identificação Fiscal (NIF).
+     * @param tel       O número de telemóvel de contacto.
+     * @param morada    A morada completa do Cliente.
+     * @param cartaoCid O número do Cartão de Cidadão.
      */
     public Cliente(String nome, int nif, int tel, String morada, int cartaoCid) {
         super(nome, nif, tel, morada, cartaoCid);
     }
 
     /**
-     * Devolve a Representação em Texto do Entidades.Cliente.
-     * Inclui a etiqueta "Entidades.Cliente" e os dados herdados de Entidades.Pessoa.
-     * @return String Formatada com os dados do cliente.
+     * Devolve a representação textual do Cliente.
+     * Adiciona o número do Cartão de Cidadão aos dados base herdados de Pessoa.
+     *
+     * @return Uma String formatada contendo os dados do cliente.
      */
     @Override
     public String toString() {
-        return "[" + super.toString() + "]";
+        return "[" + super.toString() + " | CC: " + getCartaoCid() + "]";
     }
 }
