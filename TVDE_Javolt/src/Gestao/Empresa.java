@@ -67,7 +67,7 @@ public class Empresa {
         this.clientes = new ArrayList<>();
         this.viagens = new ArrayList<>();
         this.reservas = new ArrayList<>();
-        this.nomePasta = "Logs_" + nomeEmpresa;
+        this.nomePasta = "Empresas/Logs_" + nomeEmpresa;
     }
 
     // ==========================================================
@@ -747,18 +747,25 @@ public class Empresa {
      * </p>
      */
     public void gravarDados() {
-        //1. Verifica a existência da pasta para guardar os dados, senão, cria-a.
-        File pasta = new File(nomePasta);
-        if (!pasta.exists()) {
-            pasta.mkdir(); //Cria a diretoria/pasta
+        //1. Criar a pasta principal "Empresas" se não existir
+        File pastaPrincipal = new File("Empresa");
+        if (!pastaPrincipal.exists()) {
+            pastaPrincipal.mkdir(); //Cria a diretoria/pasta
         }
+
+        //2. Cria a subpasta da empresa
+        File pastaEmpresa = new File(nomePasta);
+        if (!pastaEmpresa.exists()) {
+            pastaEmpresa.mkdir();
+        }
+
         try {
             gravarViaturas();
             gravarClientes();
             gravarCondutores();
             gravarViagens();
             gravarReservas();
-            System.out.println("Dados guardados com sucesso em " +nomePasta);
+            System.out.println("Dados guardados com sucesso em " + nomePasta);
         } catch (IOException e) {
             System.out.println("Erro crítico ao gravar ficheiros: " + e.getMessage());
         }

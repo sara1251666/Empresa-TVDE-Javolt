@@ -66,12 +66,12 @@ public class Menu {
             nomeEmpresaSelecionada = lerTexto("Introduza o nome: ");
         } else {
             //Caso 2: Existem empresas, permite escolher ou criar uma nova.
-            System.out.println("\n|----------------------------------|");
-            System.out.println("|        SELEÇÃO DE EMPRESA        |");
-            System.out.println("|----------------------------------|");
-            System.out.println("| 1 - Criar Nova Empresa           |");
-            System.out.println("| 2 - Carregar Empresa Existente   |");
-            System.out.println("|----------------------------------|");
+            System.out.println("\n|-------------------------------------------|");
+            System.out.println("|             SELEÇÃO DE EMPRESA            |");
+            System.out.println("|-------------------------------------------|");
+            System.out.println("| 1 - Criar Nova Empresa                    |");
+            System.out.println("| 2 - Carregar Empresa Existente (Listar)   |");
+            System.out.println("|-------------------------------------------|");
             int opcao = lerInteiro("Escolha uma opção: ");
 
             if (opcao == 2) {
@@ -106,21 +106,35 @@ public class Menu {
         System.out.println("Bem vindo à gestão da empresa: " + nomeEmpresaSelecionada.toUpperCase());
 
         // 3. Verificar se já existem dados antes de perguntar
-        File pastaEmpresa = new File("Logs_" + nomeEmpresaSelecionada);
+        File pastaEmpresa = new File("Empresas/Logs_" + nomeEmpresaSelecionada);
 
         //A lógica por trás: "A pasta existe?"/"É mesmo uma pasta?"/"Tem ficheiros lá dentro?"
-        boolean temDados = pastaEmpresa.exists() && pastaEmpresa.isDirectory() &&
-                pastaEmpresa.list() != null && pastaEmpresa.list().length > 0;
+        boolean temDados = pastaEmpresa.exists() &&
+                pastaEmpresa.isDirectory() &&
+                pastaEmpresa.list() != null &&
+                pastaEmpresa.list().length > 0;
+
         if (temDados) {
             //Caso A: A pasta existe e não está vazia -> pergunta se quer carregar
             System.out.println(">> ATENÇÃO: Foram encontrados registos anteriores desta empresa!");
             String respostaCarregar = lerTexto("Deseja carregar os dados guardados? (S/N): ");
+
             if (respostaCarregar.equalsIgnoreCase("S")) {
                 System.out.println("A carregar dados...");
                 empresa.carregarDados();
             } else {
-                System.out.println("!!! AVISO: Optou por iniciar com a base de dados LIMPA. !!!");
-                System.out.println("Se gravar no final, os dados antigos serão sobrescritos.");
+                System.out.println("\n!!! PERIGO: DETETADA POSSÍVEL PERDA DE DADOS !!!");
+                System.out.println("Se iniciar com a base de dados vazia e gravar no final,");
+                System.out.println("o histórico anterior será APAGADO PERMANENTEMENTE.");
+
+                String confirmacao = lerTexto("Tem a certeza que deseja continuar com a base de dados VAZIA? (S/N): ");
+
+                if (confirmacao.equalsIgnoreCase("S")) {
+                    System.out.println(">> A iniciar sistema limpo...");
+                } else {
+                    System.out.println(">> Operação cancelada. A carregar dados por segurança...");
+                    empresa.carregarDados();
+                }
             }
         } else {
             //Caso B: PAsta não existe ou está vazia -> Pergunta se quer dados de teste
@@ -156,22 +170,30 @@ public class Menu {
     }
 
     /**
-     * Procura na diretoria do projeto por pastas que comecem por "Logs_".
+     * Pesquisa e lista os nomes das empresas cujos dados já existem guardados no sistema.
+     * <p>
+     * O método procura especificamente dentro da diretoria "Empresas".
+     * Identifica subpastas que comecem pelo prefixo "Logs_" e extrai o nome real da empresa
+     * (removendo o prefixo) para apresentar ao utilizador.
+     * </p>
      *
-     * @return Uma lista com os nomes das empresas encontradas (sem o prefixo "Logs_").
+     * @return Uma lista (ArrayList) contendo os nomes das empresas encontradas.
      */
     private static ArrayList<String> listarEmpresasDetetadas() {
         ArrayList<String> nomesEmpresas = new ArrayList<>();
-        File pastaAtual = new File("."); // "." Representa a pasta atual do projeto.
-        File[] ficheiros = pastaAtual.listFiles();
+        File pastaPrincipal = new File("Empresas");
 
-        if (ficheiros != null) {
-            for (File ficheiro : ficheiros) {
-                //Verifica se é uma pasta e se começa por "Logs_"
-                if (ficheiro.isDirectory() && ficheiro.getName().startsWith("Logs_")) {
-                    //Extrai o nome real (remove "Logs_")
-                    String nomeReal = ficheiro.getName().substring(5); // 5 é o tamanho de "Logs_".
-                    nomesEmpresas.add(nomeReal);
+        if (pastaPrincipal.exists() && pastaPrincipal.isDirectory()) {
+            File[] ficheiros = pastaPrincipal.listFiles();
+
+            if (ficheiros != null) {
+                for (File ficheiro : ficheiros) {
+                    //Verifica se é uma pasta e se começa por "Logs_"
+                    if (ficheiro.isDirectory() && ficheiro.getName().startsWith("Logs_")) {
+                        //Extrai o nome real (remove "Logs_")
+                        String nomeReal = ficheiro.getName().substring(5); // 5 é o tamanho de "Logs_".
+                        nomesEmpresas.add(nomeReal);
+                    }
                 }
             }
         }
@@ -191,7 +213,7 @@ public class Menu {
             System.out.println("| 1 - Gerir Viaturas             |");
             System.out.println("| 2 - Gerir Condutores           |");
             System.out.println("| 3 - Gerir Clientes             |");
-            System.out.println("| 4 - Gerir Viagens (Histórico)  |");
+            System.out.println("| 4 - Gerir Viagens              |");
             System.out.println("| 5 - Gerir Reservas             |");
             System.out.println("| 6 - Relatórios/Estatísticas    |");
             System.out.println("| 0 - Sair                       |");
@@ -579,15 +601,30 @@ public class Menu {
     }
 
     /**
-     * Recolhe dados para criar uma nova {@link Reserva} e adiciona-a ao sistema.
+     * Recolhe os dados necessários para criar e registar uma nova {@link Reserva}.
+     * <p>
+     * Implementa uma lógica de seleção inteligente para evitar sobreposições:
+     * 1. Solicita a data e hora em primeiro lugar.
+     * 2. Calcula uma janela de tempo virtual (1 hora) para verificar a disponibilidade.
+     * 3. Apresenta apenas os clientes que estão livres nesse horário.
+     * </p>
      */
     private static void tratarCriarReserva() {
         System.out.println("--- Nova Reserva ---");
-        int nifCliente = lerInteiro("NIF Cliente: ");
-        Cliente cliente = empresa.procurarCliente(nifCliente);
+
+        //1. Pedir a data primeiro (Fator crítico de disponibilidade)
+        LocalDateTime inicio = lerData("Data/Hora da Reserva (dd-MM-yyyy HH:mm): ");
+
+        // Nota Técnica: Como a Reserva não tem "Fim" definido, assumimos uma
+        // duração virtual de 1 hora apenas para verificar se o cliente
+        // não está ocupado nesse momento exato.
+        LocalDateTime fimEstimado = inicio.plusHours(1);
+
+        //2. Usar o metodo virtual para verificar disponibilidade
+        Cliente cliente = selecionarClienteDisponivel(inicio, fimEstimado);
 
         if (cliente != null) {
-            LocalDateTime inicio = lerData("Data/Hora Reserva (dd-MM-yyyy HH:mm): ");
+            //3. Se escolheu um cliente válido, segue...
             String origem = lerTexto("Origem: ");
             String destino = lerTexto("Destino: ");
             double kms = lerDouble("Kms estimados: ");
@@ -595,8 +632,6 @@ public class Menu {
             Reserva reserva = new Reserva(cliente, inicio, origem, destino, kms);
             empresa.adicionarReserva(reserva);
             System.out.println("Reserva registada com sucesso!");
-        } else {
-            System.out.println("Cliente não encontrado");
         }
     }
 
@@ -826,9 +861,25 @@ public class Menu {
 
     /**
      * Calcula e apresenta a faturação de um condutor num intervalo de datas.
+     * Pergunta se o utilizador quer ver a lista antes de pedir o NIF.
      */
     private static void tratarFaturacaoCondutor() {
-        int nif = lerInteiro("NIF do Condutor: ");
+        String verLista = lerTexto("Deseja ver a lista de condutores? (S/N): ");
+
+        if (verLista.equalsIgnoreCase("S")) {
+            ArrayList<Condutor> condutores = empresa.getCondutores();
+            if (condutores.isEmpty()) {
+                System.out.println(">> Não existem condutores registados.");
+                return;
+            }
+            System.out.println("--- Condutores Registados ---");
+            for (Condutor condutor : condutores) {
+                System.out.println("- " + condutor.getNome() + " | NIF: " + condutor.getNif());
+            }
+            System.out.println("-----------------------------");
+        }
+
+        int nif = lerInteiro("NIF do Condutor a consultar: ");
         Condutor condutor = empresa.procurarCondutor(nif);
         if (condutor != null) {
             LocalDateTime inicio = lerData("Data inicio (dd-MM-yyyy HH:mm): ");
@@ -843,8 +894,24 @@ public class Menu {
 
     /**
      * Lista os clientes distintos que viajaram numa determinada viatura.
+     * Pergunta se o utilizador quer ver a lista de matrículas.
      */
     private static void tratarClientesViatura() {
+        String verLista = lerTexto("Deseja ver a lista de Viaturas? (S/N): ");
+
+        if (verLista.equalsIgnoreCase("S")) {
+            ArrayList<Viatura> lista = empresa.getViaturas();
+            if (lista.isEmpty()) {
+                System.out.println(">> Não existem viaturas registadas.");
+                return;
+            }
+            System.out.println("--- Viaturas Registadas ---");
+            for (Viatura viatura : lista) {
+                System.out.println("- " + viatura.getMarca() + " " + viatura.getModelo() + " | Matrícula: " + viatura.getMatricula());
+            }
+            System.out.println("---------------------------");
+        }
+
         String matricula = lerTexto("Matricula da Viatura: ");
         Viatura viatura = empresa.procurarViatura(matricula);
 
@@ -905,8 +972,24 @@ public class Menu {
 
     /**
      * Apresenta o histórico de viagens de um cliente filtrado por datas.
+     * Pergunta se o utilizador quer ver a lista de clientes.
      */
     private static void tratarHistoricoClientePorDatas() {
+        String verLista = lerTexto("Deseja ver a lista de Clientes? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            ArrayList<Cliente> lista = empresa.getClientes();
+
+            if (lista.isEmpty()) {
+                System.out.println(">> Não existem clientes registados.");
+                return;
+            }
+            System.out.println("--- Clientes Registados ---");
+            for (Cliente cliente : lista) {
+                System.out.println("- " + cliente.getNome() + " | NIF: " + cliente.getNif());
+            }
+            System.out.println("---------------------------");
+        }
+
         int nif = lerInteiro("NIF do Cliente: ");
         Cliente cliente = empresa.procurarCliente(nif);
 
@@ -924,7 +1007,7 @@ public class Menu {
                 }
             }
         } else {
-            System.out.println("Nenhum cliente encontrado.");
+            System.out.println("Erro: Nenhum cliente encontrado com esse NIF.");
         }
     }
 
