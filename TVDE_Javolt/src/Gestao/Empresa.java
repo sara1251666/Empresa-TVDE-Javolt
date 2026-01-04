@@ -15,10 +15,10 @@ import java.time.format.DateTimeFormatter;
  * Responsável por armazenar em memória (ArrayLists) todas as entidades
  * (Viaturas, Condutores, Clientes, Viagens e Reservas) e executar
  * a lógica de negócio principal, incluindo validações de integridade
- * referencial (não apagar entidades com dependências).
+ * referencial e persistência de dados em ficheiros.
  * </p>
  *
- * @author LEvi
+ * @author Levi e Sara
  * @version 1.0
  * @since 2026-01-01
  */
@@ -38,6 +38,11 @@ public class Empresa {
 
     /** Lista de reservas futuras efetuadas por clientes. */
     private ArrayList<Reserva> reservas;
+
+    /**
+     * Nome da Pasta onde os ficheiros serão guardados.
+     */
+    private static final String NOME_PASTA = "Logs";
 
     /**
      * Construtor da classe Empresa.
@@ -76,7 +81,6 @@ public class Empresa {
      *
      * @return ArrayList contendo todas as viaturas registadas.
      */
-
     public ArrayList<Viatura> getViaturas() {
         return viaturas;
     }
@@ -87,7 +91,6 @@ public class Empresa {
      * @param matricula A matrícula da viatura a pesquisar (ex: "AA-00-BB").
      * @return O objeto {@link Viatura} se encontrado, ou {@code null} caso contrário.
      */
-
     public Viatura procurarViatura(String matricula) {
         for (Viatura v : viaturas) {
             if (v.getMatricula().equalsIgnoreCase(matricula)) {
@@ -105,7 +108,6 @@ public class Empresa {
      * @return {@code true} se removido com sucesso;
      * {@code false} se a viatura não existir ou tiver viagens associadas.
      */
-
     public boolean removerViatura(String matricula) {
         Viatura v = procurarViatura(matricula);
         if (v != null) {
@@ -134,7 +136,6 @@ public class Empresa {
      * @param c O objeto Cliente a adicionar.
      * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
      */
-
     public boolean adicionarCliente(Cliente c) {
         // 1. Procura se já existe alguém com este NIF na lista
         if (procurarCliente(c.getNif()) == null) {
@@ -151,7 +152,6 @@ public class Empresa {
      *
      * @return ArrayList contendo todos os clientes.
      */
-
     public ArrayList<Cliente> getClientes() {
         return clientes;
     }
@@ -162,7 +162,6 @@ public class Empresa {
      * @param nif O Número de Identificação Fiscal do cliente.
      * @return O objeto {@link Cliente} se encontrado, ou {@code null} caso contrário.
      */
-
     public Cliente procurarCliente(int nif) {
         for (Cliente c : clientes) {
             if (c.getNif() == nif) {
@@ -180,7 +179,6 @@ public class Empresa {
      * @return {@code true} se removido com sucesso;
      * {@code false} se tiver dependências ou não existir.
      */
-
     public boolean removerCliente(int nif) {
         Cliente c = procurarCliente(nif);
         if (c != null) {
@@ -210,11 +208,11 @@ public class Empresa {
 
     /**
      * Adiciona um novo condutor ao sistema.
+     * Verifica se o NIF já existe para evitar duplicados.
      *
      * @param c O objeto Condutor a adicionar.
      * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
      */
-
     public boolean adicionarCondutor(Condutor c) {
         if (procurarCondutor(c.getNif()) == null) {
             condutores.add(c);
@@ -228,7 +226,6 @@ public class Empresa {
      *
      * @return ArrayList de condutores.
      */
-
     public ArrayList<Condutor> getCondutores() {
         return condutores;
     }
@@ -237,9 +234,8 @@ public class Empresa {
      * Procura um condutor pelo NIF.
      *
      * @param nif O NIF do condutor.
-     * @return O objeto Condutor ou null.
+     * @return O objeto {@link Condutor} se encontrado, ou {@code null} caso contrário.
      */
-
     public Condutor procurarCondutor(int nif) {
         for (Condutor c : condutores) {
             if (c.getNif() == nif) {
@@ -253,9 +249,8 @@ public class Empresa {
      * Remove um condutor do sistema se este não tiver viagens realizadas.
      *
      * @param nif O NIF do condutor a remover.
-     * @return {@code true} se removido, {@code false} caso contrário.
+     * @return {@code true} se removido com sucesso; {@code false} caso contrário.
      */
-
     public boolean removerCondutor(int nif) {
         Condutor c = procurarCondutor(nif);
         if (c != null) {
@@ -276,30 +271,37 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Verifica se existe sobreposição de horários para a Viatura e Condutor.
-     * Regra: (InicioA < FimB) e (FimA > InicioB).
-     * @param v A Viatura da nova viagem.
-     * @param c O condutor da nova viagem.
-     * @param inicio Inicio Data/Hora de Inicio.
-     * @param fim Fim Data/Hora de fim.
-     * @return Se true (verdadeiro) Está Ocupado / Se False (Falso) Está livre.
+     * Verifica se existe sobreposição de horários para a Viatura ou Condutor.
+     * <p>
+     * A sobreposição é detetada se o intervalo de tempo da nova viagem colidir
+     * com qualquer viagem já existente para o mesmo carro ou motorista.
+     * </p>
+     *
+     * @param v      A Viatura da nova viagem.
+     * @param c      O condutor da nova viagem.
+     * @param inicio Data/Hora de Início.
+     * @param fim    Data/Hora de Fim.
+     * @return {@code true} se houver sobreposição (ocupado); {@code false} se estiver livre.
      */
     public boolean verificarSobreposicao(Viatura v, Condutor c, LocalDateTime inicio, LocalDateTime fim) {
         for(Viagem viagemExistente : viagens) {
-            boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equals(v.getMatricula());
+            boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equalsIgnoreCase(v.getMatricula());
             boolean mesmoCondutor = viagemExistente.getCondutor().getNif() == c.getNif();
 
             if (mesmaViatura || mesmoCondutor) {
-                if (inicio.isBefore(viagemExistente.getDataHoraFim()) && fim.isAfter(viagemExistente.getDataHoraInicio())) {}
-                return true;
+                if (inicio.isBefore(viagemExistente.getDataHoraFim()) && fim.isAfter(viagemExistente.getDataHoraInicio())) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     /**
-     * Regista uma nova viagem realizada.
+     * Regista uma nova viagem realizada no sistema.
+     *
      * @param v A viagem a adicionar ao histórico.
+     * @return {@code true} se adicionada com sucesso; {@code false} se houver sobreposição de horários.
      */
     public boolean adicionarViagem(Viagem v) {
         if (verificarSobreposicao(v.getViatura(), v.getCondutor(), v.getDataHoraInicio(), v.getDataHoraFim())) {
@@ -313,6 +315,7 @@ public class Empresa {
 
     /**
      * Obtém o histórico completo de viagens.
+     *
      * @return ArrayList de viagens.
      */
     public ArrayList<Viagem> getViagens() {
@@ -321,6 +324,7 @@ public class Empresa {
 
     /**
      * Regista uma nova reserva no sistema.
+     *
      * @param r A reserva a adicionar.
      */
     public void adicionarReserva(Reserva r) {
@@ -328,16 +332,27 @@ public class Empresa {
     }
 
     /**
-     * Obtém a lista de reservas ativas.
+     * Obtém a lista de reservas ativas (pendentes).
+     *
      * @return ArrayList de reservas.
      */
-
     public ArrayList<Reserva> getReservas() {
         return reservas;
     }
 
-    //Metodo auxiliar para converter Reserva em viagem  ----  falta testar
-
+    /**
+     * Tenta converter uma reserva existente numa viagem efetiva.
+     * <p>
+     * Cria uma viagem com os dados da reserva e tenta adicioná-la ao sistema.
+     * Se não houver sobreposição, a reserva é removida da lista de pendentes.
+     * </p>
+     *
+     * @param r        A reserva a converter.
+     * @param condutor O condutor atribuído.
+     * @param viatura  A viatura atribuída.
+     * @param custo    O custo final da viagem.
+     * @return {@code true} se convertida com sucesso; {@code false} caso contrário.
+     */
     public boolean converterReservaEmViagem(Reserva r, Condutor condutor, Viatura viatura, double custo) {
         if (reservas.contains(r)) {
             // Cria a viagem temporária com os dados da reserva.
@@ -346,34 +361,60 @@ public class Empresa {
                     r.getCliente(),
                     viatura,
                     r.getDataHoraInicio(),
-                    r.getDataHoraInicio().plusMinutes(30), // Exemplo: duração estimada
+                    r.getDataHoraInicio().plusMinutes(30),
                     r.getMoradaOrigem(),
                     r.getMoradaDestino(),
                     r.getKms(),
                     custo
             );
-
-            if (adicionarViagem(novaViagem));
-            {
+            boolean adicionou = adicionarViagem(novaViagem);
+            if (adicionou) {
                 reservas.remove(r); // Remove a reserva pois já foi efetuada
                 return true;
+            }else {
+                return false;
             }
         }
         return false; //Devolve false se houver sobreposicção ou se a reserva não existir
+    }
+
+    /**
+     * Remove uma reserva específica da lista de reservas.
+     *
+     * @param r A reserva a remover.
+     * @return {@code true} se foi removida com sucesso.
+     */
+    public boolean removerReserva(Reserva r) {
+        return reservas.remove(r);
+    }
+
+    /**
+     * Remove uma viagem específica do histórico.
+     *
+     * @param v A viagem a remover.
+     * @return {@code true} se foi removida com sucesso.
+     */
+    public boolean removerViagens(Viagem v) {
+        return viagens.remove(v);
     }
 
     // ==========================================================
     //                 RELATÓRIOS E ESTATÍSTICAS
     // ==========================================================
 
+    /**
+     * Calcula o total faturado por um condutor num intervalo de tempo.
+     *
+     * @param nifCondutor O NIF do condutor.
+     * @param inicio      Data de início do intervalo.
+     * @param fim         Data de fim do intervalo.
+     * @return O valor total faturado (em euros).
+     */
     public double calcularFaturacaoCondutor(int nifCondutor, LocalDateTime inicio, LocalDateTime fim) {
         double total = 0.0;
         for (Viagem v : viagens) {
             if (v.getCondutor().getNif() == nifCondutor) {
-                boolean depoisInicio = v.getDataHoraInicio().isAfter(inicio) || v.getDataHoraInicio().equals(inicio);
-                boolean antesFim = v.getDataHoraInicio().isAfter(fim) || v.getDataHoraInicio().equals(fim);
-
-                if (depoisInicio && antesFim) {
+                if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
                     total += v.getCusto();
                 }
             }
@@ -381,6 +422,12 @@ public class Empresa {
         return total;
     }
 
+    /**
+     * Obtém a lista de clientes distintos que viajaram numa determinada viatura.
+     *
+     * @param matricula A matrícula da viatura.
+     * @return Lista de clientes únicos.
+     */
     public ArrayList<Cliente> getClientesPorViatura(String matricula) {
         ArrayList<Cliente> clientesViatura = new ArrayList<>();
 
@@ -403,6 +450,13 @@ public class Empresa {
         return clientesViatura;
     }
 
+    /**
+     * Método auxiliar para contabilizar a frequência de um destino na lista de estatísticas.
+     *
+     * @param destino      O nome do destino.
+     * @param nomesDestino Lista com os nomes dos destinos já encontrados.
+     * @param contagens    Lista com as contagens correspondentes.
+     */
     private void contabilizarDestino(String destino, ArrayList<String> nomesDestino, ArrayList<Integer> contagens) {
         int index = -1;
 
@@ -427,12 +481,11 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Calcula a media de quilómetros das viagens realizadas num determinado intervaki de tempo.
-     * Requisito: Apresentar a distância media (em kms).
+     * Calcula a média de quilómetros das viagens realizadas num determinado intervalo de tempo.
+     *
      * @param inicio Data e hora de inicio do intervalo.
-     * @param fim Data e hora de fim do intervalo.
-     * @return Retorna o valor médio da distância em Kms
-     * ou 0.0 se não existirem viagens realizadas num intervalo de datas.
+     * @param fim    Data e hora de fim do intervalo.
+     * @return O valor médio da distância em Kms, ou 0.0 se não existirem viagens.
      */
     public double calcularDistanciaMedia(LocalDateTime inicio, LocalDateTime fim) {
         double totalKms = 0;
@@ -440,7 +493,7 @@ public class Empresa {
 
         for (Viagem v : viagens) {
             if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
-                totalKms += v.getCusto();
+                totalKms += v.getKms();
                 contador++;
             }
         }
@@ -453,10 +506,10 @@ public class Empresa {
     /**
      * Obtém uma lista de clientes que realizaram viagens cuja distância se encontra dentro de um intervalo.
      * Garante que não existem clientes duplicados na lista devolvida.
-     * Requisito: Apresentar uma lista dos clientes com viagens cuja distância se encontra dentro de um intervalo.
-     * @param minKms Distância minima (limite inferior).
+     *
+     * @param minKms Distância mínima (limite inferior).
      * @param maxKms Distância máxima (limite superior).
-     * @return Retorna a lista de clientes únicos que cumprem o critério.
+     * @return Lista de clientes únicos que cumprem o critério.
      */
     public ArrayList<Cliente> getClientesPorIntervaloKms(double minKms, double maxKms) {
         ArrayList<Cliente> resultado = new ArrayList<>();
@@ -483,10 +536,10 @@ public class Empresa {
 
     /**
      * Pesquisa o histórico de viagens de um cliente específico dentro de um intervalo de datas.
-     * Requisito: Pesquisar as viagens de cliente num intervalo de datas indicado pelo utilizador.
-     * @param nifCliente Nif do Cliente a pesquisar.
-     * @param inicio Data de inicio.
-     * @param fim Data de fim.
+     *
+     * @param nifCliente NIF do Cliente a pesquisar.
+     * @param inicio     Data de inicio.
+     * @param fim        Data de fim.
      * @return Lista de Viagens encontradas.
      */
     public ArrayList<Viagem> getViagensClientePorDatas(int nifCliente, LocalDateTime inicio, LocalDateTime fim) {
@@ -504,8 +557,8 @@ public class Empresa {
 
     /**
      * Obtém a lista de todas as reservas pendentes associadas a um determinado cliente.
-     * Requisito: Consultar lista de reservas de um cliente.
-     * @param nifCliente Nif do Cliente.
+     *
+     * @param nifCliente NIF do Cliente.
      * @return Lista contendo as reservas desse cliente.
      */
     public ArrayList<Reserva> getReservasDoCliente(int nifCliente){
@@ -519,12 +572,12 @@ public class Empresa {
     }
 
     /**
-     * Determina o destino mais solicitado considerando tamto o histórico de Viagems como as Reservas pendentes.
+     * Determina o destino mais solicitado considerando tanto o histórico de Viagens como as Reservas pendentes.
      * A contagem é efetuada apenas dentro do intervalo de datas especificado.
-     * Requisito: Apresentar o destino mais solicitado (reservas e viagens) durante um intervalo de datas.
+     *
      * @param inicio Data e hora de ínicio do intervalo.
-     * @param fim Data e hora de fim do intervalo.
-     * @return Retorna uma lista com o nome do destino e o número de ocorrências, ou uma mensagem se não houver dados.
+     * @param fim    Data e hora de fim do intervalo.
+     * @return Uma string com o nome do destino e o número de ocorrências.
      */
     public String getDestinoMaisSolicitado(LocalDateTime inicio, LocalDateTime fim) {
         ArrayList<String> destinos = new ArrayList<>();
@@ -561,10 +614,11 @@ public class Empresa {
     }
 
     /**
-     * Metodo auxiliar privado para verificar se uma data se encontra dentro de um intervalo fechado [inicio, fim].*
-     * @param data A data a veridicar.
+     * Método auxiliar privado para verificar se uma data se encontra dentro de um intervalo fechado [inicio, fim].
+     *
+     * @param data   A data a verificar.
      * @param inicio O limite inferior do intervalo.
-     * @param fim O limite superior do intervalo.
+     * @param fim    O limite superior do intervalo.
      * @return {@code true} se a data for igual ou posterior ao início e igual ou anterior ao fim.
      */
     private boolean isDentroDoPrazo (LocalDateTime data, LocalDateTime inicio, LocalDateTime fim) {
@@ -575,15 +629,13 @@ public class Empresa {
     // ==========================================================
     //                        PERSISTÊNCIA
     // ==========================================================
-    /**
-     * Nome da Pasta onde os ficheiros serão guardados.
-     */
-    private static final String NOME_PASTA = "Logs";
 
     /**
      * Coordena a gravação de toda a informação do sistema em ficheiros de texto.
-     * Este metodo deve ser chamado apenas no fecho da aplicação para garantir
-     * que os dados (Viaturas, Cleintes, Condutores e Viagens) não são perdidos.
+     * <p>
+     * Este método deve ser chamado apenas no fecho da aplicação para garantir
+     * que os dados (Viaturas, Clientes, Condutores e Viagens) não são perdidos.
+     * </p>
      */
     public void gravarDados(){
         //1. Verifica a existência da pasta para guardar os dados, senão, cria-a.
@@ -599,9 +651,7 @@ public class Empresa {
 
     /**
      * Coordena o carregamento de toda a informação dos ficheiros para a memória.
-     * Este metodo deve ser chamado no arranque da aplicação.
-     * A ordem de carregamento é importante: as Viagens são as últimas
-     * porque depende da existencia de Condutores, Clientes e Viaturas.
+     * Este método deve ser chamado no arranque da aplicação.
      */
     public void carregarDados(){
         carregarViaturas();
@@ -612,8 +662,6 @@ public class Empresa {
 
     /**
      * Escreve a lista de viaturas no ficheiro "viaturas.txt".
-     * Usa {@code Formatter} com try-with-resources para garantir o fecho do ficheiro.
-     * o formato de escrita é: matricula;marca;modelo;ano
      */
     private void gravarViaturas() {
         try (Formatter out = new Formatter(new File("Logs/viaturas.txt"))) {
@@ -627,8 +675,6 @@ public class Empresa {
 
     /**
      * Lê o ficheiro "viaturas.txt" e carrega as viaturas para o sistema.
-     * usa {@code Scanner} para ler linha a linha e {@code split} para separar os campos.
-     * Se o ficheiro não existir (primeira execução), a exceção é ignorada.
      */
     private void carregarViaturas() {
         try (Scanner ler = new Scanner(new File("Logs/viaturas.txt"))){
@@ -645,8 +691,7 @@ public class Empresa {
     }
 
     /**
-     * Escreve a lista de clientes no ficheiro "clientes.txt"
-     * O formato de escrita é: nome;nif;tel;morada;cartaoCidadao
+     * Escreve a lista de clientes no ficheiro "clientes.txt".
      */
     private void gravarClientes(){
         try (Formatter out = new Formatter(new File("Logs/clientes.txt"))){
@@ -678,7 +723,6 @@ public class Empresa {
 
     /**
      * Escreve a lista de condutores no ficheiro "condutores.txt".
-     * O formato de escrita é: nome;nif;tel;morada;cartaoCidadao;cartaConducao;segSocial
      */
     private void gravarCondutores(){
         try ( Formatter out = new Formatter(new File("Logs/condutores.txt"))){
@@ -691,7 +735,7 @@ public class Empresa {
     }
 
     /**
-     * LÊ o ficheiro "condutores.txt" e carrega os condutores para o sistema.
+     * Lê o ficheiro "condutores.txt" e carrega os condutores para o sistema.
      */
     private void carregarCondutores(){
         try (Scanner ler = new Scanner(new File("Logs/condutores.txt"))){
@@ -709,8 +753,6 @@ public class Empresa {
 
     /**
      * Escreve o histórico de viagens no ficheiro "viagens.txt".
-     * Guarda apenas os identificadores (NIFs e Matrícula) para manter a integridade referencial.
-     * Converte ps valores decimais (kms e custo) substituindo vírguklas por pontos para garantir compatibilidade.
      */
     private void gravarViagens(){
         try (Formatter out = new Formatter(new File("Logs/viagens.txt"))){
@@ -735,8 +777,6 @@ public class Empresa {
 
     /**
      * Lê o ficheiro "viagens.txt" e reconstrói o historico de viagens.
-     * Utiliza os metodos de pesquisa ({@code procurarCondutor}, {@code procurarCliente}, etc.)
-     * para associar a viagem aos objetos corretos que já estão em memória.
      */
     private void carregarViagens(){
         try (Scanner ler = new Scanner(new File("Logs/viagens.txt"))){
