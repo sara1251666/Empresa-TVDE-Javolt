@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -1129,33 +1131,100 @@ public class Menu {
         }
         return viatura;
     }
+    // =======================================================
+    //      MÉTODOS EXCLUSIVO PARA MENUS (sem confirmação)
+    // =======================================================
 
-    /**
-     * Lê uma linha de texto do utilizador.
-     *
-     * @param msg A mensagem a apresentar antes da leitura.
-     * @return A String introduzida pelo utilizador.
-     */
-    private static String lerTexto(String msg) {
-        System.out.print(msg);
-        return scanner.nextLine();
+    private static int lerOpcaoMenu(String msg) {
+        System.out.println(msg);
+        while (!scanner.hasNextInt()) {
+            System.out.println("Valor inválido. Tente novamente.");
+            scanner.next();
+            System.out.print(msg);
+        }
+
+        int valor = scanner.nextInt();
+        scanner.nextLine();
+        return valor;
+    }
+
+    // =======================================================
+    //        MÉTODOS AUXILIARES PARA INSERÇÃO DE DADOS
+    //                   (com cancelamento)
+    // =======================================================
+
+    private static boolean confirmarSaida() {
+        System.out.print(">> Deseja cancelar a operação e voltar ao menu? (S/N): ");
+        String resp = scanner.nextLine().trim();
+        return resp.equalsIgnoreCase("S");
     }
 
     /**
-     * Lê um número inteiro, garantindo que o input é válido.
+     * Lê uma linha de texto da consola, garantindo que não está vazia.
+     * <p>
+     * O método entra num ciclo até que o utilizador insira um texto válido.
+     * Se o utilizador inserir "0", é solicitada uma confirmação para cancelar a operação.
+     * </p>
      *
-     * @param msg A mensagem a apresentar.
-     * @return O número inteiro introduzido.
+     * @param msg A mensagem a apresentar ao utilizador antes da leitura.
+     * @return A String introduzida pelo utilizador (não vazia).
+     * @throws OperacaoCanceladaException Se o utilizador digitar "0" e confirmar a saída.
      */
-    private static int lerInteiro(String msg) {
-        System.out.print(msg);
-        while (!scanner.hasNextInt()) {
-            System.out.print("Valor inválido. Tente novamente: ");
-            scanner.next();
+    private static String lerTexto(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine();
+
+            //Se for 0 pergunta se quer cancelar
+            if (input.trim().equals("0")) {
+                if (confirmarSaida()) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    System.out.println("Operação retomada.");
+                    continue;
+                }
+            }
+            if (input.isEmpty()) {
+                System.out.println("Erro: O campo não pode estar vazio.");
+                continue;
+            }
+            return input;
+
         }
-        int valor = scanner.nextInt();
-        scanner.nextLine(); // Limpar buffer
-        return valor;
+    }
+
+    /**
+     * Lê um número inteiro da consola, garantindo que o input é um número válido.
+     * <p>
+     * O método protege contra erros de formato (ex: letras em vez de números).
+     * Se o utilizador inserir "0", é solicitada uma confirmação para cancelar a operação.
+     * </p>
+     *
+     * @param msg A mensagem a apresentar ao utilizador antes da leitura.
+     * @return O número inteiro introduzido.
+     * @throws OperacaoCanceladaException Se o utilizador digitar "0" e confirmar a saída.
+     */
+    private static int lerInteiro(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine();
+
+            //1. Verifica o cancelamento
+            if (input.trim().equals("0")) {
+                if (confirmarSaida()) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    continue;
+                }
+            }
+
+            //2. Tenta converter para número
+            try {
+                return Integer.parseInt(input.trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Valor inválido. Insira um número inteiro.");
+            }
+        }
     }
 
     /**
@@ -1192,6 +1261,9 @@ public class Menu {
                 System.out.println("Formato inválido! Use: dd-MM-yyyy HH:mm");
             }
         }
+    }
+
+    private static class OperacaoCanceladaException extends Exception {
     }
 
     /**
