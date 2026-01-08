@@ -1,10 +1,11 @@
 package Entidades;
 
 /**
- * Representa um Cliente da empresa TVDE.
+ * Representa um Cliente que utiliza os serviços da empresa.
  * <p>
- * Esta classe herda de {@link Pessoa} e representa os utilizadores
- * que utilizam os serviços de transporte da empresa.
+ * Herda diretamente de {@link Pessoa}. Embora atualmente não tenha atributos adicionais,
+ * a criação desta classe específica permite distinguir semanticamente um Cliente de um Condutor
+ * e facilita a expansão futura (ex: adicionar pontos de fidelidade).
  * </p>
  *
  * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
@@ -13,17 +14,7 @@ package Entidades;
  */
 public class Cliente extends Pessoa {
 
-    /**
-     * Construtor vazio.
-     * <p>
-     * Permite instanciar um Cliente sem definir dados iniciais,
-     * sendo necessário preenchê-los posteriormente via métodos <i>set</i>.
-     * </p>
-     */
-    public Cliente() {
-    }
-
-    /**
+     /**
      * Constrói um novo Cliente com todos os dados fornecidos.
      * Invoca o construtor da superclasse {@link Pessoa}.
      *
@@ -40,7 +31,6 @@ public class Cliente extends Pessoa {
     /**
      * Devolve a representação textual do Cliente.
      * Adiciona o número do Cartão de Cidadão aos dados base herdados de Pessoa.
-     *
      * @return Uma String formatada contendo os dados do cliente.
      */
     @Override
