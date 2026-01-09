@@ -5,61 +5,60 @@ import Entidades.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Formatter;
 import java.util.Scanner;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * A classe Empresa atua como o gestor central de dados do sistema TVDE.
+ * Classe central de gestão do sistema (Business Logic Layer).
  * <p>
- * Responsável por armazenar em memória (ArrayLists) todas as entidades
- * (Viaturas, Condutores, Clientes, Viagens e Reservas) e executar
- * a lógica de negócio principal, incluindo validações de integridade
- * referencial e persistência de dados em ficheiros.
- * Suporta Múltiplas empresas através da gestão de pastas de logs dinâmicas.
+ * Esta classe armazena todas as listas de dados em memória (ArrayLists) e contém
+ * a lógica para adicionar, remover e pesquisar dados, bem como as regras de negócio
+ * (ex: verificar sobreposições de horários) e a persistência em ficheiros.
  * </p>
  *
  * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
- * @since 2026-01-01
+ * @since 2026-01-08
  */
 public class Empresa {
 
     /**
      * Lista de viaturas registadas na empresa.
      */
-    private ArrayList<Viatura> viaturas;
+    private final ArrayList<Viatura> viaturas;
 
     /**
      * Lista de condutores que trabalham na empresa.
      */
-    private ArrayList<Condutor> condutores;
+    private final ArrayList<Condutor> condutores;
 
     /**
      * Lista de clientes registados na plataforma.
      */
-    private ArrayList<Cliente> clientes;
+    private final ArrayList<Cliente> clientes;
 
     /**
      * Histórico de viagens realizadas.
      */
-    private ArrayList<Viagem> viagens;
+    private final ArrayList<Viagem> viagens;
 
     /**
      * Lista de reservas futuras efetuadas por clientes.
      */
-    private ArrayList<Reserva> reservas;
+    private final ArrayList<Reserva> reservas;
 
     /**
      * O nome da pasta onde os ficheiros desta empresa específica serão guardados.
      */
-    private String nomePasta;
+    private final String nomePasta;
 
     /**
      * Construtor da classe Empresa.
      * Inicializa todas as listas (ArrayLists) vazias prontas para armazenar dados.
+     *
+     * @param nomeEmpresa O nome da empresa (usado para criar a pasta "Logs_Nome").
      */
     public Empresa(String nomeEmpresa) {
         this.viaturas = new ArrayList<>();
@@ -78,13 +77,13 @@ public class Empresa {
      * Adiciona uma nova viatura ao sistema.
      * Verifica se a matrícula já existe para evitar duplicados.
      *
-     * @param v O objeto Viatura a ser adicionado.
+     * @param viatura O objeto Viatura a ser adicionado.
      * @return {@code true} se a viatura foi adicionada com sucesso;
      * {@code false} se já existir uma viatura com a mesma matrícula.
      */
-    public boolean adicionarViatura(Viatura v) {
-        if (procurarViatura(v.getMatricula()) == null) {
-            viaturas.add(v);
+    public boolean adicionarViatura(Viatura viatura) {
+        if (procurarViatura(viatura.getMatricula()) == null) {
+            viaturas.add(viatura);
             return true;
         }
         return false; // Matrícula já existe
@@ -92,7 +91,6 @@ public class Empresa {
 
     /**
      * Obtém a lista completa de viaturas.
-     *
      * @return ArrayList contendo todas as viaturas registadas.
      */
     public ArrayList<Viatura> getViaturas() {
@@ -101,14 +99,13 @@ public class Empresa {
 
     /**
      * Procura uma viatura específica através da matrícula.
-     *
      * @param matricula A matrícula da viatura a pesquisar (ex: "AA-00-BB").
-     * @return O objeto {@link Viatura} se encontrado, ou {@code null} caso contrário.
+     * @return O objeto {@link Viatura} se encontrado, ou {@code null} se não existir.
      */
     public Viatura procurarViatura(String matricula) {
-        for (Viatura v : viaturas) {
-            if (v.getMatricula().equalsIgnoreCase(matricula)) {
-                return v;
+        for (Viatura viatura : viaturas) {
+            if (viatura.getMatricula().equalsIgnoreCase(matricula)) {
+                return viatura;
             }
         }
         return null;
@@ -123,8 +120,8 @@ public class Empresa {
      * {@code false} se a viatura não existir ou tiver viagens associadas.
      */
     public boolean removerViatura(String matricula) {
-        Viatura v = procurarViatura(matricula);
-        if (v != null) {
+        Viatura viatura = procurarViatura(matricula);
+        if (viatura != null) {
             // Verificar dependências em Viagens
             for (Viagem viagem : viagens) {
                 if (viagem.getViatura().getMatricula().equalsIgnoreCase(matricula)) {
@@ -133,7 +130,7 @@ public class Empresa {
                 }
             }
             // Se não houver dependências, remove
-            viaturas.remove(v);
+            viaturas.remove(viatura);
             return true;
         }
         return false;
@@ -147,14 +144,14 @@ public class Empresa {
      * Adiciona um novo cliente ao sistema.
      * Verifica se o NIF já existe para evitar duplicados.
      *
-     * @param c O objeto Cliente a adicionar.
+     * @param cliente O objeto Cliente a adicionar.
      * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
      */
-    public boolean adicionarCliente(Cliente c) {
+    public boolean adicionarCliente(Cliente cliente) {
         // 1. Procura se já existe alguém com este NIF na lista
-        if (procurarCliente(c.getNif()) == null) {
+        if (procurarCliente(cliente.getNif()) == null) {
             // 2. Se devolver null (não encontrou), adiciona.
-            clientes.add(c);
+            clientes.add(cliente);
             return true;
         }
         // 3. Se encontrou, devolve falso e não adiciona.
@@ -163,8 +160,7 @@ public class Empresa {
 
     /**
      * Obtém a lista completa de clientes.
-     *
-     * @return ArrayList contendo todos os clientes.
+     * @return Lista contendo todos os clientes.
      */
     public ArrayList<Cliente> getClientes() {
         return clientes;
@@ -172,14 +168,13 @@ public class Empresa {
 
     /**
      * Procura um cliente específico através do NIF.
-     *
      * @param nif O Número de Identificação Fiscal do cliente.
      * @return O objeto {@link Cliente} se encontrado, ou {@code null} caso contrário.
      */
     public Cliente procurarCliente(int nif) {
-        for (Cliente c : clientes) {
-            if (c.getNif() == nif) {
-                return c;
+        for (Cliente cliente : clientes) {
+            if (cliente.getNif() == nif) {
+                return cliente;
             }
         }
         return null;
@@ -194,8 +189,8 @@ public class Empresa {
      * {@code false} se tiver dependências ou não existir.
      */
     public boolean removerCliente(int nif) {
-        Cliente c = procurarCliente(nif);
-        if (c != null) {
+        Cliente cliente = procurarCliente(nif);
+        if (cliente != null) {
             // Verificar dependências em Viagens
             for (Viagem viagem : viagens) {
                 if (viagem.getCliente().getNif() == nif) {
@@ -210,7 +205,7 @@ public class Empresa {
                     return false;
                 }
             }
-            clientes.remove(c);
+            clientes.remove(cliente);
             return true;
         }
         return false;
@@ -224,12 +219,12 @@ public class Empresa {
      * Adiciona um novo condutor ao sistema.
      * Verifica se o NIF já existe para evitar duplicados.
      *
-     * @param c O objeto Condutor a adicionar.
+     * @param condutor O objeto Condutor a adicionar.
      * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
      */
-    public boolean adicionarCondutor(Condutor c) {
-        if (procurarCondutor(c.getNif()) == null) {
-            condutores.add(c);
+    public boolean adicionarCondutor(Condutor condutor) {
+        if (procurarCondutor(condutor.getNif()) == null) {
+            condutores.add(condutor);
             return true;
         }
         return false;
@@ -237,8 +232,7 @@ public class Empresa {
 
     /**
      * Obtém a lista completa de condutores.
-     *
-     * @return ArrayList de condutores.
+     * @return Lista de condutores.
      */
     public ArrayList<Condutor> getCondutores() {
         return condutores;
@@ -246,14 +240,13 @@ public class Empresa {
 
     /**
      * Procura um condutor pelo NIF.
-     *
      * @param nif O NIF do condutor.
      * @return O objeto {@link Condutor} se encontrado, ou {@code null} caso contrário.
      */
     public Condutor procurarCondutor(int nif) {
-        for (Condutor c : condutores) {
-            if (c.getNif() == nif) {
-                return c;
+        for (Condutor condutor : condutores) {
+            if (condutor.getNif() == nif) {
+                return condutor;
             }
         }
         return null;
@@ -261,20 +254,19 @@ public class Empresa {
 
     /**
      * Remove um condutor do sistema se este não tiver viagens realizadas.
-     *
      * @param nif O NIF do condutor a remover.
      * @return {@code true} se removido com sucesso; {@code false} caso contrário.
      */
     public boolean removerCondutor(int nif) {
-        Condutor c = procurarCondutor(nif);
-        if (c != null) {
+        Condutor condutor = procurarCondutor(nif);
+        if (condutor != null) {
             for (Viagem viagem : viagens) {
                 if (viagem.getCondutor().getNif() == nif) {
                     System.out.println("Erro: Condutor possui histórico de viagens.");
                     return false;
                 }
             }
-            condutores.remove(c);
+            condutores.remove(condutor);
             return true;
         }
         return false;
@@ -385,16 +377,16 @@ public class Empresa {
      * com qualquer viagem já existente para o mesmo carro ou motorista.
      * </p>
      *
-     * @param v      A Viatura da nova viagem.
-     * @param c      O condutor da nova viagem.
-     * @param inicio Data/Hora de Início.
-     * @param fim    Data/Hora de Fim.
+     * @param viatura  A Viatura da nova viagem.
+     * @param condutor O condutor da nova viagem.
+     * @param inicio   Data/Hora de Início.
+     * @param fim      Data/Hora de Fim.
      * @return {@code true} se houver sobreposição (ocupado); {@code false} se estiver livre.
      */
-    public boolean verificarSobreposicao(Viatura v, Condutor c, LocalDateTime inicio, LocalDateTime fim) {
+    public boolean verificarSobreposicao(Viatura viatura, Condutor condutor, LocalDateTime inicio, LocalDateTime fim) {
         for (Viagem viagemExistente : viagens) {
-            boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equalsIgnoreCase(v.getMatricula());
-            boolean mesmoCondutor = viagemExistente.getCondutor().getNif() == c.getNif();
+            boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equalsIgnoreCase(viatura.getMatricula());
+            boolean mesmoCondutor = viagemExistente.getCondutor().getNif() == condutor.getNif();
 
             if (mesmaViatura || mesmoCondutor) {
                 if (inicio.isBefore(viagemExistente.getDataHoraFim()) && fim.isAfter(viagemExistente.getDataHoraInicio())) {
@@ -406,25 +398,24 @@ public class Empresa {
     }
 
     /**
-     * Regista uma nova viagem realizada no sistema.
+     * Regista uma nova viagem realizada no sistema após verificar conflitos.
      *
-     * @param v A viagem a adicionar ao histórico.
+     * @param viagem A viagem a adicionar ao histórico.
      * @return {@code true} se adicionada com sucesso; {@code false} se houver sobreposição de horários.
      */
-    public boolean adicionarViagem(Viagem v) {
-        if (verificarSobreposicao(v.getViatura(), v.getCondutor(), v.getDataHoraInicio(), v.getDataHoraFim())) {
+    public boolean adicionarViagem(Viagem viagem) {
+        if (verificarSobreposicao(viagem.getViatura(), viagem.getCondutor(), viagem.getDataHoraInicio(), viagem.getDataHoraFim())) {
             System.out.println("Erro: Sobreposição detetada." +
                     "Viatura ou Condutor ocupados neste horário.");
             return false;
         }
-        viagens.add(v);
+        viagens.add(viagem);
         return true;
     }
 
     /**
      * Obtém o histórico completo de viagens.
-     *
-     * @return ArrayList de viagens.
+     * @return Lista de viagens.
      */
     public ArrayList<Viagem> getViagens() {
         return viagens;
@@ -432,16 +423,14 @@ public class Empresa {
 
     /**
      * Regista uma nova reserva no sistema.
-     *
-     * @param r A reserva a adicionar.
+     * @param reserva A reserva a adicionar.
      */
-    public void adicionarReserva(Reserva r) {
-        reservas.add(r);
+    public void adicionarReserva(Reserva reserva) {
+        reservas.add(reserva);
     }
 
     /**
      * Obtém a lista de reservas ativas (pendentes).
-     *
      * @return ArrayList de reservas.
      */
     public ArrayList<Reserva> getReservas() {
@@ -449,38 +438,34 @@ public class Empresa {
     }
 
     /**
-     * Tenta converter uma reserva existente numa viagem efetiva.
-     * <p>
-     * Cria uma viagem com os dados da reserva e tenta adicioná-la ao sistema.
-     * Se não houver sobreposição, a reserva é removida da lista de pendentes.
-     * </p>
+     * Converte uma Reserva em Viagem, atribuindo os recursos que faltavam.
+     * Remove a reserva da lista se a conversão for bem-sucedida.
      *
-     * @param r        A reserva a converter.
-     * @param condutor O condutor atribuído.
-     * @param viatura  A viatura atribuída.
-     * @param custo    O custo final da viagem.
-     * @return {@code true} se convertida com sucesso; {@code false} caso contrário.
+     * @param reserva  A reserva original.
+     * @param condutor O condutor selecionado.
+     * @param viatura  A viatura selecionada.
+     * @param custo    O custo final calculado.
+     * @return {@code true} se sucesso.
      */
-    public boolean converterReservaEmViagem(Reserva r, Condutor condutor, Viatura viatura, double custo) {
-        if (reservas.contains(r)) {
+    public boolean converterReservaEmViagem(Reserva reserva, Condutor condutor, Viatura viatura, double custo) {
+        if (reservas.contains(reserva)) {
             // Cria a viagem temporária com os dados da reserva.
+            // Nota: Assumimos uma duração fixa de 30 mins por defeito se não especificada
             Viagem novaViagem = new Viagem(
                     condutor,
-                    r.getCliente(),
+                    reserva.getCliente(),
                     viatura,
-                    r.getDataHoraInicio(),
-                    r.getDataHoraInicio().plusMinutes(30),
-                    r.getMoradaOrigem(),
-                    r.getMoradaDestino(),
-                    r.getKms(),
-                    custo
-            );
+                    reserva.getDataHoraInicio(),
+                    reserva.getDataHoraInicio().plusMinutes(30),
+                    reserva.getMoradaOrigem(),
+                    reserva.getMoradaDestino(),
+                    reserva.getKms(),
+                    custo );
+
             boolean adicionou = adicionarViagem(novaViagem);
             if (adicionou) {
-                reservas.remove(r); // Remove a reserva pois já foi efetuada
+                reservas.remove(reserva); // Remove a reserva pois já foi efetuada
                 return true;
-            } else {
-                return false;
             }
         }
         return false; //Devolve false se houver sobreposicção ou se a reserva não existir
@@ -489,21 +474,21 @@ public class Empresa {
     /**
      * Remove uma reserva específica da lista de reservas.
      *
-     * @param r A reserva a remover.
+     * @param reserva A reserva a remover.
      * @return {@code true} se foi removida com sucesso.
      */
-    public boolean removerReserva(Reserva r) {
-        return reservas.remove(r);
+    public boolean removerReserva(Reserva reserva) {
+        return reservas.remove(reserva);
     }
 
     /**
      * Remove uma viagem específica do histórico.
      *
-     * @param v A viagem a remover.
+     * @param viagem A viagem a remover.
      * @return {@code true} se foi removida com sucesso.
      */
-    public boolean removerViagens(Viagem v) {
-        return viagens.remove(v);
+    public boolean removerViagens(Viagem viagem) {
+        return viagens.remove(viagem);
     }
 
     // ==========================================================
@@ -511,19 +496,18 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Calcula o total faturado por um condutor num intervalo de tempo.
-     *
-     * @param nifCondutor O NIF do condutor.
-     * @param inicio      Data de início do intervalo.
-     * @param fim         Data de fim do intervalo.
-     * @return O valor total faturado (em euros).
+     * Calcula o total faturado (€) por um condutor num intervalo de tempo.
+     * @param nifCondutor NIF do condutor.
+     * @param inicio      Início do intervalo.
+     * @param fim         Fim do intervalo.
+     * @return Total faturado.
      */
     public double calcularFaturacaoCondutor(int nifCondutor, LocalDateTime inicio, LocalDateTime fim) {
         double total = 0.0;
-        for (Viagem v : viagens) {
-            if (v.getCondutor().getNif() == nifCondutor) {
-                if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
-                    total += v.getCusto();
+        for (Viagem viagem : viagens) {
+            if (viagem.getCondutor().getNif() == nifCondutor) {
+                if (isDentroDoPrazo(viagem.getDataHoraInicio(), inicio, fim)) {
+                    total += viagem.getCusto();
                 }
             }
         }
@@ -531,27 +515,26 @@ public class Empresa {
     }
 
     /**
-     * Obtém a lista de clientes distintos que viajaram numa determinada viatura.
-     *
-     * @param matricula A matrícula da viatura.
-     * @return Lista de clientes únicos.
+     * Lista clientes únicos que viajaram numa viatura.
+     * @param matricula Matrícula da viatura.
+     * @return Lista de clientes (sem duplicados).
      */
     public ArrayList<Cliente> getClientesPorViatura(String matricula) {
         ArrayList<Cliente> clientesViatura = new ArrayList<>();
 
-        for (Viagem v : viagens) {
-            if (v.getViatura().getMatricula().equalsIgnoreCase(matricula)) {
-                Cliente c = v.getCliente();
+        for (Viagem viagem : viagens) {
+            if (viagem.getViatura().getMatricula().equalsIgnoreCase(matricula)) {
+                Cliente cliente = viagem.getCliente();
 
                 boolean jaExiste = false;
                 for (Cliente existente : clientesViatura) {
-                    if (existente.getNif() == c.getNif()) {
+                    if (existente.getNif() == cliente.getNif()) {
                         jaExiste = true;
                         break;
                     }
                 }
                 if (!jaExiste) {
-                    clientesViatura.add(c);
+                    clientesViatura.add(cliente);
                 }
             }
         }
@@ -589,19 +572,18 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Calcula a média de quilómetros das viagens realizadas num determinado intervalo de tempo.
-     *
-     * @param inicio Data e hora de inicio do intervalo.
-     * @param fim    Data e hora de fim do intervalo.
-     * @return O valor médio da distância em Kms, ou 0.0 se não existirem viagens.
+     * Calcula a média de Kms das viagens num intervalo.
+     * @param inicio Início do intervalo.
+     * @param fim    Fim do intervalo.
+     * @return Média de Kms.
      */
     public double calcularDistanciaMedia(LocalDateTime inicio, LocalDateTime fim) {
         double totalKms = 0;
         int contador = 0;
 
-        for (Viagem v : viagens) {
-            if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
-                totalKms += v.getKms();
+        for (Viagem viagem : viagens) {
+            if (isDentroDoPrazo(viagem.getDataHoraInicio(), inicio, fim)) {
+                totalKms += viagem.getKms();
                 contador++;
             }
         }
@@ -622,9 +604,9 @@ public class Empresa {
     public ArrayList<Cliente> getClientesPorIntervaloKms(double minKms, double maxKms) {
         ArrayList<Cliente> resultado = new ArrayList<>();
 
-        for (Viagem v : viagens) {
-            if (v.getKms() >= minKms && v.getKms() <= maxKms) {
-                Cliente cliente = v.getCliente();
+        for (Viagem viagem : viagens) {
+            if (viagem.getKms() >= minKms && viagem.getKms() <= maxKms) {
+                Cliente cliente = viagem.getCliente();
 
                 //Verificar duplicados para não listar o mesmo cliente duas vezes.
                 boolean jaExiste = false;
@@ -653,10 +635,10 @@ public class Empresa {
     public ArrayList<Viagem> getViagensClientePorDatas(int nifCliente, LocalDateTime inicio, LocalDateTime fim) {
         ArrayList<Viagem> resultado = new ArrayList<>();
 
-        for (Viagem v : viagens) {
-            if (v.getCliente().getNif() == nifCliente) {
-                if (isDentroDoPrazo(v.getDataHoraInicio(), inicio, fim)) {
-                    resultado.add(v);
+        for (Viagem viagem : viagens) {
+            if (viagem.getCliente().getNif() == nifCliente) {
+                if (isDentroDoPrazo(viagem.getDataHoraInicio(), inicio, fim)) {
+                    resultado.add(viagem);
                 }
             }
         }
@@ -671,9 +653,9 @@ public class Empresa {
      */
     public ArrayList<Reserva> getReservasDoCliente(int nifCliente) {
         ArrayList<Reserva> resultado = new ArrayList<>();
-        for (Reserva r : reservas) {
-            if (r.getCliente().getNif() == nifCliente) {
-                resultado.add(r);
+        for (Reserva reservas : reservas) {
+            if (reservas.getCliente().getNif() == nifCliente) {
+                resultado.add(reservas);
             }
         }
         return resultado;
@@ -721,6 +703,16 @@ public class Empresa {
         return destinos.get(maxIndex) + " (" + maxValor + " vezes)";
     }
 
+    public double calcularTotalKmsCliente(int nifCliente){
+        double totalKms = 0;
+        for (Viagem viagem : viagens) {
+            if (viagem.getCliente().getNif() == nifCliente) {
+                totalKms += viagem.getKms();
+            }
+        }
+        return totalKms;
+    }
+
     /**
      * Método auxiliar privado para verificar se uma data se encontra dentro de um intervalo fechado [inicio, fim].
      *
@@ -750,13 +742,21 @@ public class Empresa {
         //1. Criar a pasta principal "Empresas" se não existir
         File pastaPrincipal = new File("Empresas");
         if (!pastaPrincipal.exists()) {
-            pastaPrincipal.mkdir(); //Cria a diretoria/pasta
+            boolean criouPrincipal = pastaPrincipal.mkdir();
+
+            if (!criouPrincipal) {
+                System.out.println("Erro fatal: Não foi possível criar a pasta 'Empresas'.");
+            }
         }
 
         //2. Cria a subpasta da empresa
         File pastaEmpresa = new File(nomePasta);
         if (!pastaEmpresa.exists()) {
-            pastaEmpresa.mkdir();
+            boolean criouEmpresa = pastaEmpresa.mkdir(); //Guardamos a resposta
+            if (!criouEmpresa) {
+                System.out.println("Erro fatal: Não foi possível criar a pasta " + nomePasta);
+                return;
+            }
         }
 
         try {

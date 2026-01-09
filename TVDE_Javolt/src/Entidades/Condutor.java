@@ -1,10 +1,10 @@
 package Entidades;
 
 /**
- * Representa um Condutor da empresa TVDE.
+ * Representa um Condutor profissional da empresa.
  * <p>
- * Esta classe herda de {@link Pessoa} e adiciona atributos específicos
- * necessários para o exercício da condução profissional.
+ * Esta classe herda de {@link Pessoa}, reaproveitando atributos comuns (nome, nif, etc.),
+ * e adiciona os requisitos legais para condução (Carta e Segurança Social).
  * </p>
  *
  * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
@@ -43,7 +43,6 @@ public class Condutor extends Pessoa {
 
     /**
      * Obtém o número da carta de condução.
-     *
      * @return A carta de condução.
      */
     public String getCartaCond() {
@@ -52,7 +51,6 @@ public class Condutor extends Pessoa {
 
     /**
      * Define um novo valor para a carta de condução.
-     *
      * @param cartaCond A nova carta de condução a atribuir.
      */
     public void setCartaCond(String cartaCond) {
@@ -61,7 +59,6 @@ public class Condutor extends Pessoa {
 
     /**
      * Obtém o número da Segurança Social.
-     *
      * @return O número da Segurança Social.
      */
     public int getSegSocial() {
@@ -70,7 +67,6 @@ public class Condutor extends Pessoa {
 
     /**
      * Define um novo número de Segurança Social.
-     *
      * @param segSocial O novo número de Segurança Social.
      */
     public void setSegSocial(int segSocial) {
@@ -80,7 +76,6 @@ public class Condutor extends Pessoa {
     /**
      * Devolve a representação em texto do Condutor.
      * Junta os dados da classe {@link Pessoa} com os dados específicos do condutor.
-     *
      * @return Uma String formatada com os dados do Condutor.
      */
     @Override

@@ -3,12 +3,13 @@ package Entidades;
 /**
  * Representa uma viatura da frota da empresa TVDE.
  * <p>
- * Guarda os dados principais que identificam e caracterizam o veículo.
+ * Esta classe armazena as características físicas do veículo e serve como
+ * objeto base para as validações de disponibilidade nas viagens.
  * </p>
  *
- * @author Grupo 1 - Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
+ * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
  * @version 1.0
- * @since 2026-01-01
+ * @since 2026-01-08
  */
 public class Viatura {
 
@@ -33,12 +34,11 @@ public class Viatura {
     private int anoFabrico;
 
     /**
-     * Constrói uma nova instância de Viatura com todos os dados obrigatórios.
-     *
-     * @param matricula  A matrícula do carro.
-     * @param marca      A marca do carro.
-     * @param modelo     O modelo do carro.
-     * @param anoFabrico O ano em que o carro foi fabricado.
+     * Constrói uma nova instância de Viatura.
+     * @param matricula  A matrícula (deve ser única no sistema).
+     * @param marca      A marca do veículo.
+     * @param modelo     O modelo do veículo.
+     * @param anoFabrico O ano de fabrico.
      */
     public Viatura(String matricula, String marca, String modelo, int anoFabrico) {
         this.matricula = matricula;
@@ -49,7 +49,6 @@ public class Viatura {
 
     /**
      * Obtém a matrícula do veículo.
-     *
      * @return A matrícula do carro.
      */
     public String getMatricula() {
@@ -58,7 +57,6 @@ public class Viatura {
 
     /**
      * Define uma nova matrícula para o veículo.
-     *
      * @param matricula A nova matrícula a atribuir.
      */
     public void setMatricula(String matricula) {
@@ -67,7 +65,6 @@ public class Viatura {
 
     /**
      * Obtém a marca do veículo.
-     *
      * @return A marca do carro.
      */
     public String getMarca() {
@@ -76,7 +73,6 @@ public class Viatura {
 
     /**
      * Define a marca do veículo.
-     *
      * @param marca A nova marca do carro.
      */
     public void setMarca(String marca) {
@@ -85,7 +81,6 @@ public class Viatura {
 
     /**
      * Obtém o modelo do veículo.
-     *
      * @return O modelo do carro.
      */
     public String getModelo() {
@@ -94,7 +89,6 @@ public class Viatura {
 
     /**
      * Define o modelo do veículo.
-     *
      * @param modelo O novo modelo do carro.
      */
     public void setModelo(String modelo) {
@@ -103,7 +97,6 @@ public class Viatura {
 
     /**
      * Obtém o ano de fabrico do veículo.
-     *
      * @return O ano de fabrico.
      */
     public int getAnoFabrico() {
@@ -112,7 +105,6 @@ public class Viatura {
 
     /**
      * Define o ano de fabrico do veículo.
-     *
      * @param anoFabrico O novo ano de fabrico.
      */
     public void setAnoFabrico(int anoFabrico) {
@@ -121,7 +113,6 @@ public class Viatura {
 
     /**
      * Devolve a representação textual da Viatura.
-     *
      * @return Uma String formatada com matrícula, marca, modelo e ano.
      */
     @Override

@@ -40,14 +40,6 @@ public class Reserva {
      */
     private double kms;
 
-    /**
-     * Construtor vazio.
-     * <p>
-     * Permite instanciar uma Reserva sem definir dados iniciais.
-     * </p>
-     */
-    public Reserva() {
-    }
 
     /**
      * Constrói uma nova Reserva com todos os dados necessários.
