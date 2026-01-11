@@ -3,11 +3,13 @@ package Entidades;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 /**
  * Representa uma intenção de viagem solicitada por um cliente.
  * <p>
  * Contém os dados do serviço solicitado (quem, quando, onde) antes de este ser efetivamente realizado
- * ou atribuído a um condutor.
+ * ou atribuído a um condutor. Uma reserva pode ser convertida numa {@link Viagem} quando
+ * são atribuídos um condutor e uma viatura.
  * </p>
  *
  * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
@@ -40,11 +42,10 @@ public class Reserva {
      */
     private double kms;
 
-
     /**
      * Constrói uma nova Reserva com todos os dados necessários.
      *
-     * @param cliente        O cliente que solicitou a reserva[cite: 98].
+     * @param cliente        O cliente que solicitou a reserva.
      * @param dataHoraInicio A data e hora pretendida para a viagem.
      * @param moradaOrigem   O local de recolha.
      * @param moradaDestino  O local de destino.
@@ -61,7 +62,7 @@ public class Reserva {
     /**
      * Obtém o cliente associado à reserva.
      *
-     * @return O objeto {@link Cliente} desta reserva[cite: 99].
+     * @return O objeto {@link Cliente} desta reserva.
      */
     public Cliente getCliente() {
         return cliente;
