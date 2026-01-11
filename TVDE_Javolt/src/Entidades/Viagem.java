@@ -84,7 +84,20 @@ public class Viagem {
      * @param kms            Distância percorrida em Kms.
      * @param custo          Valor final cobrado pela viagem (em euros).
      */
-    public Viagem(Condutor condutor, Cliente cliente, Viatura viatura, LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim, String moradaOrigem, String moradaDestino, double kms, double custo) {
+    public Viagem(Condutor condutor, Cliente cliente, Viatura viatura,
+                  LocalDateTime dataHoraInicio, LocalDateTime dataHoraFim,
+                  String moradaOrigem, String moradaDestino, double kms, double custo) {
+
+        if (condutor == null || cliente == null || viatura == null) {
+            throw new IllegalArgumentException("Condutor, Cliente e Viatura são obrigatórios");
+        }
+        if (dataHoraFim.isBefore(dataHoraInicio)) {
+            throw new IllegalArgumentException("Data de fim não pode ser anterior à data de início");
+        }
+        if (kms < 0 || custo < 0) {
+            throw new IllegalArgumentException("Kms e custo não podem ser negativos");
+        }
+
         this.condutor = condutor;
         this.cliente = cliente;
         this.viatura = viatura;
@@ -273,6 +286,7 @@ public class Viagem {
         return "[" + dataHoraInicio.format(formatter) + "] " +
                 "Condutor: " + condutor.getNome() +
                 " | Cliente: " + cliente.getNome() +
+                " | Matricula viatura: " + viatura.getMatricula() +
                 " | " + moradaOrigem + " -> " + moradaDestino +
                 " (" + kms + " km)" + " | Custo: " + custo + "€";
     }

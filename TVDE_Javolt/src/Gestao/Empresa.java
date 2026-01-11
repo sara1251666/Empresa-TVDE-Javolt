@@ -1,7 +1,6 @@
 package Gestao;
 
 import Entidades.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.io.File;
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Classe central de gestão do sistema (Business Logic Layer).
+ * Classe central de gestão do sistema (Lógica de negócio).
  * <p>
  * Esta classe armazena todas as listas de dados em memória (ArrayLists) e contém
  * a lógica para adicionar, remover e pesquisar dados, bem como as regras de negócio
@@ -26,33 +25,44 @@ public class Empresa {
 
     /**
      * Lista de viaturas registadas na empresa.
+     * Cada viatura é única e identificada pela matrícula.
      */
     private final ArrayList<Viatura> viaturas;
 
     /**
      * Lista de condutores que trabalham na empresa.
+     * Cada condutor é único e identificado pelo NIF.
      */
     private final ArrayList<Condutor> condutores;
 
     /**
      * Lista de clientes registados na plataforma.
+     * Cada cliente é único e identificado pelo NIF.
      */
     private final ArrayList<Cliente> clientes;
 
     /**
      * Histórico de viagens realizadas.
+     * Contém todas as viagens já efetuadas no sistema.
      */
     private final ArrayList<Viagem> viagens;
 
     /**
      * Lista de reservas futuras efetuadas por clientes.
+     * As reservas podem ser convertidas em viagens quando atribuídas a condutores e viaturas.
      */
     private final ArrayList<Reserva> reservas;
 
     /**
      * O nome da pasta onde os ficheiros desta empresa específica serão guardados.
+     * Formato: "Empresas/Logs_nomeEmpresa"
      */
     private final String nomePasta;
+
+    /**
+     * Limite máximo de objetos por tipo, conforme especificado no enunciado.
+     */
+    private static final int LIMITE_MAXIMO = 100;
 
     /**
      * Construtor da classe Empresa.
@@ -74,14 +84,18 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Adiciona uma nova viatura ao sistema.
+     * Adiciona uma nova viatura ao sistema, respeitando o limite máximo de 100 objetos.
      * Verifica se a matrícula já existe para evitar duplicados.
      *
      * @param viatura O objeto Viatura a ser adicionado.
      * @return {@code true} se a viatura foi adicionada com sucesso;
-     * {@code false} se já existir uma viatura com a mesma matrícula.
+     * {@code false} se já existir uma viatura com a mesma matrícula ou limite atingido.
      */
     public boolean adicionarViatura(Viatura viatura) {
+        if (viaturas.size() >= LIMITE_MAXIMO) {
+            System.out.println("ATENÇÃO: Limite máximo de " + LIMITE_MAXIMO + " viaturas atingido!");
+            return false;
+        }
         if (procurarViatura(viatura.getMatricula()) == null) {
             viaturas.add(viatura);
             return true;
@@ -91,6 +105,7 @@ public class Empresa {
 
     /**
      * Obtém a lista completa de viaturas.
+     *
      * @return ArrayList contendo todas as viaturas registadas.
      */
     public ArrayList<Viatura> getViaturas() {
@@ -99,6 +114,7 @@ public class Empresa {
 
     /**
      * Procura uma viatura específica através da matrícula.
+     *
      * @param matricula A matrícula da viatura a pesquisar (ex: "AA-00-BB").
      * @return O objeto {@link Viatura} se encontrado, ou {@code null} se não existir.
      */
@@ -141,25 +157,28 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Adiciona um novo cliente ao sistema.
+     * Adiciona um novo cliente ao sistema, respeitando um número náximo de 100 objetos.
      * Verifica se o NIF já existe para evitar duplicados.
+     *
      *
      * @param cliente O objeto Cliente a adicionar.
      * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
      */
     public boolean adicionarCliente(Cliente cliente) {
-        // 1. Procura se já existe alguém com este NIF na lista
+        if (clientes.size() >= LIMITE_MAXIMO) {
+            System.out.println("ATENÇÃO: Limite máximo de " + LIMITE_MAXIMO + " clientes atingido!");
+            return false;
+        }
         if (procurarCliente(cliente.getNif()) == null) {
-            // 2. Se devolver null (não encontrou), adiciona.
             clientes.add(cliente);
             return true;
         }
-        // 3. Se encontrou, devolve falso e não adiciona.
         return false;
     }
 
     /**
      * Obtém a lista completa de clientes.
+     *
      * @return Lista contendo todos os clientes.
      */
     public ArrayList<Cliente> getClientes() {
@@ -168,6 +187,7 @@ public class Empresa {
 
     /**
      * Procura um cliente específico através do NIF.
+     *
      * @param nif O Número de Identificação Fiscal do cliente.
      * @return O objeto {@link Cliente} se encontrado, ou {@code null} caso contrário.
      */
@@ -217,13 +237,13 @@ public class Empresa {
 
     /**
      * Adiciona um novo condutor ao sistema.
-     * Verifica se o NIF já existe para evitar duplicados.
+     * Verifica se o número de identificação já existe para evitar duplicados.
      *
      * @param condutor O objeto Condutor a adicionar.
-     * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
+     * @return {@code true} se adicionado com sucesso; {@code false} se o ID já existir.
      */
     public boolean adicionarCondutor(Condutor condutor) {
-        if (procurarCondutor(condutor.getNif()) == null) {
+        if (procurarCondutorPorId(condutor.getNumeroIdentificacao()) == null) {
             condutores.add(condutor);
             return true;
         }
@@ -232,6 +252,7 @@ public class Empresa {
 
     /**
      * Obtém a lista completa de condutores.
+     *
      * @return Lista de condutores.
      */
     public ArrayList<Condutor> getCondutores() {
@@ -239,11 +260,27 @@ public class Empresa {
     }
 
     /**
-     * Procura um condutor pelo NIF.
+     * Procura um condutor pelo número de identificação da empresa.
+     *
+     * @param numeroIdentificacao O número de ID do condutor na empresa.
+     * @return O objeto {@link Condutor} se encontrado, ou {@code null} caso contrário.
+     */
+    public Condutor procurarCondutorPorId(int numeroIdentificacao) {
+        for (Condutor condutor : condutores) {
+            if (condutor.getNumeroIdentificacao() == numeroIdentificacao) {
+                return condutor;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Procura um condutor pelo NIF (para compatibilidade).
+     *
      * @param nif O NIF do condutor.
      * @return O objeto {@link Condutor} se encontrado, ou {@code null} caso contrário.
      */
-    public Condutor procurarCondutor(int nif) {
+    public Condutor procurarCondutorPorNif(int nif) {
         for (Condutor condutor : condutores) {
             if (condutor.getNif() == nif) {
                 return condutor;
@@ -254,15 +291,16 @@ public class Empresa {
 
     /**
      * Remove um condutor do sistema se este não tiver viagens realizadas.
-     * @param nif O NIF do condutor a remover.
+     *
+     * @param numeroIdentificacao O número de ID do condutor a remover.
      * @return {@code true} se removido com sucesso; {@code false} caso contrário.
      */
-    public boolean removerCondutor(int nif) {
-        Condutor condutor = procurarCondutor(nif);
+    public boolean removerCondutor(int numeroIdentificacao) {
+        Condutor condutor = procurarCondutorPorId(numeroIdentificacao);
         if (condutor != null) {
             for (Viagem viagem : viagens) {
-                if (viagem.getCondutor().getNif() == nif) {
-                    System.out.println("Erro: Condutor possui histórico de viagens.");
+                if (viagem.getCondutor().getNumeroIdentificacao() == numeroIdentificacao) {
+                    System.out.println(">> Erro: Condutor possui histórico de viagens.");
                     return false;
                 }
             }
@@ -292,17 +330,19 @@ public class Empresa {
 
         for (Condutor condutor : condutores) {
             boolean estaOcupado = false;
-            //Verifica se este condutor tem alguma viagem que colida com o horário.
+
+            // Verifica se este condutor tem alguma viagem que colida com o horário
             for (Viagem viagem : viagens) {
-                if (viagem.getCondutor().getNif() == condutor.getNif()) {
-                    //Lógica de sobreposição (InicioA < FimB) && (FimA > InicioB)
+                if (viagem.getCondutor().getNumeroIdentificacao() == condutor.getNumeroIdentificacao()) {
+                    // Lógica de sobreposição (InicioA < FimB) && (FimA > InicioB)
                     if (inicio.isBefore(viagem.getDataHoraFim()) && fim.isAfter(viagem.getDataHoraInicio())) {
                         estaOcupado = true;
-                        break; //Já sabemos que o condutor está ocupado, então paramos a verificação.
+                        break; // Já sabemos que o condutor está ocupado
                     }
                 }
             }
-            //Se correu as viagens todas e não encontrou conflito, adicionamos o condutor à lista
+
+            // Se não encontrou conflito, adiciona à lista
             if (!estaOcupado) {
                 condutoresDisponiveis.add(condutor);
             }
@@ -386,7 +426,7 @@ public class Empresa {
     public boolean verificarSobreposicao(Viatura viatura, Condutor condutor, LocalDateTime inicio, LocalDateTime fim) {
         for (Viagem viagemExistente : viagens) {
             boolean mesmaViatura = viagemExistente.getViatura().getMatricula().equalsIgnoreCase(viatura.getMatricula());
-            boolean mesmoCondutor = viagemExistente.getCondutor().getNif() == condutor.getNif();
+            boolean mesmoCondutor = viagemExistente.getCondutor().getNumeroIdentificacao() == condutor.getNumeroIdentificacao();
 
             if (mesmaViatura || mesmoCondutor) {
                 if (inicio.isBefore(viagemExistente.getDataHoraFim()) && fim.isAfter(viagemExistente.getDataHoraInicio())) {
@@ -399,13 +439,19 @@ public class Empresa {
 
     /**
      * Regista uma nova viagem realizada no sistema após verificar conflitos.
+     * Respeitando um valor máximo de 100 objetos.
      *
      * @param viagem A viagem a adicionar ao histórico.
      * @return {@code true} se adicionada com sucesso; {@code false} se houver sobreposição de horários.
      */
     public boolean adicionarViagem(Viagem viagem) {
-        if (verificarSobreposicao(viagem.getViatura(), viagem.getCondutor(), viagem.getDataHoraInicio(), viagem.getDataHoraFim())) {
-            System.out.println("Erro: Sobreposição detetada." +
+        if (viagens.size() >= LIMITE_MAXIMO) {
+            System.out.println("ATENÇÃO: Limite máximo de " + LIMITE_MAXIMO + " viagens atingido!");
+            return false;
+        }
+        if (verificarSobreposicao(viagem.getViatura(), viagem.getCondutor(),
+                viagem.getDataHoraInicio(), viagem.getDataHoraFim())) {
+           System.out.println(">> Erro: Sobreposição detetada." +
                     "Viatura ou Condutor ocupados neste horário.");
             return false;
         }
@@ -415,6 +461,7 @@ public class Empresa {
 
     /**
      * Obtém o histórico completo de viagens.
+     *
      * @return Lista de viagens.
      */
     public ArrayList<Viagem> getViagens() {
@@ -422,15 +469,22 @@ public class Empresa {
     }
 
     /**
-     * Regista uma nova reserva no sistema.
+     * Regista uma nova reserva no sistema respeitando um limite máximo de 100 objetos.
+     *
      * @param reserva A reserva a adicionar.
      */
-    public void adicionarReserva(Reserva reserva) {
+    public boolean adicionarReserva(Reserva reserva) {
+        if (reservas.size() >= LIMITE_MAXIMO) {
+            System.out.println("ATENÇÃO: Limite máximo de " + LIMITE_MAXIMO + " reservas atingido!");
+            return false;
+        }
         reservas.add(reserva);
+        return true;
     }
 
     /**
      * Obtém a lista de reservas ativas (pendentes).
+     *
      * @return ArrayList de reservas.
      */
     public ArrayList<Reserva> getReservas() {
@@ -440,35 +494,44 @@ public class Empresa {
     /**
      * Converte uma Reserva em Viagem, atribuindo os recursos que faltavam.
      * Remove a reserva da lista se a conversão for bem-sucedida.
+     * <p>
+     * Assume uma duração fixa de 30 minutos por defeito.
+     * </p>
      *
      * @param reserva  A reserva original.
      * @param condutor O condutor selecionado.
      * @param viatura  A viatura selecionada.
      * @param custo    O custo final calculado.
-     * @return {@code true} se sucesso.
+     * @return {@code true} se sucesso; {@code false} se falhar.
      */
     public boolean converterReservaEmViagem(Reserva reserva, Condutor condutor, Viatura viatura, double custo) {
-        if (reservas.contains(reserva)) {
-            // Cria a viagem temporária com os dados da reserva.
-            // Nota: Assumimos uma duração fixa de 30 mins por defeito se não especificada
-            Viagem novaViagem = new Viagem(
-                    condutor,
-                    reserva.getCliente(),
-                    viatura,
-                    reserva.getDataHoraInicio(),
-                    reserva.getDataHoraInicio().plusMinutes(30),
-                    reserva.getMoradaOrigem(),
-                    reserva.getMoradaDestino(),
-                    reserva.getKms(),
-                    custo );
-
-            boolean adicionou = adicionarViagem(novaViagem);
-            if (adicionou) {
-                reservas.remove(reserva); // Remove a reserva pois já foi efetuada
-                return true;
-            }
+        // Validações básicas
+        if (reserva == null || condutor == null || viatura == null) {
+            System.out.println("Erro: Parâmetros não podem ser null.");
+            return false;
         }
-        return false; //Devolve false se houver sobreposicção ou se a reserva não existir
+
+        if (!reservas.contains(reserva)) {
+            System.out.println("Erro: Reserva não encontrada.");
+            return false;
+        }
+
+        // Cria a viagem com duração fixa de 30 minutos
+        LocalDateTime dataHoraFim = reserva.getDataHoraInicio().plusMinutes(30);
+        Viagem novaViagem = new Viagem(condutor, reserva.getCliente(), viatura, reserva.getDataHoraInicio(),
+                dataHoraFim, reserva.getMoradaOrigem(), reserva.getMoradaDestino(), reserva.getKms(), custo);
+
+        // Usa o método adicionarViagem que já verifica sobreposição
+        boolean adicionou = adicionarViagem(novaViagem);
+
+        if (adicionou) {
+            reservas.remove(reserva);
+            System.out.println("Reserva convertida em viagem com sucesso.");
+            return true;
+        }
+
+        System.out.println(">>Erro: Não foi possível converter a reserva em viagem.");
+        return false;
     }
 
     /**
@@ -497,15 +560,16 @@ public class Empresa {
 
     /**
      * Calcula o total faturado (€) por um condutor num intervalo de tempo.
-     * @param nifCondutor NIF do condutor.
+     *
+     * @param numeroIdentificacao Número de ID do condutor na empresa.
      * @param inicio      Início do intervalo.
      * @param fim         Fim do intervalo.
      * @return Total faturado.
      */
-    public double calcularFaturacaoCondutor(int nifCondutor, LocalDateTime inicio, LocalDateTime fim) {
+    public double calcularFaturacaoCondutor(int numeroIdentificacao, LocalDateTime inicio, LocalDateTime fim) {
         double total = 0.0;
         for (Viagem viagem : viagens) {
-            if (viagem.getCondutor().getNif() == nifCondutor) {
+            if (viagem.getCondutor().getNumeroIdentificacao() == numeroIdentificacao) {
                 if (isDentroDoPrazo(viagem.getDataHoraInicio(), inicio, fim)) {
                     total += viagem.getCusto();
                 }
@@ -516,6 +580,7 @@ public class Empresa {
 
     /**
      * Lista clientes únicos que viajaram numa viatura.
+     *
      * @param matricula Matrícula da viatura.
      * @return Lista de clientes (sem duplicados).
      */
@@ -573,6 +638,7 @@ public class Empresa {
 
     /**
      * Calcula a média de Kms das viagens num intervalo.
+     *
      * @param inicio Início do intervalo.
      * @param fim    Fim do intervalo.
      * @return Média de Kms.
@@ -703,6 +769,12 @@ public class Empresa {
         return destinos.get(maxIndex) + " (" + maxValor + " vezes)";
     }
 
+    /**
+     * Calcula o total de quilómetros percorridos por um cliente.
+     *
+     * @param nifCliente NIF do cliente.
+     * @return Total de quilómetros percorridos pelo cliente.
+     */
     public double calcularTotalKmsCliente(int nifCliente){
         double totalKms = 0;
         for (Viagem viagem : viagens) {
@@ -731,7 +803,6 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * /**
      * Grava todos os dados. Usa try-catch centralizado para apanhar erros dos sub-métodos.
      * <p>
      * Este método deve ser chamado apenas no fecho da aplicação para garantir
@@ -752,7 +823,7 @@ public class Empresa {
         //2. Cria a subpasta da empresa
         File pastaEmpresa = new File(nomePasta);
         if (!pastaEmpresa.exists()) {
-            boolean criouEmpresa = pastaEmpresa.mkdir(); //Guardamos a resposta
+            boolean criouEmpresa = pastaEmpresa.mkdir();
             if (!criouEmpresa) {
                 System.out.println("Erro fatal: Não foi possível criar a pasta " + nomePasta);
                 return;
@@ -776,12 +847,20 @@ public class Empresa {
      * Este método deve ser chamado no arranque da aplicação.
      */
     public void carregarDados() {
+        File pastaDados = new File(nomePasta);
+        if (!pastaDados.exists()) {
+            System.out.println(">> Erro: Pasta de dados '" + nomePasta + "' não encontrada.");
+            System.out.println("Iniciando com dados vazios...");
+            return;
+        }
+
+        System.out.println("A carregar dados de: " + nomePasta);
         carregarViaturas();
         carregarClientes();
         carregarCondutores();
         carregarViagens();
         carregarReservas();
-
+        System.out.println("Dados carregados com sucesso!");
     }
 
     // ==========================================================
@@ -791,6 +870,8 @@ public class Empresa {
 
     /**
      * Escreve a lista de viaturas no ficheiro "viaturas.txt".
+     *
+     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
      */
     private void gravarViaturas() throws IOException {
         try (Formatter out = new Formatter(new File(nomePasta + "/viaturas.txt"))) {
@@ -802,44 +883,63 @@ public class Empresa {
 
     /**
      * Escreve a lista de clientes no ficheiro "clientes.txt".
+     *
+     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
      */
     private void gravarClientes() throws IOException {
         try (Formatter out = new Formatter(new File(nomePasta + "/clientes.txt"))) {
-            for (Cliente c : clientes) {
-                out.format("%s;%d;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid());
+            for (Cliente cliente : clientes) {
+                out.format("%s;%d;%d;%s;%d%n", cliente.getNome(), cliente.getNif(), cliente.getTel(), cliente.getMorada(), cliente.getCartaoCid());
             }
         }
     }
 
     /**
      * Escreve a lista de condutores no ficheiro "condutores.txt".
+     *
+     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
      */
     private void gravarCondutores() throws IOException {
         try (Formatter out = new Formatter(new File(nomePasta + "/condutores.txt"))) {
-            for (Condutor c : condutores) {
-                out.format("%s;%d;%d;%s;%d;%s;%d%n", c.getNome(), c.getNif(), c.getTel(), c.getMorada(), c.getCartaoCid(), c.getCartaCond(), c.getSegSocial());
+            for (Condutor condutor : condutores) {
+                // Formato: id;nome;nif;tel;morada;cartaoCid;cartaCond;segSocial
+                out.format("%d;%s;%d;%d;%s;%d;%s;%d%n",
+                        condutor.getNumeroIdentificacao(),
+                        condutor.getNome(),
+                        condutor.getNif(),
+                        condutor.getTel(),
+                        condutor.getMorada(),
+                        condutor.getCartaoCid(),
+                        condutor.getCartaCond(),
+                        condutor.getSegSocial());
             }
         }
     }
 
     /**
      * Escreve o histórico de viagens no ficheiro "viagens.txt".
+     * <p>
+     * Formato: IDCondutor;nifCliente;matricula;dataInicio;dataFim;origem;destino;kms;custo
+     * </p>
+     *
+     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
      */
     private void gravarViagens() throws IOException {
         try (Formatter out = new Formatter(new File(nomePasta + "/viagens.txt"))) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             for (Viagem viagem : viagens) {
-                out.format("%d;%d;%s;%s;%s;%s;%s;%s;%s%n",
-                        viagem.getCondutor().getNif(),
+                // Formato: nifCondutor;nifCliente;matricula;dataInicio;dataFim;origem;destino;kms;custo
+                out.format("%d;%d;%s;%s;%s;%s;%s;%.2f;%.2f%n",
+                        viagem.getCondutor().getNumeroIdentificacao(),
                         viagem.getCliente().getNif(),
                         viagem.getViatura().getMatricula(),
                         viagem.getDataHoraInicio().format(dtf),
                         viagem.getDataHoraFim().format(dtf),
                         viagem.getMoradaOrigem(),
                         viagem.getMoradaDestino(),
-                        String.valueOf(viagem.getKms()).replace(',', '.'),
-                        String.valueOf(viagem.getCusto()).replace(',', '.'));
+                        viagem.getKms(),
+                        viagem.getCusto());
             }
         }
     }
@@ -849,7 +949,10 @@ public class Empresa {
      * <p>
      * Guarda o NIF do cliente para manter a integridade referencial ao carregar,
      * a data/hora, moradas e distância.
+     * Formato: nifCliente;dataHora;origem;destino;kms
      * </p>
+     *
+     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
      */
     private void gravarReservas() throws  IOException {
         try (Formatter out = new Formatter(new File(nomePasta + "/reservas.txt"))) {
@@ -875,6 +978,10 @@ public class Empresa {
 
     /**
      * Lê o ficheiro "viaturas.txt" e carrega as viaturas para o sistema.
+     * <p>
+     * Formato esperado: matricula;marca;modelo;anoFabrico
+     * Se o ficheiro não existir, ignora silenciosamente (primeira execução).
+     * </p>
      */
     private void carregarViaturas() {
         try (Scanner ler = new Scanner(new File(nomePasta + "/viaturas.txt"))) {
@@ -894,6 +1001,10 @@ public class Empresa {
 
     /**
      * Lê o ficheiro "clientes.txt" e carrega os clientes para o sistema.
+     * <p>
+     * Formato esperado: nome;nif;tel;morada;cartaoCid
+     * Se o ficheiro não existir, ignora silenciosamente (primeira execução).
+     * </p>
      */
     private void carregarClientes() {
         try (Scanner ler = new Scanner(new File(nomePasta + "/clientes.txt"))) {
@@ -913,6 +1024,10 @@ public class Empresa {
 
     /**
      * Lê o ficheiro "condutores.txt" e carrega os condutores para o sistema.
+     * <p>
+     * Formato esperado: id;nome;nif;tel;morada;cartaoCid;cartaCond;segSocial
+     * Se o ficheiro não existir, ignora silenciosamente (primeira execução).
+     * </p>
      */
     private void carregarCondutores() {
         try (Scanner ler = new Scanner(new File(nomePasta + "/condutores.txt"))) {
@@ -920,18 +1035,33 @@ public class Empresa {
                 String linha = ler.nextLine();
                 String[] dados = linha.split(";");
 
-                if (dados.length >= 7) {
-                    Condutor c = new Condutor(dados[0], Integer.parseInt(dados[1]), Integer.parseInt(dados[2]), dados[3], Integer.parseInt(dados[4]), dados[5], Integer.parseInt(dados[6]));
+                if (dados.length >= 8) {
+                    int numeroIdentificacao = Integer.parseInt(dados[0]);
+                    String nome = dados[1];
+                    int nif = Integer.parseInt(dados[2]);
+                    int tel = Integer.parseInt(dados[3]);
+                    String morada = dados[4];
+                    int cartaoCid = Integer.parseInt(dados[5]);
+                    String cartaCond = dados[6];
+                    int segSocial = Integer.parseInt(dados[7]);
+
+                    Condutor c = new Condutor(numeroIdentificacao, nome, nif, tel,
+                            morada, cartaoCid, cartaCond, segSocial);
                     adicionarCondutor(c);
                 }
             }
         } catch (Exception e) {
-            //Ignora se não existir.
+            // Ignora se não existir.
         }
     }
 
     /**
-     * Lê o ficheiro "viagens.txt" e reconstrói o historico de viagens.
+     * Lê o ficheiro "viagens.txt" e reconstrói o histórico de viagens.
+     * <p>
+     * Formato esperado: idCondutor;nifCliente;matricula;dataInicio;dataFim;origem;destino;kms;custo
+     * Verifica se os objetos Condutor, Cliente e Viatura existem antes de criar a viagem.
+     * Se algum não existir, a viagem é ignorada.
+     * </p>
      */
     private void carregarViagens() {
         try (Scanner ler = new Scanner(new File(nomePasta + "/viagens.txt"))) {
@@ -942,7 +1072,7 @@ public class Empresa {
                 String[] dados = linha.split(";");
 
                 if (dados.length >= 9) {
-                    Condutor condutor = procurarCondutor(Integer.parseInt(dados[0]));
+                    Condutor condutor = procurarCondutorPorId(Integer.parseInt(dados[0]));
                     Cliente cliente = procurarCliente(Integer.parseInt(dados[1]));
                     Viatura viatura = procurarViatura(dados[2]);
 
@@ -956,13 +1086,13 @@ public class Empresa {
                             Viagem v = new Viagem(condutor, cliente, viatura, dataHoraInicio, dataHoraFim, dados[5], dados[6], kms, custo);
                             viagens.add(v);
                         } catch (Exception e) {
-                            System.out.println("Erro ao carregar viagens: " + e.getMessage());
+                            System.out.println(">> Erro: Impossível carregar viagens: " + e.getMessage());
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            System.out.println("Nota: Histórico de viagens vazio ou ilegível.");
+            System.out.println(">> Histórico de viagens vazio ou ilegível.");
             //Ignora se não existir.
         }
     }
@@ -973,6 +1103,7 @@ public class Empresa {
      * Reconstrói a ligação ao objeto {@link Cliente} utilizando o NIF guardado.
      * Se o cliente não for encontrado (ex: foi eliminado manualmente do ficheiro),
      * a reserva é ignorada para evitar inconsistências.
+     * Formato: nifCliente;dataHora;origem;destino;kms
      * </p>
      */
     private void carregarReservas() {
