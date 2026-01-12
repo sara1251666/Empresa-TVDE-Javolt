@@ -4,67 +4,85 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d64284e5-e528-468e-bc10-38d107a2592f" name="Changes" comment="">
+    <list default="true" id="a380fd5b-65b0-4708-ab1f-89603befb50c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Cliente.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Condutor.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Pessoa.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Reserva.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Viagem.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Viatura.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Gestao/Empresa.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Main.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu$OperacaoCanceladaException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Empresa-TVDE-Javolt.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Java_Development_Kit.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/clientes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/condutores.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/reservas.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/viagens.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/viaturas.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/clientes.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/condutores.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/reservas.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/viagens.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/viaturas.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/TVDE_Javolt.iml" beforeDir="false" afterPath="$PROJECT_DIR$/APOO_TVDE_Javolt.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/src/Entidades/Cliente.java" beforeDir="false" afterPath="$PROJECT_DIR$/TVDE_Javolt/src/Entidades/Cliente.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/src/Gestao/Empresa.java" beforeDir="false" afterPath="$PROJECT_DIR$/TVDE_Javolt/src/Gestao/Empresa.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/src/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/TVDE_Javolt/src/Menu.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 1
+  &quot;associatedIndex&quot;: 3
 }</component>
-  <component name="ProjectId" id="36l72N5Xm4lLsTmJzwKL0wAghl5" />
+  <component name="ProjectId" id="387wAbDKSX4PB3E2Whep3MXFOnp" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "levi__crud",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/maste/Desktop/Empresa-TVDE-Javolt",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.runner"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Sara__Alterações&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sara/Desktop/APOO_TVDE_Javolt&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
       </set>
     </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="d64284e5-e528-468e-bc10-38d107a2592f" name="Changes" comment="" />
-      <created>1765569096277</created>
+      <changelist id="a380fd5b-65b0-4708-ab1f-89603befb50c" name="Changes" comment="" />
+      <created>1768163775080</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1765569096277</updated>
+      <updated>1768163775080</updated>
     </task>
     <servers />
-  </component>
-  <component name="XSLT-Support.FileAssociations.UIState">
-    <expand />
-    <select />
   </component>
 </project>

@@ -15,7 +15,7 @@ package Entidades;
  * @version 1.0
  * @since 2026-01-01
  */
-public class Cliente extends Pessoa {
+public class  Cliente extends Pessoa {
 
     /**
      * Constrói um novo Cliente com todos os dados fornecidos.

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Empresa-TVDE-Javolt.iml" filepath="$PROJECT_DIR$/.idea/Empresa-TVDE-Javolt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/APOO_TVDE_Javolt.iml" filepath="$PROJECT_DIR$/APOO_TVDE_Javolt.iml" />
     </modules>
   </component>
 </project>

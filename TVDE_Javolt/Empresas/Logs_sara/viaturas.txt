@@ -1,3 +1,0 @@
-AA-00-BB;Toyota;Corolla;2020
-XX-99-ZZ;Tesla;Model 3;2024
-CC-11-DD;Renault;Clio;2018

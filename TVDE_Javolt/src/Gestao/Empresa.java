@@ -1,6 +1,7 @@
 package Gestao;
 
 import Entidades.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.io.File;
@@ -18,7 +19,7 @@ import java.time.format.DateTimeFormatter;
  * </p>
  *
  * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
- * @version 1.0
+ * @version 2.0
  * @since 2026-01-08
  */
 public class Empresa {
@@ -54,21 +55,31 @@ public class Empresa {
     private final ArrayList<Reserva> reservas;
 
     /**
-     * O nome da pasta onde os ficheiros desta empresa específica serão guardados.
-     * Formato: "Empresas/Logs_nomeEmpresa"
+     * Nome da Empresa.
      */
-    private final String nomePasta;
+    private final String nomeEmpresa;
 
     /**
-     * Limite máximo de objetos por tipo, conforme especificado no enunciado.
+     * Prefixo usado para criar as pastas de logs da empresa.
+     */
+    private static final String PREFIXO_LOGS = "Logs_";
+
+    /**
+     * O nome da pasta base onde todas as empresas são armazenadas.
+     */
+    private static final String NOME_PASTA_BASE = "Empresas";
+
+    /**
+     * Limite máximo de objetos por tipo.
      */
     private static final int LIMITE_MAXIMO = 100;
+
 
     /**
      * Construtor da classe Empresa.
      * Inicializa todas as listas (ArrayLists) vazias prontas para armazenar dados.
      *
-     * @param nomeEmpresa O nome da empresa (usado para criar a pasta "Logs_Nome").
+     * @param nomeEmpresa O nome da empresa.
      */
     public Empresa(String nomeEmpresa) {
         this.viaturas = new ArrayList<>();
@@ -76,7 +87,74 @@ public class Empresa {
         this.clientes = new ArrayList<>();
         this.viagens = new ArrayList<>();
         this.reservas = new ArrayList<>();
-        this.nomePasta = "Empresas/Logs_" + nomeEmpresa;
+        this.nomeEmpresa = nomeEmpresa;
+    }
+
+    /**
+     * Retorna o nome da empresa.
+     *
+     * @return Nome da empresa.
+     */
+    public String getNomeEmpresa() {
+        return nomeEmpresa;
+    }
+
+    /**
+     * Retorna o caminho completo da pasta da empresa.
+     * Formato: "Empresas/Logs_NomeEmpresa"
+     *
+     * @return Caminho completo para a pasta da empresa.
+     */
+    public String getCaminhoPastaEmpresa() {
+        return NOME_PASTA_BASE + "/" + PREFIXO_LOGS + nomeEmpresa;
+    }
+
+    /**
+     * Verifica se a pasta da empresa já existe no sistema de ficheiros.
+     *
+     * @return {@code true} se a pasta existe, {@code false} caso contrário.
+     */
+    public boolean existePastaEmpresa() {
+        File pasta = new File(getCaminhoPastaEmpresa());
+        return pasta.exists() && pasta.isDirectory();
+    }
+
+    /**
+     * Lista todas as empresas existentes no sistema.
+     * Procura por pastas dentro de "Empresas/" com o prefixo "Logs_".
+     *
+     * @return Lista de nomes de Empresas encontradas (sem o prefixo "Logs_").
+     */
+    public static ArrayList<String> listarEmpresasExistentes() {
+        ArrayList<String> empresas = new ArrayList<>();
+        File pastaEmpresas = new File(NOME_PASTA_BASE);
+
+        if (!pastaEmpresas.exists() || !pastaEmpresas.isDirectory()) {
+            return empresas; // Lista vazia
+        }
+
+        File[] subPastas = pastaEmpresas.listFiles(File::isDirectory);
+        if (subPastas != null) {
+            for (File subPasta : subPastas) {
+                if (subPasta.getName().startsWith(PREFIXO_LOGS)) {
+                    // Extrai "Uber" de "Logs_Uber"
+                    String nomeEmpresa = subPasta.getName().substring(PREFIXO_LOGS.length()); // Remove "Logs_"
+                    empresas.add(nomeEmpresa);
+                }
+            }
+        }
+        return empresas;
+    }
+
+    /**
+     * Verifica se uma empresa com o nome especificado já existe.
+     *
+     * @param nomeEmpresa Nome da empresa a verificar.
+     * @return {@code true} se a empresa existe, {@code false} caso contrário.
+     */
+    public static boolean empresaExiste(String nomeEmpresa) {
+        File pastaEmpresas = new File(NOME_PASTA_BASE + "/" + PREFIXO_LOGS + nomeEmpresa);
+        return pastaEmpresas.exists() && pastaEmpresas.isDirectory();
     }
 
     // ==========================================================
@@ -159,7 +237,6 @@ public class Empresa {
     /**
      * Adiciona um novo cliente ao sistema, respeitando um número náximo de 100 objetos.
      * Verifica se o NIF já existe para evitar duplicados.
-     *
      *
      * @param cliente O objeto Cliente a adicionar.
      * @return {@code true} se adicionado com sucesso; {@code false} se o NIF já existir.
@@ -390,7 +467,7 @@ public class Empresa {
     public ArrayList<Cliente> getClientesDisponiveis(LocalDateTime inicio, LocalDateTime fim) {
         ArrayList<Cliente> clientesDisponiveis = new ArrayList<>();
 
-        //Verifica se o Cliente tem alguma viagem que colia com o horário.
+        //Verifica se o Cliente tem alguma viagem que colida com o horário.
         for (Cliente cliente : clientes) {
             boolean estaOcupado = false;
             for (Viagem viagem : viagens) {
@@ -451,7 +528,7 @@ public class Empresa {
         }
         if (verificarSobreposicao(viagem.getViatura(), viagem.getCondutor(),
                 viagem.getDataHoraInicio(), viagem.getDataHoraFim())) {
-           System.out.println(">> Erro: Sobreposição detetada." +
+            System.out.println(">> Erro: Sobreposição detetada. " +
                     "Viatura ou Condutor ocupados neste horário.");
             return false;
         }
@@ -472,6 +549,7 @@ public class Empresa {
      * Regista uma nova reserva no sistema respeitando um limite máximo de 100 objetos.
      *
      * @param reserva A reserva a adicionar.
+     * @return {@code true} se a reserva foi adicionada com sucesso.
      */
     public boolean adicionarReserva(Reserva reserva) {
         if (reservas.size() >= LIMITE_MAXIMO) {
@@ -562,8 +640,8 @@ public class Empresa {
      * Calcula o total faturado (€) por um condutor num intervalo de tempo.
      *
      * @param numeroIdentificacao Número de ID do condutor na empresa.
-     * @param inicio      Início do intervalo.
-     * @param fim         Fim do intervalo.
+     * @param inicio              Início do intervalo.
+     * @param fim                 Fim do intervalo.
      * @return Total faturado.
      */
     public double calcularFaturacaoCondutor(int numeroIdentificacao, LocalDateTime inicio, LocalDateTime fim) {
@@ -775,7 +853,7 @@ public class Empresa {
      * @param nifCliente NIF do cliente.
      * @return Total de quilómetros percorridos pelo cliente.
      */
-    public double calcularTotalKmsCliente(int nifCliente){
+    public double calcularTotalKmsCliente(int nifCliente) {
         double totalKms = 0;
         for (Viagem viagem : viagens) {
             if (viagem.getCliente().getNif() == nifCliente) {
@@ -803,42 +881,37 @@ public class Empresa {
     // ==========================================================
 
     /**
-     * Grava todos os dados. Usa try-catch centralizado para apanhar erros dos sub-métodos.
+     * Grava todos os dados em ficheiros de texto.
      * <p>
-     * Este método deve ser chamado apenas no fecho da aplicação para garantir
-     * que os dados (Viaturas, Clientes, Condutores e Viagens) não são perdidos.
+     * Cria automaticamente a estrutura de pastas "Empresas/Logs_NomeEmpresa"
+     * se esta ainda não existir.
      * </p>
      */
     public void gravarDados() {
-        //1. Criar a pasta principal "Empresas" se não existir
-        File pastaPrincipal = new File("Empresas");
-        if (!pastaPrincipal.exists()) {
-            boolean criouPrincipal = pastaPrincipal.mkdir();
+        // 1. Obter o caminho completo da pasta (Ex: "Empresas/Logs_Javolt")
+        String caminho = getCaminhoPastaEmpresa();
+        File pasta = new File(caminho);
 
-            if (!criouPrincipal) {
-                System.out.println("Erro fatal: Não foi possível criar a pasta 'Empresas'.");
+        // 2. Criar a estrutura de diretorias
+        // O método mkdirs() cria a pasta pai "Empresas" e a filha "Logs_..." se não existirem
+        if (!pasta.exists()) {
+            if (pasta.mkdirs()) {
+                System.out.println(">> Estrutura de pastas criada com sucesso: " + caminho);
+            } else {
+                System.out.println(">> Erro fatal: Não foi possível criar a pasta " + caminho);
+                return; // Se não há pasta, aborta a gravação para evitar erros
             }
         }
-
-        //2. Cria a subpasta da empresa
-        File pastaEmpresa = new File(nomePasta);
-        if (!pastaEmpresa.exists()) {
-            boolean criouEmpresa = pastaEmpresa.mkdir();
-            if (!criouEmpresa) {
-                System.out.println("Erro fatal: Não foi possível criar a pasta " + nomePasta);
-                return;
-            }
-        }
-
+        // 3. Tentar gravar os ficheiros individuais
         try {
             gravarViaturas();
             gravarClientes();
             gravarCondutores();
             gravarViagens();
             gravarReservas();
-            System.out.println("Dados guardados com sucesso em " + nomePasta);
+            System.out.println("Dados guardados com sucesso em " + caminho);
         } catch (IOException e) {
-            System.out.println("Erro crítico ao gravar ficheiros: " + e.getMessage());
+            System.out.println("Erro crítico: Não foi possível gravar ficheiros: " + e.getMessage());
         }
     }
 
@@ -847,20 +920,22 @@ public class Empresa {
      * Este método deve ser chamado no arranque da aplicação.
      */
     public void carregarDados() {
-        File pastaDados = new File(nomePasta);
+        String caminho = getCaminhoPastaEmpresa();
+        File pastaDados = new File(caminho);
+
         if (!pastaDados.exists()) {
-            System.out.println(">> Erro: Pasta de dados '" + nomePasta + "' não encontrada.");
-            System.out.println("Iniciando com dados vazios...");
+            System.out.println(">> Aviso: Pasta de dados '" + caminho + "' não encontrada.");
+            System.out.println(">> O sistema iniciará com as listas vazias.");
             return;
         }
 
-        System.out.println("A carregar dados de: " + nomePasta);
+        System.out.println("A carregar dados de: " + caminho);
         carregarViaturas();
         carregarClientes();
         carregarCondutores();
         carregarViagens();
         carregarReservas();
-        System.out.println("Dados carregados com sucesso!");
+        System.out.println("Carregamento concluído.");
     }
 
     // ==========================================================
@@ -870,66 +945,59 @@ public class Empresa {
 
     /**
      * Escreve a lista de viaturas no ficheiro "viaturas.txt".
-     *
-     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
+     * @throws IOException Se ocorrer um erro de escrita.
      */
     private void gravarViaturas() throws IOException {
-        try (Formatter out = new Formatter(new File(nomePasta + "/viaturas.txt"))) {
+        String ficheiro = getCaminhoPastaEmpresa() + "/viaturas.txt";
+        try (Formatter out = new Formatter(new File(ficheiro))) {
             for (Viatura v : viaturas) {
-                out.format("%s;%s;%s;%d%n", v.getMatricula(), v.getMarca(), v.getModelo(), v.getAnoFabrico());
+                out.format("%s;%s;%s;%d%n",
+                        v.getMatricula(), v.getMarca(), v.getModelo(), v.getAnoFabrico());
             }
         }
     }
 
     /**
      * Escreve a lista de clientes no ficheiro "clientes.txt".
-     *
-     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
+     * @throws IOException Se ocorrer um erro de escrita.
      */
     private void gravarClientes() throws IOException {
-        try (Formatter out = new Formatter(new File(nomePasta + "/clientes.txt"))) {
+        String ficheiro = getCaminhoPastaEmpresa() + "/clientes.txt";
+        try (Formatter out = new Formatter(new File(ficheiro))) {
             for (Cliente cliente : clientes) {
-                out.format("%s;%d;%d;%s;%d%n", cliente.getNome(), cliente.getNif(), cliente.getTel(), cliente.getMorada(), cliente.getCartaoCid());
+                out.format("%s;%d;%d;%s;%d%n",
+                        cliente.getNome(), cliente.getNif(), cliente.getTel(),
+                        cliente.getMorada(), cliente.getCartaoCid());
             }
         }
     }
 
     /**
      * Escreve a lista de condutores no ficheiro "condutores.txt".
-     *
-     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
+     * @throws IOException Se ocorrer um erro de escrita.
      */
     private void gravarCondutores() throws IOException {
-        try (Formatter out = new Formatter(new File(nomePasta + "/condutores.txt"))) {
+        String ficheiro = getCaminhoPastaEmpresa() + "/condutores.txt";
+        try (Formatter out = new Formatter(new File(ficheiro))) {
             for (Condutor condutor : condutores) {
-                // Formato: id;nome;nif;tel;morada;cartaoCid;cartaCond;segSocial
                 out.format("%d;%s;%d;%d;%s;%d;%s;%d%n",
-                        condutor.getNumeroIdentificacao(),
-                        condutor.getNome(),
-                        condutor.getNif(),
-                        condutor.getTel(),
-                        condutor.getMorada(),
-                        condutor.getCartaoCid(),
-                        condutor.getCartaCond(),
-                        condutor.getSegSocial());
+                        condutor.getNumeroIdentificacao(), condutor.getNome(),
+                        condutor.getNif(), condutor.getTel(), condutor.getMorada(),
+                        condutor.getCartaoCid(), condutor.getCartaCond(), condutor.getSegSocial());
             }
         }
     }
 
     /**
      * Escreve o histórico de viagens no ficheiro "viagens.txt".
-     * <p>
-     * Formato: IDCondutor;nifCliente;matricula;dataInicio;dataFim;origem;destino;kms;custo
-     * </p>
-     *
-     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
+     * @throws IOException Se ocorrer um erro de escrita.
      */
     private void gravarViagens() throws IOException {
-        try (Formatter out = new Formatter(new File(nomePasta + "/viagens.txt"))) {
+        String ficheiro = getCaminhoPastaEmpresa() + "/viagens.txt";
+        try (Formatter out = new Formatter(new File(ficheiro))) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             for (Viagem viagem : viagens) {
-                // Formato: nifCondutor;nifCliente;matricula;dataInicio;dataFim;origem;destino;kms;custo
                 out.format("%d;%d;%s;%s;%s;%s;%s;%.2f;%.2f%n",
                         viagem.getCondutor().getNumeroIdentificacao(),
                         viagem.getCliente().getNif(),
@@ -946,20 +1014,14 @@ public class Empresa {
 
     /**
      * Escreve a lista de reservas pendentes no ficheiro "reservas.txt".
-     * <p>
-     * Guarda o NIF do cliente para manter a integridade referencial ao carregar,
-     * a data/hora, moradas e distância.
-     * Formato: nifCliente;dataHora;origem;destino;kms
-     * </p>
-     *
-     * @throws IOException Se ocorrer um erro de escrita no ficheiro.
+     * @throws IOException Se ocorrer um erro de escrita.
      */
-    private void gravarReservas() throws  IOException {
-        try (Formatter out = new Formatter(new File(nomePasta + "/reservas.txt"))) {
+    private void gravarReservas() throws IOException {
+        String ficheiro = getCaminhoPastaEmpresa() + "/reservas.txt";
+        try (Formatter out = new Formatter(new File(ficheiro))) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             for (Reserva reserva : reservas) {
-                //Formato: NIF_Cliente;DATA_HORA;ORIGEM;DESTINO;KMS
                 out.format("%d;%s;%s;%s;%s%n",
                         reserva.getCliente().getNif(),
                         reserva.getDataHoraInicio().format(dtf),
@@ -984,7 +1046,7 @@ public class Empresa {
      * </p>
      */
     private void carregarViaturas() {
-        try (Scanner ler = new Scanner(new File(nomePasta + "/viaturas.txt"))) {
+        try (Scanner ler = new Scanner(new File(getCaminhoPastaEmpresa() + "/viaturas.txt"))) {
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados = linha.split(";");
@@ -1007,7 +1069,7 @@ public class Empresa {
      * </p>
      */
     private void carregarClientes() {
-        try (Scanner ler = new Scanner(new File(nomePasta + "/clientes.txt"))) {
+        try (Scanner ler = new Scanner(new File(getCaminhoPastaEmpresa() + "/clientes.txt"))) {
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados = linha.split(";");
@@ -1030,7 +1092,7 @@ public class Empresa {
      * </p>
      */
     private void carregarCondutores() {
-        try (Scanner ler = new Scanner(new File(nomePasta + "/condutores.txt"))) {
+        try (Scanner ler = new Scanner(new File(getCaminhoPastaEmpresa() + "/condutores.txt"))) {
             while (ler.hasNextLine()) {
                 String linha = ler.nextLine();
                 String[] dados = linha.split(";");
@@ -1064,7 +1126,7 @@ public class Empresa {
      * </p>
      */
     private void carregarViagens() {
-        try (Scanner ler = new Scanner(new File(nomePasta + "/viagens.txt"))) {
+        try (Scanner ler = new Scanner(new File(getCaminhoPastaEmpresa() + "/viagens.txt"))) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             while (ler.hasNextLine()) {
@@ -1107,7 +1169,7 @@ public class Empresa {
      * </p>
      */
     private void carregarReservas() {
-        try (Scanner ler = new Scanner(new File(nomePasta + "/reservas.txt"))) {
+        try (Scanner ler = new Scanner(new File(getCaminhoPastaEmpresa() + "/reservas.txt"))) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
             while (ler.hasNextLine()) {
