@@ -5,40 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a380fd5b-65b0-4708-ab1f-89603befb50c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Cliente.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Condutor.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Pessoa.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Reserva.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Viagem.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Entidades/Viatura.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Gestao/Empresa.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Main.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu$OperacaoCanceladaException.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Empresa-TVDE-Javolt.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Java_Development_Kit.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/clientes.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/condutores.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/reservas.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/viagens.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_Leo/viaturas.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/clientes.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/condutores.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/reservas.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/viagens.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/Empresas/Logs_sara/viaturas.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/TVDE_Javolt.iml" beforeDir="false" afterPath="$PROJECT_DIR$/APOO_TVDE_Javolt.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/src/Entidades/Cliente.java" beforeDir="false" afterPath="$PROJECT_DIR$/TVDE_Javolt/src/Entidades/Cliente.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TVDE_Javolt/src/Gestao/Empresa.java" beforeDir="false" afterPath="$PROJECT_DIR$/TVDE_Javolt/src/Gestao/Empresa.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Empresas/Logs_sara/viagens.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Empresas/Logs_sara/viagens.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TVDE_Javolt/src/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/TVDE_Javolt/src/Menu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu$OperacaoCanceladaException.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu$OperacaoCanceladaException.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/APOO_TVDE_Javolt/Menu.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

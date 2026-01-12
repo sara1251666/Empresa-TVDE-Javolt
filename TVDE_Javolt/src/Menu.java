@@ -141,7 +141,16 @@ public class Menu {
         try {
             imprimirCabecalho("CRIAÇÃO DE NOVA EMPRESA");
             exibirMsgCancelar();
-            return lerTextoComCancelamento("Nome da nova empresa: ");
+
+            while (true) {
+                String nome = lerTextoComCancelamento("Nome da nova empresa: ");
+
+                if (Empresa.empresaExiste(nome)){
+                    imprimirErro("Já existe uma empresa com esse nome. Tente outro.");
+                } else {
+                    return nome;
+                }
+            }
         } catch (OperacaoCanceladaException e) {
             return null;
         }
@@ -222,22 +231,7 @@ public class Menu {
      * @return Lista de nomes de empresas encontradas (sem o prefixo "Logs_").
      */
     private static ArrayList<String> listarEmpresasDetetadas() {
-        ArrayList<String> nomesEmpresas = new ArrayList<>();
-        File pastaPrincipal = new File("Empresas");
-
-        if (pastaPrincipal.exists() && pastaPrincipal.isDirectory()) {
-            File[] ficheiros = pastaPrincipal.listFiles();
-
-            if (ficheiros != null) {
-                for (File ficheiro : ficheiros) {
-                    if (ficheiro.isDirectory() && ficheiro.getName().startsWith("Logs_")) {
-                        String nomeReal = ficheiro.getName().substring(5); // Remove "Logs_"
-                        nomesEmpresas.add(nomeReal);
-                    }
-                }
-            }
-        }
-        return nomesEmpresas;
+        return Empresa.listarEmpresasExistentes();
     }
 
 // =======================================================
@@ -251,38 +245,26 @@ public class Menu {
      * Se existirem, pergunta se devem ser carregados.
      * Se não existirem, pergunta se devem ser gerados dados de teste.
      * </p>
-     *
-     * @param nomeEmpresa Nome da empresa para construir o caminho da pasta.
      */
     private static void carregarDadosIniciais() {
-        File pastaEmpresa = new File("Empresas/Logs_" + empresa.getNomeEmpresa());
-        String[] conteudoPasta = pastaEmpresa.list();
-
-        boolean temDados = pastaEmpresa.exists() &&
-                pastaEmpresa.isDirectory() &&
-                conteudoPasta != null &&
-                conteudoPasta.length > 0;
+        boolean temDados = empresa.existePastaEmpresa();
 
         if (temDados) {
-            try {
-                tratarCarregamentoDadosExistente();
-            } catch (OperacaoCanceladaException e) {
-                System.out.println(">> Carregamento cancelado. A iniciar com base de dados vazia.");
+            File pasta = new File(empresa.getCaminhoPastaEmpresa());
+            String[] conteudo = pasta.list();
+            if (conteudo == null || conteudo.length == 0) {
+                temDados = false;
             }
-        } else {
-            System.out.println("\n>> Primeira inicialização detetada (Sem histórico).");
         }
-
-        if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()) {
-            System.out.println(">> A base de dados está vazia.");
-            System.out.println(">> Deseja gerar dados de teste? (S/N): ");
-            String resposta = scanner.nextLine();
-
-            if (resposta.equalsIgnoreCase("S")) {
-                inicializarDadosTeste();
+        try {
+            if (temDados) {
+                tratarCarregamentoDadosExistente();
             } else {
-                System.out.println(">> Sistema a iniciar com base de dados vazia.");
+                System.out.println("\n>> Primeira inicialização detetada (Sem histórico).");
             }
+            verificarDadosTeste();
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Configuração inicial interrompida.");
         }
     }
 
@@ -294,7 +276,7 @@ public class Menu {
      * Se o utilizador recusar, mostra aviso sobre possível perda de dados.
      * </p>
      */
-    private static void tratarCarregamentoDadosExistente() throws OperacaoCanceladaException{
+    private static void tratarCarregamentoDadosExistente() throws OperacaoCanceladaException {
         System.out.println("\n>> ATENÇÃO: Foram encontrados registos anteriores!");
         String resposta = lerTextoComCancelamento("Deseja carregar os dados guardados? (S/N): ");
 
@@ -312,8 +294,6 @@ public class Menu {
      * Alert o utilizador que iniciar com dados vazios pode apagar
      * permanentemente o histórico anterior se gravar no final.
      * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
      */
     private static void mostrarAvisoPerdaDados() {
         System.out.println("\n!!! PERIGO: DETETADA POSSÍVEL PERDA DE DADOS !!!");
