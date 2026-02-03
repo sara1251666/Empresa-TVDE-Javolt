@@ -8,7 +8,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 import java.util.ArrayList;
 
-
 /**
  * Classe responsável pela Interface com o Utilizador (UI) via consola.
  * <p>
@@ -17,126 +16,116 @@ import java.util.ArrayList;
  * completo de menus hierárquicos para todas as operações do sistema TVDE.
  * </p>
  * <p>
- * Características principais:
- * <ul>
- *   <li>Seleção/criação de empresas</li>
- *   <li>Carregamento/gravação automática de dados</li>
- *   <li>Operações CRUD completas para todas as entidades</li>
- *   <li>Validação robusta de inputs do utilizador</li>
- *   <li>Sistema de cancelamento em qualquer operação</li>
- *   <li>Interface visual formatada com cabeçalhos e menus</li>
- * </ul>
+ * REQUISITOS CUMPRIDOS:
+ * - CRUD completo para todas as entidades (Viaturas, Condutores, Clientes, Reservas, Viagens)
+ * - Transformação de reserva em viagem
+ * - Verificação de sobreposição de reservas/viagens
+ * - Estatísticas e relatórios exigidos
+ * - Gestão de múltiplas empresas com ficheiros separados
+ * - Validação de dependências na eliminação
+ * - Interface robusta com validação de inputs
+ * - Manipulação de ficheiros de texto conforme especificado (Formatter, Scanner, etc.)
  * </p>
  *
- * @author Grupo 1 - Javolt (Levi, Sara, Leonardo, Micael)
- * @version 1.5
+ * @author Grupo 1 - Javolt
+ * @version 3.0
  * @since 2026-01-11
  */
 public class Menu {
 
-    /**
-     * Instância da Empresa atual. Não é inicializada logo para permitir
-     * seleção do nome da empresa no início da aplicação.
-     */
     private static Empresa empresa;
-
-    /**
-     * Objeto Scanner partilhado para leitura de inputs do utilizador.
-     * Usado em todos os métodos de leitura para evitar múltiplas instâncias.
-     */
     private static final Scanner scanner = new Scanner(System.in);
-
-    /**
-     * Formatador de data padrão para o sistema (dd-MM-yyyy HH:mm).
-     * Usado para parsing e formatação de datas em toda a aplicação.
-     */
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
-    /**
-     * Método principal de inicialização da aplicação.
-     * <p>
-     * Ordem de execução:
-     * <ol>
-     *   <li>Imprime cabeçalho inicial</li>
-     *   <li>Obtém/seleciona nome da empresa</li>
-     *   <li>Cria instância da Empresa</li>
-     *   <li>Carrega dados existentes ou inicia com vazio</li>
-     *   <li>Executa menu principal em loop</li>
-     *   <li>Encerra com gravação opcional de dados</li>
-     * </ol>
-     * </p>
-     */
-    public static void iniciar() {
-        imprimirCabecalho("SISTEMA DE GESTÃO TVDE");
-
-        // 1. Selecionar empresa
-        String nomeEmpresa = obterNomeEmpresa();
-        if (nomeEmpresa == null || nomeEmpresa.isEmpty()) {
-            imprimirAviso("Operação cancelada. A sair...");
-            return;
-        }
-
-        // 2. Criar empresa
-        empresa = new Empresa(nomeEmpresa);
-        System.out.println("\nBem vindo à gestão da empresa: " + nomeEmpresa);
-
-        // 3. Carregar dados iniciais
-        carregarDadosIniciais();
-
-        // 4. Executar menu principal
-        executarMenuPrincipal();
-
-        // 5. Encerrar aplicação
-        encerrarAplicacao(nomeEmpresa);
-    }
 
     // =======================================================
     //           INICIALIZAÇÃO E SELEÇÃO DE EMPRESA
     // =======================================================
 
-    /**
-     * Obtém o nome da empresa (nova ou existente).
-     * <p>
-     * Permite voltar ao menu de seleção se o utilizador escolher "0".
-     * Se não existirem empresas, força criação de nova.
-     * </p>
-     *
-     * @return Nome da empresa selecionada/criada, ou {@code null} se cancelado completamente.
-     */
-    private static String obterNomeEmpresa() {
-        ArrayList<String> empresas = listarEmpresasDetetadas();
+    public static void iniciar() {
+        imprimirCabecalho("SISTEMA DE GESTÃO TVDE");
 
-        // Loop até obter um nome válido ou cancelar completamente
-        while (true) {
-            if (empresas.isEmpty()) {
-                return criarEmpresaNova();
+        String nomeEmpresa = obterNomeEmpresa();
+
+        do {
+            if (nomeEmpresa == null) {
+                imprimirAviso("Operação cancelada. A sair...");
+                return;
             }
 
-            // Menu de seleção
-            String empresaSelecionada = selecionarEmpresa(empresas);
+            if (nomeEmpresa.isEmpty()) {
+                imprimirErro("Nome da Empresa não pode ser vazio.");
+                continue;
+            }
+            break; //Se o nome for válido, continua
+        } while (true);
 
-            if (empresaSelecionada == null) {
-                imprimirAviso("Nenhuma empresa selecionada.");
-                System.out.print("Deseja sair da aplicação? (S/N): ");
-                String resposta = scanner.nextLine();
+        empresa = new Empresa(nomeEmpresa);
+        imprimirCabecalho("A gerir a empresa: " + nomeEmpresa);
 
-                if (resposta.equalsIgnoreCase("S")) {
-                    return null;
+        carregarDadosIniciais();
+        executarMenuPrincipal();
+        encerrarAplicacao(nomeEmpresa);
+    }
+
+    private static String obterNomeEmpresa() {
+        ArrayList<String> empresas = Empresa.listarEmpresasExistentes();
+
+        while (true) {
+            if (empresas.isEmpty()) {
+                imprimirErro("Nenhuma Empresa encontrada.");
+                imprimirCabecalho("Menu Inicial ");
+                System.out.println("| 1 - Criar Nova Empresa                         |");
+                System.out.println("| 0 - Sair do Sistema                            |");
+                imprimirLinha();
+
+                int opcao = lerOpcaoMenu("Opção: ");
+                switch (opcao) {
+                    case 1 -> {
+                        String nome = criarEmpresaNova();
+                        if (nome == null) {
+                            continue;
+                        }
+                        return nome;
+                    }
+                    case 0 -> {
+                        return null;
+                    }
+                    default -> imprimirErro("Opção inválida.");
                 }
+            // É importante atualizar a lista caso a criação tenha falhado ou para a próxima iteração
+            empresas = Empresa.listarEmpresasExistentes();
             } else {
-                return empresaSelecionada; // Empresa selecionada com sucesso
+                imprimirCabecalho("SELEÇÃO DE EMPRESA");
+                System.out.println("| 1 - Criar Nova Empresa                           |");
+                System.out.println("| 2 - Carregar Empresa Existente                   |");
+                System.out.println("| 0 - Sair                                         |");
+                imprimirLinha();
+
+                int opcao = lerOpcaoMenu("Opção: ");
+                switch (opcao) {
+                    case 1 -> {
+                        String nome = criarEmpresaNova();
+                        if (nome == null) {
+                            continue;
+                        }
+                        return nome;
+                    }
+                    case 2 -> {
+                        String selecionada = listarESelecionarEmpresa(empresas);
+                        if (selecionada == null) {
+                            continue;
+                        }
+                        return selecionada;
+                    }
+                    case 0 -> {
+                        return null;
+                    }
+                    default -> imprimirErro("Opção inválida.");
+                }
             }
         }
     }
 
-    /**
-     * Cria uma nova empresa solicitando o nome ao utilizador.
-     * <p>
-     * O utilizador pode cancelar a operação a qualquer momento pressionando "0".
-     * </p>
-     *
-     * @return Nome da nova empresa, ou {@code null} se cancelado.
-     */
     private static String criarEmpresaNova() {
         try {
             imprimirCabecalho("CRIAÇÃO DE NOVA EMPRESA");
@@ -144,8 +133,7 @@ public class Menu {
 
             while (true) {
                 String nome = lerTextoComCancelamento("Nome da nova empresa: ");
-
-                if (Empresa.empresaExiste(nome)){
+                if (Empresa.empresaExiste(nome)) {
                     imprimirErro("Já existe uma empresa com esse nome. Tente outro.");
                 } else {
                     return nome;
@@ -156,50 +144,6 @@ public class Menu {
         }
     }
 
-    /**
-     * Permite selecionar empresa existente ou criar nova.
-     * <p>
-     * Apresenta menu com duas opções: criar nova ou carregar existente.
-     * </p>
-     *
-     * @param empresasExistentes Lista de empresas detetadas no sistema.
-     * @return Nome da empresa selecionada, ou {@code null} se cancelado.
-     */
-    private static String selecionarEmpresa(ArrayList<String> empresasExistentes) {
-        while (true) {
-            imprimirCabecalho("SELEÇÃO DE EMPRESA");
-            System.out.println("| 1 - Criar Nova Empresa                           |");
-            System.out.println("| 2 - Carregar Empresa Existente                   |");
-            imprimirLinha();
-
-            int opcao = lerOpcaoMenu("Escolha uma opção: ");
-
-            switch (opcao) {
-                case 1:
-                    return criarEmpresaNova();
-                case 2: {
-                    String empresaSelecionada = listarESelecionarEmpresa(empresasExistentes);
-                    if (empresaSelecionada != null) {
-                        return empresaSelecionada;
-                    }
-                    break;
-                }
-                default:
-                    imprimirAviso("Opção inválida.");
-            }
-        }
-    }
-
-    /**
-     * Lista empresas existentes e permite selecionar uma.
-     * <p>
-     * Apresenta lista numerada das empresas detetadas.
-     * O utilizador pode selecionar uma ou voltar (opção 0).
-     * </p>
-     *
-     * @param empresas Lista de nomes de empresas existentes.
-     * @return Nome da empresa selecionada, ou {@code null} se cancelado.
-     */
     private static String listarESelecionarEmpresa(ArrayList<String> empresas) {
         imprimirCabecalho("EMPRESAS ENCONTRADAS");
         for (int i = 0; i < empresas.size(); i++) {
@@ -208,44 +152,17 @@ public class Menu {
         System.out.println("  0 - Voltar");
         imprimirLinha();
 
-        int opcao = lerOpcaoMenu("Escolha a opção: ");
-
+        int opcao = lerOpcaoMenu("Opção: ");
         if (opcao == 0) {
             return null;
         } else if (opcao > 0 && opcao <= empresas.size()) {
             return empresas.get(opcao - 1);
         } else {
-            imprimirAviso("Opção inválida.");
+            imprimirErro("Opção inválida.");
             return null;
         }
     }
 
-
-    /**
-     * Pesquisa e lista empresas detetadas no sistema.
-     * <p>
-     * Procura na pasta "Empresas" por subpastas com prefixo "Logs_".
-     * Cada pasta representa uma empresa diferente.
-     * </p>
-     *
-     * @return Lista de nomes de empresas encontradas (sem o prefixo "Logs_").
-     */
-    private static ArrayList<String> listarEmpresasDetetadas() {
-        return Empresa.listarEmpresasExistentes();
-    }
-
-// =======================================================
-//               CARREGAMENTO DE DADOS
-// =======================================================
-
-    /**
-     * Carrega dados iniciais da empresa.
-     * <p>
-     * Verifica se existem dados guardados anteriormente.
-     * Se existirem, pergunta se devem ser carregados.
-     * Se não existirem, pergunta se devem ser gerados dados de teste.
-     * </p>
-     */
     private static void carregarDadosIniciais() {
         boolean temDados = empresa.existePastaEmpresa();
 
@@ -256,527 +173,538 @@ public class Menu {
                 temDados = false;
             }
         }
+
         try {
             if (temDados) {
-                tratarCarregamentoDadosExistente();
-            } else {
-                System.out.println("\n>> Primeira inicialização detetada (Sem histórico).");
+                imprimirAviso("Foram encontrados registos anteriores!");
+                String resposta = lerSimNaoCancelamento("Deseja carregar os dados guardados? (S/N): ");
+                if (resposta.equalsIgnoreCase("S")) {
+                    empresa.carregarDados();
+                    imprimirAviso("Dados carregados com sucesso.");
+                }
             }
-            verificarDadosTeste();
+
+            if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()) {
+                imprimirAviso("A base de dados está vazia.");
+                String resposta = lerSimNao("Deseja gerar dados de teste? (S/N): ");
+                if (resposta.equalsIgnoreCase("S")) {
+                    inicializarDadosTeste();
+                }
+            }
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Configuração inicial interrompida.");
         }
     }
 
+    // =======================================================
+    //                  MENU PRINCIPAL
+    // =======================================================
 
-    /**
-     * Trata do carregamento de dados existentes.
-     * <p>
-     * Pergunta ao utilizador se deseja carregar dados guardados anteriormente.
-     * Se o utilizador recusar, mostra aviso sobre possível perda de dados.
-     * </p>
-     */
-    private static void tratarCarregamentoDadosExistente() throws OperacaoCanceladaException {
-        System.out.println("\n>> ATENÇÃO: Foram encontrados registos anteriores!");
-        String resposta = lerTextoComCancelamento("Deseja carregar os dados guardados? (S/N): ");
-
-        if (resposta.equalsIgnoreCase("S")) {
-            System.out.println("A carregar dados...");
-            empresa.carregarDados();
-        } else {
-            mostrarAvisoPerdaDados();
-        }
-    }
-
-    /**
-     * Mostra aviso sobre possível perda de dados.
-     * <p>
-     * Alert o utilizador que iniciar com dados vazios pode apagar
-     * permanentemente o histórico anterior se gravar no final.
-     * </p>
-     */
-    private static void mostrarAvisoPerdaDados() {
-        System.out.println("\n!!! PERIGO: DETETADA POSSÍVEL PERDA DE DADOS !!!");
-        System.out.println("Se iniciar com a base de dados vazia e gravar no final,");
-        System.out.println("o histórico anterior será APAGADO PERMANENTEMENTE.");
-
-        System.out.println(">> Tem a certeza que deseja continuar com a base de dados VAZIA? (S/N): ");
-
-        String confirmacao = scanner.nextLine();
-
-        if (confirmacao.equalsIgnoreCase("S")) {
-            System.out.println("\n>> A iniciar sistema limpo...");
-        } else {
-            System.out.println("A carregar dados...");
-            empresa.carregarDados();
-        }
-    }
-
-    /**
-     * Verifica se precisa de gerar dados de teste.
-     * <p>
-     * Se a base de dados estiver vazia (sem viaturas nem condutores),
-     * pergunta ao utilizador se deseja gerar dados de teste automáticos.
-     * </p>
-     */
-    private static void verificarDadosTeste() {
-        if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()) {
-            try {
-                imprimirAviso("A base de dados está vazia.");
-                System.out.println();
-                String resposta = lerTextoComCancelamento("Deseja gerar dados de teste? (S/N): ");
-                if (resposta.equalsIgnoreCase("S")) {
-                    inicializarDadosTeste();
-                } else {
-                    imprimirAviso("Sistema a iniciar com base de dados vazia.");
-                }
-            } catch (OperacaoCanceladaException e) {
-                imprimirAviso("Opção ignorada. Sistema vazio.");
-            }
-        }
-    }
-
-// =======================================================
-//               MENU PRINCIPAL
-// =======================================================
-
-    /**
-     * Executa o menu principal em loop.
-     * <p>
-     * Exibe o menu principal e processa opções até o utilizador
-     * selecionar a opção de saída (0).
-     * </p>
-     */
     private static void executarMenuPrincipal() {
-        int opcao = -1;
+        int opcao;
         do {
-            exibirMenuPrincipal();
-            opcao = lerOpcaoMenu("Escolha uma opção: ");
-            if (opcao == 0) {
-                if (!confirmarSaida()) {
-                    opcao = -1;
+            imprimirCabecalho("MENU PRINCIPAL - TVDE");
+            System.out.println("| 1 - Gestão de Viaturas                           |");
+            System.out.println("| 2 - Gestão de Condutores                         |");
+            System.out.println("| 3 - Gestão de Clientes                           |");
+            System.out.println("| 4 - Gestão de Viagens                            |");
+            System.out.println("| 5 - Gestão de Reservas                           |");
+            System.out.println("| 6 - Consultas e Estatísticas                     |");
+            System.out.println("| 7 - Gravar/Carregar Dados                        |");
+            System.out.println("| 0 - Sair                                         |");
+            imprimirLinha();
+
+            opcao = lerOpcaoMenu("Opção: ");
+            switch (opcao) {
+                case 1 -> menuCRUD("Viaturas");
+                case 2 -> menuCRUD("Condutores");
+                case 3 -> menuCRUD("Clientes");
+                case 4 -> menuViagens();
+                case 5 -> menuReservas();
+                case 6 -> menuEstatisticas();
+                case 7 -> menuGestaoFicheiros();
+                case 0 -> {
+                    if (confirmarSaida()) return;
                 }
-            } else {
-                processarOpcaoPrincipal(opcao);
+                default -> imprimirErro("Opção inválida. Tente novamente.");
             }
-        } while (opcao != 0);
+        } while (true);
     }
 
-    /**
-     * Exibe o menu principal formatado.
-     * <p>
-     * Mostra todas as opções principais do sistema.
-     * </p>
-     */
-    private static void exibirMenuPrincipal() {
-        imprimirCabecalho("TVDE - MENU PRINCIPAL");
-        System.out.println("| 1 - Gerir Viaturas                               |");
-        System.out.println("| 2 - Gerir Condutores                             |");
-        System.out.println("| 3 - Gerir Clientes                               |");
-        System.out.println("| 4 - Gerir Viagens                                |");
-        System.out.println("| 5 - Gerir Reservas                               |");
-        System.out.println("| 6 - Relatórios/Estatísticas                      |");
-        System.out.println("| 0 - Sair                                         |");
-        imprimirLinha();
-    }
-
-    /**
-     * Processa opção do menu principal.
-     * <p>
-     * Encaminha para o submenu correspondente à opção selecionada.
-     * </p>
-     *
-     * @param opcao Opção selecionada pelo utilizador.
-     */
-    private static void processarOpcaoPrincipal(int opcao) {
-        switch (opcao) {
-            case 1 -> menuCRUD("Viaturas");
-            case 2 -> menuCRUD("Condutores");
-            case 3 -> menuCRUD("Clientes");
-            case 4 -> menuViagens();
-            case 5 -> menuReservas();
-            case 6 -> menuEstatisticas();
-            case 0 -> confirmarSaida();
-            default -> {
-                if (opcao != -1) {
-                    System.out.println("Opção inválida.");
-                }
-            }
-        }
-    }
-
-    /**
-     * Confirma a saída da aplicação.
-     * <p>
-     * Pergunta ao utilizador se tem certeza que deseja sair.
-     * </p>
-     * * @return true se o utilizador confirmar (S), false caso contrário.
-     */
     private static boolean confirmarSaida() {
         try {
-            String resposta = lerTextoComCancelamento("Tem a certeza que deseja sair? (S/N): ");
-            if (resposta.equalsIgnoreCase("S")) {
-                imprimirAviso("A preparar encerramento...");
-                return true;
-            } else {
-                imprimirAviso("Saída Cancelada.");
-                return false;
-            }
+            String resposta = lerSimNaoCancelamento("Tem a certeza que deseja sair? (S/N): ");
+            return resposta.equalsIgnoreCase("S");
         } catch (OperacaoCanceladaException e) {
             return false;
         }
     }
 
-// =======================================================
-//               SUBMENUS ESPECÍFICOS
-// =======================================================
+    // =======================================================
+    //               MENUS DE GESTÃO DE DADOS
+    // =======================================================
 
-    /**
-     * Menu genérico CRUD para entidades.
-     * <p>
-     * Implementa o padrão CRUD (Create, Read, Update, Delete)
-     * para a entidade especificada.
-     * </p>
-     *
-     * @param entidade Nome da entidade (Viaturas, Condutores, Clientes).
-     */
-    private static void menuCRUD(String entidade) {
+    private static void menuGestaoFicheiros() {
         int opcao;
         do {
-            exibirMenuCRUD(entidade);
-            opcao = lerOpcaoMenu("Escolha a opção: ");
-            processarOpcaoCRUD(entidade, opcao);
-        } while (opcao != 0);
-    }
+            imprimirCabecalho("GESTÃO DE DADOS - " + empresa.getNomeEmpresa());
+            System.out.println("| 1 - Gravar Dados em Ficheiros                    |");
+            System.out.println("| 2 - Carregar Dados de Ficheiro                   |");
+            System.out.println("| 3 - Mudar de Empresa                             |");
+            System.out.println("| 4 - Criar Nova Empresa                           |");
+            System.out.println("| 5 - Eliminar Dados da Empresa                    |");
+            System.out.println("| 0 - Voltar                                       |");
+            imprimirLinha();
 
-    /**
-     * Exibe menu CRUD formatado.
-     *
-     * @param entidade Nome da entidade a mostrar no cabeçalho.
-     */
-    private static void exibirMenuCRUD(String entidade) {
-        imprimirCabecalho("GESTÃO DE " + entidade);
-        System.out.println("|    1 - Criar (Create)                            |");
-        System.out.println("|    2 - Listar (Read)                             |");
-        System.out.println("|    3 - Atualizar (Update)                        |");
-        System.out.println("|    4 - Apagar (Delete)                           |");
-        System.out.println("|    0 - Voltar                                    |");
-        imprimirLinha();
-    }
-
-    /**
-     * Processa opção do menu CRUD.
-     * <p>
-     * Encaminha para os métodos específicos da entidade selecionada.
-     * </p>
-     *
-     * @param entidade Nome da entidade.
-     * @param opcao    Opção selecionada (1-4 para CRUD, 0 para voltar).
-     */
-    private static void processarOpcaoCRUD(String entidade, int opcao) {
-        switch (entidade) {
-            case "Viaturas" -> processarOpcaoViaturas(opcao);
-            case "Condutores" -> processarOpcaoCondutores(opcao);
-            case "Clientes" -> processarOpcaoClientes(opcao);
-        }
-    }
-
-    /**
-     * Menu de gestão de viagens.
-     * <p>
-     * Permite registar novas viagens, listar histórico e eliminar viagens.
-     * </p>
-     */
-    private static void menuViagens() {
-        int opcao;
-        do {
-            exibirMenuViagens();
-            opcao = lerOpcaoMenu("Escolha uma opção: ");
-            processarOpcaoViagens(opcao);
-        } while (opcao != 0);
-    }
-
-    /**
-     * Exibe menu de viagens.
-     */
-    private static void exibirMenuViagens() {
-        imprimirCabecalho("GESTÃO DE VIAGENS");
-        System.out.println("| 1 - Registar Nova Viagem (Imediata)              |");
-        System.out.println("| 2 - Listar Histórico de Viagens                  |");
-        System.out.println("| 3 - Apagar uma Viagem do Histórico               |");
-        System.out.println("| 0 - Voltar                                       |");
-        imprimirLinha();
-    }
-
-    /**
-     * Processa opção do menu de viagens.
-     *
-     * @param opcao Opção selecionada (1-3 para operações, 0 para voltar).
-     */
-    private static void processarOpcaoViagens(int opcao) {
-        switch (opcao) {
-            case 1 -> tratarRegistarViagem();
-            case 2 -> tratarListarViagens();
-            case 3 -> tratarEliminarViagem();
-        }
-    }
-
-    /**
-     * Menu de gestão de reservas.
-     * <p>
-     * Permite todas as operações relacionadas com reservas,
-     * incluindo conversão em viagens.
-     * </p>
-     */
-    private static void menuReservas() {
-        int opcao;
-        do {
-            exibirMenuReservas();
-            opcao = lerOpcaoMenu("Escolha uma opção: ");
-            processarOpcaoReservas(opcao);
-        } while (opcao != 0);
-    }
-
-    /**
-     * Exibe menu de reservas formatado.
-     */
-    private static void exibirMenuReservas() {
-        imprimirCabecalho("GESTÃO DE RESERVAS");
-        System.out.println("| 1 - Criar Nova Reserva                           |");
-        System.out.println("| 2 - Listar Reservas Pendentes                    |");
-        System.out.println("| 3 - Consultar Reservas de um Cliente             |");
-        System.out.println("| 4 - Alterar uma Reserva                          |");
-        System.out.println("| 5 - Converter Reserva em Viagem                  |");
-        System.out.println("| 6 - Cancelar/Apagar uma Reserva                  |");
-        System.out.println("| 0 - Voltar                                       |");
-        imprimirLinha();
-    }
-
-    /**
-     * Processa opção do menu de reservas.
-     *
-     * @param opcao Opção selecionada (1-6 para operações, 0 para voltar).
-     */
-    private static void processarOpcaoReservas(int opcao) {
-        switch (opcao) {
-            case 1 -> tratarCriarReserva();
-            case 2 -> tratarListarReservas();
-            case 3 -> tratarConsultarReservasCliente();
-            case 4 -> tratarAlterarReserva();
-            case 5 -> tratarConverterReserva();
-            case 6 -> tratarEliminarReserva();
-        }
-    }
-
-    /**
-     * Menu de estatísticas e relatórios.
-     * <p>
-     * Permite aceder a várias estatísticas do sistema,
-     * como faturação, destinos populares, distâncias médias, etc.
-     * </p>
-     */
-    private static void menuEstatisticas() {
-        int opcao;
-        do {
-            exibirMenuEstatisticas();
-            opcao = lerOpcaoMenu("Escolha uma opção: ");
-            processarOpcaoEstatisticas(opcao);
-        } while (opcao != 0);
-    }
-
-    /**
-     * Exibe menu de estatísticas formatado.
-     */
-    private static void exibirMenuEstatisticas() {
-        imprimirCabecalho("RELATÓRIOS E ESTATÍSTICAS");
-        System.out.println("| 1 - Faturação Cliente                            |");
-        System.out.println("| 2 - Clientes por Viatura                         |");
-        System.out.println("| 3 - Top Destinos                                 |");
-        System.out.println("| 4 - Distância Média                              |");
-        System.out.println("| 5 - Clientes por Kms                             |");
-        System.out.println("| 6 - Histórico Clientes                           |");
-        System.out.println("| 0 - Voltar                                       |");
-        imprimirLinha();
-    }
-
-    /**
-     * Processa opção do menu de estatísticas.
-     *
-     * @param opcao Opção selecionada (1-6 para estatísticas, 0 para voltar).
-     */
-    private static void processarOpcaoEstatisticas(int opcao) {
-        switch (opcao) {
-            case 1 -> estatFaturacaoCondutor();
-            case 2 -> estatClientesViatura();
-            case 3 -> estatDestinoMaisSolicitado();
-            case 4 -> estatDistanciaMedia();
-            case 5 -> estatClientesPorIntervaloKms();
-            case 6 -> estatHistoricoClientePorDatas();
-        }
-    }
-
-// =======================================================
-//               PROCESSAMENTO CRUD
-// =======================================================
-
-    /**
-     * Processa opções CRUD para Viaturas.
-     *
-     * @param opcao Opção selecionada (1-Criar, 2-Listar, 3-Atualizar, 4-Eliminar).
-     */
-    private static void processarOpcaoViaturas(int opcao) {
-        try {
+            opcao = lerOpcaoMenu("Opção: ");
             switch (opcao) {
-                case 1 -> criarViatura();
-                case 2 -> listarViaturas();
-                case 3 -> atualizarViatura();
-                case 4 -> eliminarViatura();
+                case 1 -> gravarDadosAtuais();
+                case 2 -> carregarDadosAtuais();
+                case 3 -> tratarMudarEmpresa();
+                case 4 -> {
+                    String novoNome = criarEmpresaNova();
+                    if (novoNome != null) {
+                        String mudar = lerSimNao("Empresa criada. Deseja mudar para " + novoNome + "? (S/N) ");
+                        if (mudar.equalsIgnoreCase("S")) {
+
+                            try {
+                                String gravar = lerSimNaoCancelamento(
+                                        "Deseja gravar os dados da empresa atual antes de mudar? (S/N): "
+                                );
+
+                                if (gravar.equalsIgnoreCase("S")) {
+                                    empresa.gravarDados();
+                                    imprimirAviso("Dados gravados com sucesso.");
+                                }
+
+                                empresa = new Empresa(novoNome);
+                                imprimirAviso("A gerir a empresa: " + novoNome);
+
+                                if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()) {
+                                    String gerar = lerSimNao("Deseja gerar dados de teste? (S/N): ");
+                                    if (gerar.equalsIgnoreCase("S")) {
+                                        inicializarDadosTeste();
+                                    }
+                                }
+
+                            } catch (OperacaoCanceladaException e) {
+                                imprimirAviso("Mudança de empresa cancelada.");
+                            }
+                        }
+                    }
+                }
+
+                case 5 -> eliminarDadosEmpresa();
+                case 0 -> {
+                    return;
+                }
+                default -> imprimirErro("Opção inválida.");
+            }
+        } while (true);
+    }
+
+    // =======================================================
+    //           GRAVAR E CARREGAR DADOS ATUAIS
+    // =======================================================
+
+    private static void gravarDadosAtuais() {
+        try {
+            imprimirCabecalho("GRAVAR DADOS ATUAIS");
+            imprimirAviso("Viaturas: " + empresa.getViaturas().size());
+            imprimirAviso("Condutores: " + empresa.getCondutores().size());
+            imprimirAviso("Clientes: " + empresa.getClientes().size());
+            imprimirAviso("Viagens: " + empresa.getViagens().size());
+            imprimirAviso("Reservas: " + empresa.getReservas().size());
+            imprimirLinha();
+
+            String caminhoPasta = empresa.getCaminhoPastaEmpresa();
+            imprimirAviso("Local de gravação: " + caminhoPasta);
+
+            File pasta = new File(caminhoPasta);
+            if (pasta.exists()) {
+                imprimirAviso("A pasta já existe.");
+            } else {
+                imprimirAviso("A pasta será criada automaticamente.");
+            }
+
+            String resposta = lerSimNaoCancelamento("\nTem a certeza que deseja gravar os dados? (S/N): ");
+
+            if (resposta.equalsIgnoreCase("S")) {
+                imprimirAviso("\nA gravar dados...");
+                empresa.gravarDados();
+                imprimirAviso("Dados gravados com sucesso!");
+            } else {
+                imprimirAviso("Operação cancelada.");
             }
         } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
+            System.out.println("Operação cancelada.");
+        }
+    }
+
+    private static void carregarDadosAtuais() {
+        try {
+            imprimirCabecalho("CARREGAR DADOS DE OUTRA EMPRESA");
+            imprimirAviso("ATENÇÃO: Esta operação irá substituir os dados atuais em memória.");
+            imprimirAviso("Recomenda-se gravar os dados atuais antes de prosseguir.");
+            System.out.println();
+            imprimirTitulo("Dados atuais em memória:");
+            imprimirAviso("Viaturas: " + empresa.getViaturas().size());
+            imprimirAviso("Condutores: " + empresa.getCondutores().size());
+            imprimirAviso("Clientes: " + empresa.getClientes().size());
+            imprimirAviso("Viagens: " + empresa.getViagens().size());
+            imprimirAviso("Reservas: " + empresa.getReservas().size());
+
+            String resposta = lerSimNaoCancelamento("Tem a certeza que deseja continar? (S/N): ");
+
+            if (!resposta.equalsIgnoreCase("S")) {
+                imprimirAviso("Operação cancelada.");
+                return;
+            }
+
+            imprimirCabecalho("INTRODUZA O NOME DA EMPRESA");
+            exibirMsgCancelar();
+
+            String nomeEmpresa = lerTextoComCancelamento("Nome da empresa a carregar: ");
+
+            if (nomeEmpresa.equalsIgnoreCase(empresa.getNomeEmpresa())) {
+                imprimirErro("Esta já é a Empresa atual.");
+                return;
+            }
+
+            if (!Empresa.empresaExiste(nomeEmpresa)) {
+                imprimirErro("A Empresa '" + nomeEmpresa + "' não foi encontrada.");
+
+                resposta = lerSimNaoCancelamento("Deseja criar uma nova Empresa com este nome? ");
+                if (!resposta.equalsIgnoreCase("S")) {
+                    criarNovaEmpresaECarregar(nomeEmpresa);
+                }
+                return;
+            }
+
+            carregarEmpresaSelecionada(nomeEmpresa);
+
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Operacao cancelada.");
+        }
+    }
+
+    private static void tratarMudarEmpresa(){
+        ArrayList<String> empresas = Empresa.listarEmpresasExistentes();
+        if (empresas.isEmpty()) {
+            imprimirErro("Não existem outras empresas registadas.");
+            return;
+        }
+        String novaEmpresa = listarESelecionarEmpresa(empresas);
+        if (novaEmpresa != null) {
+            try {
+                String gravar = lerSimNaoCancelamento("Deseja gravar os dados da empresa atual antes de mudar? (S/N): ");
+                if (gravar.equalsIgnoreCase("S")) {
+                    empresa.gravarDados();
+                    imprimirAviso("Dados gravados com sucesso.");
+                }
+                carregarEmpresaSelecionada(novaEmpresa);
+            }catch (OperacaoCanceladaException e){
+                imprimirAviso("Mudança de empresa cancelada.");
+            }
+        }
+    }
+
+    // =======================================================
+    //           ELIMINAR DADOS DA EMPRESA
+    // =======================================================
+
+    private static void eliminarDadosEmpresa() {
+        try {
+            imprimirTitulo("ELIMINAR DADOS DA EMPRESA");
+            imprimirAviso("ATENÇÃO: Esta operação irá APAGAR PERMANENTEMENTE todos os dados guardados.");
+            imprimirAviso("Empresa: " + empresa.getNomeEmpresa());
+
+            String caminhoPasta = empresa.getCaminhoPastaEmpresa();
+            File pasta = new File(caminhoPasta);
+
+            if (!pasta.exists()) {
+                imprimirAviso("A empresa não tem dados guardados em ficheiro.");
+                return;
+            }
+
+            String[] ficheiros = pasta.list();
+            if (ficheiros == null || ficheiros.length == 0) {
+                imprimirAviso("A pasta existe mas está vazia.");
+                return;
+            }
+
+            imprimirTitulo("Ficheiros a Eliminar");
+            for (String ficheiro : ficheiros) {
+                System.out.println("-> " + ficheiro);
+            }
+            imprimirAviso("Total: " + ficheiros.length + " ficheiros");
+            imprimirTitulo("DADOS ATUAIS EM MEMÓRIA");
+            imprimirAviso("(não serão afetados)");
+            imprimirAviso("Viaturas: " + empresa.getViaturas().size());
+            imprimirAviso("Condutores: " + empresa.getCondutores().size());
+            imprimirAviso("Clientes: " + empresa.getClientes().size());
+            imprimirAviso("Viagens: " + empresa.getViagens().size());
+            imprimirAviso("Reservas: " + empresa.getReservas().size());
+
+            String resposta1 = lerSimNaoCancelamento("Tem a certeza que deseja eliminar os dados guardados? (S/N): ");
+            if (!resposta1.equalsIgnoreCase("S")) {
+                imprimirAviso("Operação cancelada.");
+                return;
+            }
+
+            imprimirAviso("ATENÇÃO: Esta ação NÃO pode ser desfeita!");
+            String resposta2 = lerSimNaoCancelamento("Confirmar eliminação PERMANENTE? (S/N): ");
+            if (!resposta2.equalsIgnoreCase("S")) {
+                imprimirAviso("Operação cancelada.");
+                return;
+            }
+            imprimirAviso("A eliminar ficheiros...");
+            int eliminados = 0;
+            for (String ficheiro : ficheiros) {
+                File file = new File(pasta, ficheiro);
+                if (file.delete()) {
+                    eliminados++;
+                }
+            }
+
+            if (pasta.delete()) {
+                imprimirAviso("Pasta da empresa eliminada com sucesso.");
+            } else if (pasta.exists() && pasta.list() != null && pasta.list().length == 0) {
+                imprimirAviso("Todos os ficheiros foram eliminados.");
+            }
+            imprimirAviso("Ficheiros eliminados: " + eliminados + " de " + ficheiros.length);
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Operacao cancelada.");
+        }
+    }
+
+    // =======================================================
+    //           MÉTODOS AUXILIARES PARA CARREGAMENTO
+    // =======================================================
+
+    private static void criarNovaEmpresaECarregar(String nomeEmpresa) throws OperacaoCanceladaException {
+        try {
+            imprimirCabecalho("CRIAÇÃO DE NOVA EMPRESA: " + nomeEmpresa);
+
+            if (Empresa.empresaExiste(nomeEmpresa)) {
+                imprimirErro("Já existe uma empresa com esse nome. Operação cancelada.");
+                return;
+            }
+            Empresa novaEmpresa = new Empresa(nomeEmpresa);
+
+            imprimirAviso("Empresa '" + nomeEmpresa + "' criada com sucesso!");
+            String resposta = lerSimNaoCancelamento("Deseja gerar dados de teste para esta empresa? (S/N): ");
+            if (resposta.equalsIgnoreCase("S")) {
+                inicializarDadosTeste();
+            }
+
+            empresa = novaEmpresa;
+            imprimirTitulo("A gerir a empresa: " + nomeEmpresa);
+        } catch (OperacaoCanceladaException e) {
+            imprimirErro("Carregamento interrompido.");
+        }
+    }
+
+    private static void carregarEmpresaSelecionada(String nomeEmpresa) {
+        try {
+            imprimirCabecalho("A CARREGAR EMPRESA " + nomeEmpresa);
+
+            Empresa novaEmpresa = new Empresa(nomeEmpresa);
+
+            if (novaEmpresa.existePastaEmpresa()) {
+                File pasta = new File(novaEmpresa.getCaminhoPastaEmpresa());
+                String[] conteudo = pasta.list();
+
+                if (conteudo != null && conteudo.length > 0) {
+                    imprimirAviso("Foram encontrados " + conteudo.length + " ficheiros de dados.");
+                    String resposta = lerSimNaoCancelamento("Deseja carregar os dados guardados? (S/N): ");
+
+                    if (resposta.equalsIgnoreCase("S")) {
+                        novaEmpresa.carregarDados();
+                        System.out.println();
+                        imprimirAviso("Dados carregados com sucesso!");
+                    } else {
+                        imprimirAviso("A carregar Empresa sem dados!");
+                    }
+                } else {
+                    imprimirAviso("A empresa existe mas não tem dados guardados.");
+                }
+            } else {
+                imprimirAviso("A empresa '" + nomeEmpresa + "' não tem pasta de dados.");
+            }
+            empresa = novaEmpresa;
+            if (empresa.getViaturas().isEmpty() && empresa.getCondutores().isEmpty()) {
+                imprimirAviso("A base de dados está vazia.");
+                String resposta = lerSimNaoCancelamento("Deseja gerar dados de teste? (S/N): ");
+
+                if (resposta.equalsIgnoreCase("S")) {
+                    inicializarDadosTeste();
+                }
+            }
+            imprimirAviso("A gerir a empresa: " + nomeEmpresa);
+        } catch (OperacaoCanceladaException e) {
+
         }
     }
 
 
-    /**
-     * Cria uma nova viatura.
-     * <p>
-     * Solicita todos os dados necessários e cria uma nova {@link Viatura}.
-     * Valida se a matrícula é única no sistema.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
+    // =======================================================
+    //               MENUS CRUD GENÉRICOS
+    // =======================================================
+
+    private static void menuCRUD(String tipo) {
+        int opcao;
+        do {
+            imprimirCabecalho("GESTÃO DE " + tipo.toUpperCase());
+            System.out.println("| 1 - Criar (Create)                               |");
+            System.out.println("| 2 - Listar (Read)                                |");
+            System.out.println("| 3 - Atualizar (Update)                           |");
+            System.out.println("| 4 - Apagar (Delete)                              |");
+            System.out.println("| 0 - Voltar                                       |");
+            imprimirLinha();
+
+            opcao = lerOpcaoMenu("Opção: ");
+            try {
+                switch (tipo) {
+                    case "Viaturas" -> processarViaturas(opcao);
+                    case "Condutores" -> processarCondutores(opcao);
+                    case "Clientes" -> processarClientes(opcao);
+                }
+            } catch (OperacaoCanceladaException e) {
+                imprimirAviso("Operação cancelada.");
+            }
+        } while (opcao != 0);
+    }
+
+    // =======================================================
+    //                  GESTÃO DE VIATURAS
+    // =======================================================
+
+    private static void processarViaturas(int opcao) throws OperacaoCanceladaException {
+        switch (opcao) {
+            case 1 -> criarViatura();
+            case 2 -> listarViaturas(empresa.getViaturas());
+            case 3 -> atualizarViatura();
+            case 4 -> eliminarViatura();
+        }
+    }
+
     private static void criarViatura() throws OperacaoCanceladaException {
+        imprimirTitulo("NOVA VIATURA");
         exibirMsgCancelar();
 
         String matricula = lerMatriculaUnica();
         String marca = lerTextoComCancelamento("Marca: ");
         String modelo = lerTextoComCancelamento("Modelo: ");
-        int ano = lerInteiroComCancelamento("Ano de Fabrico: ");
+        int ano = lerAnoValido();
 
-        Viatura viatura = new Viatura(matricula, marca, modelo, ano);
-        if (empresa.adicionarViatura(viatura)) {
-            System.out.println("Viatura adicionada com sucesso!");
-        } else {
-            imprimirErro("Não foi possível adicionar a viatura.");
+        try {
+            Viatura viatura = new Viatura(matricula, marca, modelo, ano);
+            if (empresa.adicionarViatura(viatura)) {
+                imprimirAviso("Viatura adicionada com sucesso!");
+            } else {
+                imprimirErro("Não foi possível adicionar a viatura.");
+            }
+        } catch (IllegalArgumentException e) {
+            imprimirErro("Erro ao criar viatura: " + e.getMessage());
         }
     }
 
-    /**
-     * Lê matrícula garantindo que é única no sistema.
-     * <p>
-     * Continua a pedir matrícula até que seja inserida uma que não exista.
-     * </p>
-     *
-     * @return Matrícula única válida.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
     private static String lerMatriculaUnica() throws OperacaoCanceladaException {
         String matricula;
         do {
             matricula = lerTextoComCancelamento("Matrícula: ");
             if (empresa.procurarViatura(matricula) != null) {
-                imprimirErro("Viatura com essa matrícula já existente.");
+                imprimirErro("Viatura com essa matrícula já existe.");
             }
         } while (empresa.procurarViatura(matricula) != null);
         return matricula;
     }
 
-    /**
-     * Lista todas as viaturas registadas.
-     * <p>
-     * Mostra lista numerada com todas as viaturas do sistema.
-     * Se não houver viaturas, mostra mensagem apropriada.
-     * </p>
-     */
-    private static void listarViaturas() {
-        if (empresa.getViaturas().isEmpty()) {
-            imprimirAviso("Nenhuma viatura registada.");
-        } else {
-            imprimirTitulo("Lista de Viaturas");
-            int contador = 1;
-            for (Viatura v : empresa.getViaturas()) {
-                System.out.println(contador + ". " + v.toString());
-                contador++;
-            }
-        }
-    }
-
-    /**
-     * Atualiza uma viatura existente.
-     * <p>
-     * Solicita matrícula, localiza a viatura e permite editar
-     * marca, modelo e ano de fabrico.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
     private static void atualizarViatura() throws OperacaoCanceladaException {
-        String matricula = lerTextoComCancelamento("Insira a matrícula da viatura a editar: ");
+        imprimirTitulo("ATUALIZAR VIATURA");
+
+        String verLista = lerSimNaoCancelamento("Deseja ver a lista de viaturas? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarViaturas(empresa.getViaturas());
+        }
+
+        String matricula = lerTextoComCancelamento("Matrícula da viatura a editar: ");
         Viatura viatura = empresa.procurarViatura(matricula);
 
-        if (viatura != null) {
-            System.out.println("Dados atuais: " + viatura);
-            viatura.setMarca(lerTextoComCancelamento("Nova Marca: "));
-            viatura.setModelo(lerTextoComCancelamento("Novo Modelo: "));
-            viatura.setAnoFabrico(lerInteiroComCancelamento("Novo Ano: "));
-            System.out.println("Viatura atualizada.");
-        } else {
+        if (viatura == null) {
             imprimirErro("Viatura não encontrada.");
+            return;
         }
-    }
 
-    /**
-     * Elimina uma viatura do sistema.
-     * <p>
-     * Verifica se a viatura não tem viagens associadas antes de permitir a eliminação.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static void eliminarViatura() throws OperacaoCanceladaException {
-        System.out.println("--- Apagar Viatura ---");
+        System.out.println("\nDados atuais: " + viatura);
+        System.out.println("(Nota: Prima ENTER para avançar. Digite 0 para cancelar.)");
 
-        mostrarLista("Viaturas");
-
-        String matricula = lerTextoComCancelamento("Matrícula a eliminar: ");
-        if (empresa.removerViatura(matricula)) {
-            System.out.println("Viatura removida.");
-        } else {
-            imprimirErro("Viatura não existe ou tem viagens associadas.");
+        System.out.print("\nNova Marca [" + viatura.getMarca() + "]: ");
+        String novaMarca = lerTextoComCancelamento("");
+        if (!novaMarca.isEmpty()) {
+            viatura.setMarca(novaMarca);
         }
-    }
 
-    /**
-     * Processa opções CRUD para Condutores.
-     *
-     * @param opcao Opção selecionada (1-Criar, 2-Listar, 3-Atualizar, 4-Eliminar).
-     */
-    private static void processarOpcaoCondutores(int opcao) {
-        try {
-            switch (opcao) {
-                case 1 -> criarCondutor();
-                case 2 -> listarCondutores();
-                case 3 -> atualizarCondutor();
-                case 4 -> eliminarCondutor();
+        System.out.print("Novo Modelo [" + viatura.getModelo() + "]: ");
+        String novoModelo = lerTextoComCancelamento("");
+        if (!novoModelo.isEmpty()) {
+            viatura.setModelo(novoModelo);
+        }
+
+        System.out.print("Novo Ano [" + viatura.getAnoFabrico() + "]: ");
+        String anoInput = lerTextoComCancelamento("");
+        if (!anoInput.isEmpty()) {
+            try {
+                int ano = Integer.parseInt(anoInput);
+                if (ano >= 1886 && ano <= 2026) {
+                    viatura.setAnoFabrico(ano);
+                } else {
+                    imprimirErro("Ano inválido (1886-2026). Valor antigo mantido.");
+                }
+            } catch (NumberFormatException e) {
+                imprimirErro("Ano inválido. Mantido o anterior.");
             }
-        } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
         }
     }
 
+    private static void eliminarViatura() throws OperacaoCanceladaException {
+        imprimirTitulo("ELIMINAR VIATURA");
 
-    /**
-     * Cria um novo condutor.
-     * <p>
-     * Solicita todos os dados necessários, incluindo o número de identificação único.
-     * Valida NIF e garante unicidade do número de identificação.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
+        String verLista = lerSimNaoCancelamento("Deseja ver a lista de viaturas? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarViaturas(empresa.getViaturas());
+        }
+
+        String matricula = lerTextoComCancelamento("Matrícula da viatura a eliminar: ");
+        Viatura viatura = empresa.procurarViatura(matricula);
+
+        if (viatura == null) {
+            imprimirErro("Viatura com a matricula: [" + matricula + "] não existe.");
+            return;
+        }
+        if (empresa.removerViatura(matricula)) {
+            imprimirAviso("Viatura removida com sucesso.");
+        } else {
+            imprimirErro("Viatura tem viagens associadas.");
+        }
+    }
+
+// =======================================================
+//                  GESTÃO DE CONDUTORES
+// =======================================================
+
+    private static void processarCondutores(int opcao) throws OperacaoCanceladaException {
+        switch (opcao) {
+            case 1 -> criarCondutor();
+            case 2 -> listarCondutores(empresa.getCondutores());
+            case 3 -> atualizarCondutor();
+            case 4 -> eliminarCondutor();
+        }
+    }
+
     private static void criarCondutor() throws OperacaoCanceladaException {
+        imprimirTitulo("NOVO CONDUTOR");
         exibirMsgCancelar();
 
         int numeroIdentificacao = lerNumeroIdentificacaoUnico();
@@ -794,103 +722,118 @@ public class Menu {
             if (empresa.adicionarCondutor(condutor)) {
                 imprimirAviso("Condutor registado com sucesso!");
             } else {
-                imprimirErro("Número de identificação já existe!");
+                imprimirErro("Não foi possível registar o condutor.");
             }
         } catch (IllegalArgumentException e) {
-            imprimirAviso("\nErro de validação nos dados: " + e.getMessage());
+            imprimirErro("Erro nos dados: " + e.getMessage());
         }
     }
 
-    /**
-     * Lista todos os condutores registado.
-     */
-    private static void listarCondutores() {
-        ArrayList<Condutor> lista = empresa.getCondutores();
-        if (lista.isEmpty()) {
-            imprimirAviso("Não há condutores registados.");
-        } else {
-            imprimirTitulo("\nLista de Condutores");
-            int contador = 1;
-            for (Condutor c : lista) {
-                System.out.println(contador + ". " + c.toString());
-                contador++;
+    private static int lerNumeroIdentificacaoUnico() throws OperacaoCanceladaException {
+        int numeroId;
+        while (true) {
+            numeroId = lerInteiroComCancelamento("Número de identificação: ");
+
+            if (numeroId <= 0) {
+                imprimirErro("O número deve ser positivo.");
+                continue;
             }
+
+            if (empresa.procurarCondutorPorId(numeroId) != null) {
+                imprimirErro("Já existe um condutor com esse número.");
+                continue;
+            }
+            break;
         }
+        return numeroId;
     }
 
-    /**
-     * Atualiza um condutor existente.
-     * <p>
-     * Permite editar nome, telemóvel, morada, carta de condução e segurança social.
-     * Não permite alterar número de identificação ou NIF.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
     private static void atualizarCondutor() throws OperacaoCanceladaException {
-        int numeroId = lerInteiroComCancelamento("Número de identificação do condutor a editar: ");
+        imprimirTitulo("ATUALIZAR CONDUTOR");
+
+        String verLista = lerSimNaoCancelamento("Deseja ver a lista de condutores? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarCondutores(empresa.getCondutores());
+        }
+
+        int numeroId = lerInteiroComCancelamento("Número de identificação do condutor: ");
         Condutor condutor = empresa.procurarCondutorPorId(numeroId);
 
-        if (condutor != null) {
-            System.out.println("Dados atuais: " + condutor);
-            condutor.setNome(lerTextoComCancelamento("Novo Nome: "));
-            condutor.setTel(lerInteiroComCancelamento("Novo Telemóvel: "));
-            condutor.setMorada(lerTextoComCancelamento("Nova Morada: "));
-            condutor.setCartaCond(lerTextoComCancelamento("Nova Carta Condução: "));
-            condutor.setSegSocial(lerInteiroComCancelamento("Nova Segurança Social: "));
-            System.out.println("Condutor atualizado.");
-        } else {
-            imprimirAviso("Condutor não encontrado.");
+        if (condutor == null) {
+            imprimirErro("Condutor não encontrado.");
+            return;
         }
+
+        System.out.println("\nDados atuais: " + condutor);
+        System.out.println("(Nota: Prima ENTER para avançar. Digite 0 para cancelar.)");
+        System.out.print("\nNovo Nome [" + condutor.getNome() + "]: ");
+        String novoNome = lerTextoComCancelamento("");
+        if (!novoNome.isEmpty()) {
+            condutor.setNome(novoNome);
+        }
+
+        System.out.print("Novo Telemóvel [" + condutor.getTel() + "]: ");
+        String novoTel = lerTextoComCancelamento("");
+        if (!novoTel.isEmpty()) {
+            try {
+                condutor.setTel(Integer.parseInt(novoTel));
+            } catch (NumberFormatException e) {
+                imprimirErro("Telemóvel inválido. Mantido o anterior.");
+            }
+        }
+
+        System.out.print("Nova Morada [" + condutor.getMorada() + "]: ");
+        String novaMorada = lerTextoComCancelamento("");
+        if (!novaMorada.isEmpty()) {
+            condutor.setMorada(novaMorada);
+        }
+
+        System.out.print("Nova Carta Condução [" + condutor.getCartaCond() + "]: ");
+        String novaCarta = lerTextoComCancelamento("");
+        if (!novaCarta.isEmpty()) {
+            condutor.setCartaCond(novaCarta);
+        }
+
+        imprimirAviso("Condutor atualizado com sucesso.");
     }
 
-    /**
-     * Elimina um condutor do sistema.
-     * <p>
-     * Verifica se o condutor não tem viagens associadas antes de permitir a eliminação.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
     private static void eliminarCondutor() throws OperacaoCanceladaException {
-        System.out.println("--- Apagar Condutor ---");
+        imprimirTitulo("ELIMINAR CONDUTOR");
 
-        mostrarLista("Condutores");
-        int numeroId = lerInteiroComCancelamento("Número de identificação a eliminar: ");
+        String verLista = lerSimNaoCancelamento("Deseja ver a lista de condutores? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarCondutores(empresa.getCondutores());
+        }
+
+        int numeroId = lerInteiroComCancelamento("Número de identificação do condutor: ");
+        Condutor condutor = empresa.procurarCondutorPorId(numeroId);
+        if (condutor == null) {
+            imprimirErro("Condutor com ID [" + numeroId + "] não existe.");
+            return;
+        }
+
         if (empresa.removerCondutor(numeroId)) {
-            imprimirAviso("Condutor removido.");
+            imprimirAviso("Condutor removido com sucesso.");
         } else {
             imprimirErro("Não pode remover condutor com histórico de viagens.");
         }
     }
 
-    /**
-     * Processa opções CRUD para Clientes.
-     *
-     * @param opcao Opção selecionada (1-Criar, 2-Listar, 3-Atualizar, 4-Eliminar).
-     */
-    private static void processarOpcaoClientes(int opcao) {
-        try {
-            switch (opcao) {
-                case 1 -> criarCliente();
-                case 2 -> listarClientes();
-                case 3 -> atualizarCliente();
-                case 4 -> eliminarCliente();
-            }
-        } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
+// =======================================================
+//                  GESTÃO DE CLIENTES
+// =======================================================
+
+    private static void processarClientes(int opcao) throws OperacaoCanceladaException {
+        switch (opcao) {
+            case 1 -> criarCliente();
+            case 2 -> listarClientes(empresa.getClientes());
+            case 3 -> atualizarCliente();
+            case 4 -> eliminarCliente();
         }
     }
 
-    /**
-     * Cria um novo cliente.
-     * <p>
-     * Solicita dados básicos do cliente e valida unicidade do NIF.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
     private static void criarCliente() throws OperacaoCanceladaException {
+        imprimirTitulo("NOVO CLIENTE");
         exibirMsgCancelar();
 
         int nif = lerNifUnico("Cliente");
@@ -902,74 +845,91 @@ public class Menu {
         try {
             Cliente cliente = new Cliente(nome, nif, telefone, morada, cartaoCidadao);
             if (empresa.adicionarCliente(cliente)) {
-                imprimirAviso("Sucesso: Cliente registado!");
+                imprimirAviso("Cliente registado com sucesso!");
             }
         } catch (IllegalArgumentException e) {
-            imprimirErro("Erro ao criar cliente: " + e.getMessage());
+            imprimirErro("Erro nos dados: " + e.getMessage());
         }
     }
 
-    /**
-     * Lista todos os clientes registados.
-     */
-    private static void listarClientes() {
-        ArrayList<Cliente> lista = empresa.getClientes();
-        if (lista.isEmpty()) {
-            imprimirAviso("Não há clientes registados.");
-        } else {
-            imprimirTitulo("\nLista de Clientes");
-            int contador = 1;
-            for (Cliente c : lista) {
-                System.out.println(contador + ". " + c.toString());
-                contador++;
+    private static int lerNifUnico(String tipo) throws OperacaoCanceladaException {
+        int nif;
+        while (true) {
+            nif = lerInteiroComCancelamento("NIF (9 dígitos): ");
+
+            if (String.valueOf(nif).length() != 9) {
+                imprimirErro("O NIF deve ter exatamente 9 dígitos.");
+                continue;
             }
+
+            if (empresa.nifExiste(nif)) {
+                imprimirErro("Já existe um " + tipo + " com esse NIF.");
+                continue;
+            }
+            break;
         }
+        return nif;
     }
 
-    /**
-     * Atualiza um cliente existente.
-     * <p>
-     * Permite editar nome, telemóvel e morada.
-     * Não permite alterar NIF ou cartão de cidadão.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
     private static void atualizarCliente() throws OperacaoCanceladaException {
-        int nif = lerInteiroComCancelamento("NIF do cliente a editar: ");
+        imprimirTitulo("ATUALIZAR CLIENTE");
+
+        String verLista = lerSimNaoCancelamento("Deseja ver a lista de clientes? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarClientes(empresa.getClientes());
+        }
+
+        int nif = lerInteiroComCancelamento("NIF do cliente: ");
         Cliente cliente = empresa.procurarCliente(nif);
 
-        if (cliente != null) {
-            cliente.setNome(lerTextoComCancelamento("Novo Nome: "));
-            cliente.setTel(lerInteiroComCancelamento("Novo Telemóvel: "));
-            cliente.setMorada(lerTextoComCancelamento("Nova Morada: "));
-            imprimirAviso("Cliente atualizado.");
-        } else {
+        if (cliente == null) {
             imprimirErro("Cliente não encontrado.");
-        }
-    }
-
-    /**
-     * Elimina um cliente do sistema.
-     * <p>
-     * Verifica se o cliente não tem viagens ou reservas associadas
-     * antes de permitir a eliminação.
-     * </p>
-     *
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static void eliminarCliente() throws OperacaoCanceladaException {
-        if (empresa.getClientes().isEmpty()) {
-            imprimirAviso("Não existem clientes registados para eliminar.");
             return;
         }
 
-        exibirMsgCancelar();
-        imprimirTitulo("Escolha o Cliente a Eliminar");
+        System.out.println("\nDados atuais: " + cliente);
+        System.out.println("(Nota: Prima ENTER para avançar. Digite 0 para cancelar.)");
+        System.out.print("\nNovo Nome [" + cliente.getNome() + "]: ");
+        String novoNome = lerTextoOpcional("");
+        if (!novoNome.isEmpty()) {
+            cliente.setNome(novoNome);
+        }
 
-        mostrarLista("Clientes");
+        System.out.print("Novo Telemóvel [" + cliente.getTel() + "]: ");
+        String novoTel = lerTextoOpcional("");
+        if (!novoTel.isEmpty()) {
+            try {
+                cliente.setTel(Integer.parseInt(novoTel));
+            } catch (NumberFormatException e) {
+                imprimirErro("Telemóvel inválido. Mantido o anterior.");
+            }
+        }
 
-        int nif = lerInteiroComCancelamento("NIF a eliminar: ");
+        System.out.print("Nova Morada [" + cliente.getMorada() + "]: ");
+        String novaMorada = lerTextoOpcional("");
+        if (!novaMorada.isEmpty()) {
+            cliente.setMorada(novaMorada);
+        }
+
+        imprimirAviso("Cliente atualizado com sucesso.");
+    }
+
+    private static void eliminarCliente() throws OperacaoCanceladaException {
+        imprimirTitulo("ELIMINAR CLIENTE");
+
+        String verLista = lerSimNaoCancelamento("Deseja ver a lista de clientes? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarClientes(empresa.getClientes());
+        }
+
+        int nif = lerInteiroComCancelamento("NIF do cliente: ");
+        Cliente cliente = empresa.procurarCliente(nif);
+
+        if (cliente == null) {
+            imprimirErro("Cliente NIF [" + nif + "] não existe.");
+            return;
+        }
+
         if (empresa.removerCliente(nif)) {
             imprimirAviso("Cliente removido com sucesso.");
         } else {
@@ -977,100 +937,50 @@ public class Menu {
         }
     }
 
-    /**
-     * Lê NIF garantindo que é único no sistema.
-     * <p>
-     * Valida que o NIF tem 9 dígitos e não existe já para o tipo especificado.
-     * </p>
-     *
-     * @param tipo "Cliente" ou "Condutor" para verificação específica.
-     * @return NIF válido e único.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static int lerNifUnico(String tipo) throws OperacaoCanceladaException {
-        int nif;
-        while (true) {
-            nif = lerInteiroComCancelamento("NIF (9 dígitos): ");
-
-            if (String.valueOf(nif).length() != 9) {
-                imprimirErro("O NIF tem que ser exatamente 9 dígitos.");
-                continue;
-            }
-
-            boolean existe = false;
-            if (tipo.equals("Cliente")) {
-                existe = empresa.procurarCliente(nif) != null;
-            } else if (tipo.equals("Condutor")) {
-                existe = empresa.procurarCondutorPorNif(nif) != null;
-            }
-
-            if (existe) {
-                imprimirErro("Já existe um " + tipo + " com esse NIF.");
-                continue;
-            }
-
-            break;
-        }
-        return nif;
-    }
-
-    /**
-     * Lê número de identificação do condutor garantindo que é único.
-     * <p>
-     * Valida que o número é positivo e não existe já no sistema.
-     * </p>
-     *
-     * @return Número de identificação único e válido.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static int lerNumeroIdentificacaoUnico() throws OperacaoCanceladaException {
-        int numeroId;
-        while (true) {
-            numeroId = lerInteiroComCancelamento("Número de identificação do condutor: ");
-
-            if (numeroId <= 0) {
-                imprimirErro("O número deve ser positivo.");
-                continue;
-            }
-
-            // Verifica se já existe condutor com este ID
-            if (empresa.procurarCondutorPorId(numeroId) != null) {
-                imprimirErro("Já existe um condutor com esse número de identificação.");
-                continue;
-            }
-
-            break;
-        }
-        return numeroId;
-    }
-
 // =======================================================
-//                  MÉTODOS DE VIAGENS
+//                  GESTÃO DE VIAGENS
 // =======================================================
 
-    /**
-     * Regista uma nova viagem.
-     * <p>
-     * Solicita todos os dados necessários para criar uma viagem,
-     * incluindo seleção de condutor, cliente e viatura disponíveis.
-     * Verifica conflitos de horário automaticamente.
-     * </p>
-     */
+    private static void menuViagens() {
+        int opcao;
+        do {
+            imprimirCabecalho("GESTÃO DE VIAGENS");
+            System.out.println("| 1 - Registar Nova Viagem                         |");
+            System.out.println("| 2 - Transformar Reserva em Viagem                |");
+            System.out.println("| 3 - Listar Todas as Viagens                      |");
+            System.out.println("| 4 - Eliminar Viagem                              |");
+            System.out.println("| 5 - Verificar Conflitos de Horário               |");
+            System.out.println("| 0 - Voltar                                       |");
+            imprimirLinha();
+
+            opcao = lerOpcaoMenu("Opção: ");
+            switch (opcao) {
+                case 1 -> tratarRegistarViagem();
+                case 2 -> tratarConverterReserva();
+                case 3 -> listarViagens(empresa.getViagens());
+                case 4 -> tratarEliminarViagem();
+                case 5 -> verificarConflitosHorario();
+                case 0 -> {
+                    return;
+                }
+                default -> imprimirErro("Opção inválida.");
+            }
+        } while (true);
+    }
+
     private static void tratarRegistarViagem() {
         try {
             imprimirTitulo("NOVA VIAGEM");
             exibirMsgCancelar();
 
-            // 1. Datas
-            LocalDateTime inicio = lerDataComCancelamento("Início da Viagem (dd-MM-yyyy HH:mm): ");
-            LocalDateTime fim = lerDataComCancelamento("Fim da Viagem (dd-MM-yyyy HH:mm): ");
+            LocalDateTime inicio = lerDataComCancelamento("Início (dd-MM-yyyy HH:mm): ");
+            LocalDateTime fim = lerDataComCancelamento("Fim (dd-MM-yyyy HH:mm): ");
 
             if (fim.isBefore(inicio)) {
-                imprimirErro("Data de fim anterior a data de início.");
+                imprimirErro("Data de fim anterior à data de início.");
                 return;
             }
 
-            // 2. Selecionar recursos
             Condutor condutor = selecionarCondutorDisponivel(inicio, fim);
             if (condutor == null) return;
 
@@ -1080,16 +990,16 @@ public class Menu {
             Viatura viatura = selecionarViaturaDisponivel(inicio, fim);
             if (viatura == null) return;
 
-            // 3. Dados restantes
             String origem = lerTextoComCancelamento("Origem: ");
             String destino = lerTextoComCancelamento("Destino: ");
-            double kms = lerDoubleComCancelamento("Kms: ");
-            double custo = lerDoubleComCancelamento("Custo: ");
+            double kms = lerDoubleComCancelamento("Kms percorridos: ");
+            double custo = lerDoubleComCancelamento("Custo (€): ");
 
-            Viagem novaViagem = new Viagem(condutor, cliente, viatura, inicio, fim, origem, destino, kms, custo);
+            Viagem viagem = new Viagem(condutor, cliente, viatura, inicio, fim,
+                    origem, destino, kms, custo);
 
-            if (empresa.adicionarViagem(novaViagem)) {
-                imprimirAviso("Viagem adicionada com sucesso.");
+            if (empresa.adicionarViagem(viagem)) {
+                imprimirAviso("Viagem registada com sucesso!");
             } else {
                 imprimirErro("Conflito de horário detetado.");
             }
@@ -1098,151 +1008,73 @@ public class Menu {
         }
     }
 
-    /**
-     * Lista todas as viagens registadas.
-     */
-    private static void tratarListarViagens() {
-        ArrayList<Viagem> viagens = empresa.getViagens();
-        if (viagens.isEmpty()) {
-            imprimirAviso("Sem viagens registadas!");
-        } else {
-            imprimirTitulo("\nHistórico de Viagens");
-            for (Viagem viagem : viagens) {
-                System.out.println(viagem);
-            }
-        }
-    }
-
-    /**
-     * Elimina uma viagem do histórico.
-     * <p>
-     * Mostra lista numerada de viagens e permite selecionar uma para eliminar.
-     * </p>
-     */
     private static void tratarEliminarViagem() {
-        ArrayList<Viagem> viagens = empresa.getViagens();
-        if (viagens.isEmpty()) {
-            imprimirAviso("Não existem viagens no histórico para eliminar.");
-            return;
-        }
-
         try {
-            imprimirTitulo("Escolha a viagem a eliminar");
-            exibirMsgCancelar();
-
-            for (int i = 0; i < viagens.size(); i++) {
-                System.out.println((i + 1) + ". " + viagens.get(i));
+            ArrayList<Viagem> viagens = empresa.getViagens();
+            if (viagens.isEmpty()) {
+                imprimirAviso("Não existem viagens para eliminar.");
+                return;
             }
 
-            int index = lerInteiroComCancelamento("\nNúmero da viagem a apagar: ") - 1;
+            imprimirTitulo("ELIMINAR VIAGEM");
+            listarViagens(viagens);
+
+            int index = lerInteiroComCancelamento("Número da viagem a eliminar: ") - 1;
+
             if (index >= 0 && index < viagens.size()) {
                 Viagem viagem = viagens.get(index);
-                if (empresa.removerViagens(viagem)) {
-                    imprimirAviso("Viagem removida com sucesso!");
+                if (empresa.removerViagem(viagem)) {
+                    imprimirAviso("Viagem eliminada com sucesso!");
                 } else {
-                    imprimirErro("Não foi possível remover a Viagem.");
+                    imprimirErro("Não foi possível eliminar a viagem.");
                 }
             } else {
                 imprimirErro("Opção inválida.");
             }
         } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação Cancelada.");
+            imprimirAviso("Operação cancelada.");
         }
     }
 
 // =======================================================
-//                  MÉTODOS DE RESERVAS
+//                  GESTÃO DE RESERVAS
 // =======================================================
 
-    /**
-     * Cria uma nova reserva.
-     * <p>
-     * Solicita dados da reserva e cria um novo objeto {@link Reserva}.
-     * Assume duração padrão de 1 hora para verificação de disponibilidade.
-     * </p>
-     */
+    private static void menuReservas() {
+        int opcao;
+        do {
+            imprimirCabecalho("GESTÃO DE RESERVAS");
+            System.out.println("| 1 - Criar Nova Reserva                           |");
+            System.out.println("| 2 - Listar Reservas Pendentes                    |");
+            System.out.println("| 3 - Consultar/Alterar Reservas de Cliente        |");
+            System.out.println("| 5 - Eliminar Reserva                             |");
+            System.out.println("| 6 - Verificar Conflitos de Horário               |");
+            System.out.println("| 0 - Voltar                                       |");
+            imprimirLinha();
+
+            opcao = lerOpcaoMenu("Opção: ");
+            switch (opcao) {
+                case 1 -> tratarCriarReserva();
+                case 2 -> listarReservas(empresa.getReservas());
+                case 3 -> tratarConsultarReservasCliente();
+                case 4 -> tratarAlterarReserva();
+                case 5 -> verificarConflitoReserva();
+                case 0 -> {
+                    return;
+                }
+                default -> imprimirErro("Opção inválida.");
+            }
+        } while (true);
+    }
+
     private static void tratarCriarReserva() {
         try {
             imprimirTitulo("NOVA RESERVA");
             exibirMsgCancelar();
 
-            LocalDateTime inicio = lerDataComCancelamento("Data/Hora da Reserva (dd-MM-yyyy HH:mm): ");
-            LocalDateTime fimEstimado = inicio.plusHours(1); // Duração virtual
+            LocalDateTime inicio = lerDataComCancelamento("Inicio: Data/Hora (dd-MM-yyyy HH:mm): ");
 
-            Cliente cliente = selecionarClienteDisponivel(inicio, fimEstimado);
-            if (cliente == null) return;
-
-            String origem = lerTextoComCancelamento("Origem: ");
-            String destino = lerTextoComCancelamento("Destino: ");
-            double kms = lerDoubleComCancelamento("Kms estimados: ");
-
-            Reserva reserva = new Reserva(cliente, inicio, origem, destino, kms);
-            empresa.adicionarReserva(reserva);
-            imprimirAviso("Reserva registada com sucesso!");
-        } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
-        }
-    }
-
-    /**
-     * Lista todas as reservas pendentes.
-     */
-    private static void tratarListarReservas() {
-        ArrayList<Reserva> reservas = empresa.getReservas();
-        if (reservas.isEmpty()) {
-            imprimirAviso("Sem nenhuma reserva pendente!");
-        } else {
-            int contador = 1;
-            for (Reserva reserva : reservas) {
-                System.out.println(contador + ". " + reserva);
-                contador++;
-            }
-        }
-    }
-
-    /**
-     * Consulta reservas de um cliente específico.
-     * <p>
-     * Solicita NIF do cliente e mostra todas as suas reservas pendentes.
-     * </p>
-     */
-    private static void tratarConsultarReservasCliente() {
-        try {
-            exibirMsgCancelar();
-            int nif = lerInteiroComCancelamento("NIF do Cliente: ");
-            Cliente cliente = empresa.procurarCliente(nif);
-
-            if (cliente != null) {
-                ArrayList<Reserva> reservas = empresa.getReservasDoCliente(nif);
-                if (reservas.isEmpty()) {
-                    imprimirAviso("Este cliente não tem reservas pendentes.");
-                } else {
-                    imprimirTitulo("Reservas de " + cliente.getNome());
-                    for (Reserva reserva : reservas) {
-                        System.out.println("[" + reserva + "]");
-                    }
-                }
-            } else {
-                imprimirErro("Cliente não encontrado.");
-            }
-        } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
-        }
-    }
-
-    /**
-     * Altera uma reserva existente.
-     * <p>
-     * Permite modificar data/hora, origem, destino ou distância de uma reserva.
-     * </p>
-     */
-    private static void tratarAlterarReserva() {
-        try {
-            imprimirTitulo("ALTERAR RESERVA");
-            exibirMsgCancelar();
-
-            // 1. Selecionar cliente
-            int nifCliente = lerInteiroComCancelamento("NIF Cliente: ");
+            int nifCliente = lerInteiroComCancelamento("NIF do Cliente: ");
             Cliente cliente = empresa.procurarCliente(nifCliente);
 
             if (cliente == null) {
@@ -1250,153 +1082,145 @@ public class Menu {
                 return;
             }
 
-            // 2. Selecionar reserva
-            Reserva reserva = selecionarReservaCliente(nifCliente);
-            if (reserva == null) return;
+            String origem = lerTextoComCancelamento("Origem: ");
+            String destino = lerTextoComCancelamento("Destino: ");
+            double kms = lerDoubleComCancelamento("Kms estimados: ");
 
-            // 3. Menu de alteração
-            exibirMenuAlteracaoReserva();
-            int opcao = lerOpcaoMenu("Escolha a opção: ");
-            processarAlteracaoReserva(reserva, opcao);
-
+            Reserva reserva = new Reserva(cliente, inicio, origem, destino, kms);
+            empresa.adicionarReserva(reserva);
+            imprimirAviso("Reserva criada com sucesso!");
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Operação cancelada.");
         }
     }
 
-    /**
-     * Seleciona reserva de um cliente específico.
-     *
-     * @param nifCliente NIF do cliente.
-     * @return Reserva selecionada, ou {@code null} se cancelado.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Reserva selecionarReservaCliente(int nifCliente) throws OperacaoCanceladaException {
-        ArrayList<Reserva> reservasCliente = empresa.getReservasDoCliente(nifCliente);
-
-        if (reservasCliente.isEmpty()) {
-            System.out.println("Este cliente não tem reservas pendentes para alterar.");
-            return null;
-        }
-
-        imprimirTitulo("Reservas de " + empresa.procurarCliente(nifCliente).getNome());
-        for (int i = 0; i < reservasCliente.size(); i++) {
-            System.out.println((i + 1) + ". " + reservasCliente.get(i));
-        }
-
-        int index = lerInteiroComCancelamento("Escolha a Reserva a Alterar: ") - 1;
-        if (index >= 0 && index < reservasCliente.size()) {
-            return reservasCliente.get(index);
-        } else {
-            imprimirErro("Opção inválida.");
-            return null;
-        }
-    }
-
-    /**
-     * Exibe menu de alteração de reserva.
-     */
-    private static void exibirMenuAlteracaoReserva() {
-        imprimirTitulo("Dados a alterar");
-        System.out.println("1 - Data e Hora");
-        System.out.println("2 - Origem");
-        System.out.println("3 - Destino");
-        System.out.println("4 - Distância (Kms)");
-        System.out.println("0 - Cancelar");
-    }
-
-    /**
-     * Processa alteração de reserva.
-     *
-     * @param reserva Reserva a alterar.
-     * @param opcao   Opção selecionada (1-Data, 2-Origem, 3-Destino, 4-Kms).
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static void processarAlteracaoReserva(Reserva reserva, int opcao) throws OperacaoCanceladaException {
-        switch (opcao) {
-            case 1 -> {
-                LocalDateTime novaData = lerDataComCancelamento("Nova Data/Hora (dd-MM-yyyy HH:mm): ");
-                reserva.setDataHoraInicio(novaData);
-                imprimirAviso("Data atualizada com sucesso!");
-            }
-            case 2 -> {
-                String novaOrigem = lerTextoComCancelamento("Nova Origem: ");
-                reserva.setMoradaOrigem(novaOrigem);
-                imprimirAviso("Morada origem atualizada com sucesso!");
-            }
-            case 3 -> {
-                String novoDestino = lerTextoComCancelamento("Novo Destino: ");
-                reserva.setMoradaDestino(novoDestino);
-                imprimirAviso("Morada destino atualizada com sucesso!");
-            }
-            case 4 -> {
-                double novosKms = lerDoubleComCancelamento("Novos Kms: ");
-                reserva.setKms(novosKms);
-                imprimirAviso("Distância atualizada com sucesso!");
-            }
-            case 0 -> imprimirAviso("Alteração cancelada.");
-            default -> imprimirErro("Opção Inválida.");
-        }
-    }
-
-    /**
-     * Converte reserva em viagem.
-     * <p>
-     * Permite selecionar uma reserva pendente e convertê-la numa viagem real,
-     * atribuindo condutor, viatura e custo.
-     * </p>
-     */
-    private static void tratarConverterReserva() {
+    private static void tratarConsultarReservasCliente() {
         try {
-            ArrayList<Reserva> reservas = empresa.getReservas();
-            if (reservas.isEmpty()) {
-                imprimirAviso("Sem nenhuma Reserva para converter em Viagem");
+            imprimirTitulo("RESERVAS DO CLIENTE");
+            int nif = lerInteiroComCancelamento("NIF do cliente: ");
+            Cliente cliente = empresa.procurarCliente(nif);
+
+            if (cliente == null) {
+                imprimirErro("Cliente não encontrado.");
                 return;
             }
 
-            // 1. Selecionar reserva
-            imprimirTitulo("Reservas a converter");
-            for (int i = 0; i < reservas.size(); i++) {
-                System.out.println((i + 1) + ". " + reservas.get(i));
+            ArrayList<Reserva> reservas = empresa.getReservasDoCliente(nif);
+            if (reservas.isEmpty()) {
+                imprimirAviso("Este cliente não tem reservas pendentes.");
+            } else {
+                imprimirTitulo("Reservas de " + cliente.getNome());
+                listarReservas(reservas);
+            }
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Operação cancelada.");
+        }
+    }
+
+    private static void tratarAlterarReserva() {
+        try {
+            imprimirTitulo("ALTERAR RESERVA");
+
+            int nif = lerInteiroComCancelamento("NIF do cliente: ");
+            ArrayList<Reserva> reservas = empresa.getReservasDoCliente(nif);
+
+            if (reservas.isEmpty()) {
+                imprimirAviso("Este cliente não tem reservas para alterar.");
+                return;
             }
 
-            int index = lerInteiroComCancelamento("Número da reserva: ") - 1;
+            listarReservas(reservas);
+            int index = lerInteiroComCancelamento("Número da reserva a alterar: ") - 1;
+
             if (index < 0 || index >= reservas.size()) {
                 imprimirErro("Opção inválida.");
                 return;
             }
 
             Reserva reserva = reservas.get(index);
-            System.out.println("Reserva Selecionada: " + reserva.getCliente().getNome() + " - " +
-                    reserva.getDataHoraInicio().format(dateTimeFormatter));
 
-            // 2. Duração estimada
-            int duracao = lerInteiroComCancelamento("Duração estimada (minutos): ");
-            LocalDateTime fimEstimado = reserva.getDataHoraInicio().plusMinutes(duracao);
+            imprimirCabecalho("ALTERAÇÃO DE RESERVA");
+            System.out.println("1 - Data/Hora");
+            System.out.println("2 - Origem");
+            System.out.println("3 - Destino");
+            System.out.println("4 - Kms estimados");
+            System.out.println("0 - Cancelar");
 
-            // 3. Selecionar recursos
-            Condutor condutor = selecionarCondutorDisponivel(reserva.getDataHoraInicio(), fimEstimado);
+            int opcao = lerOpcaoMenu("O que deseja alterar? ");
+
+            switch (opcao) {
+                case 1 -> {
+                    LocalDateTime novaData = lerDataComCancelamento("Nova data/hora: ");
+                    reserva.setDataHoraInicio(novaData);
+                }
+                case 2 -> {
+                    String novaOrigem = lerTextoComCancelamento("Nova origem: ");
+                    reserva.setMoradaOrigem(novaOrigem);
+                }
+                case 3 -> {
+                    String novoDestino = lerTextoComCancelamento("Novo destino: ");
+                    reserva.setMoradaDestino(novoDestino);
+                }
+                case 4 -> {
+                    double novosKms = lerDoubleComCancelamento("Novos kms: ");
+                    reserva.setKms(novosKms);
+                }
+                case 0 -> {
+                    imprimirAviso("Alteração cancelada.");
+                    return;
+                }
+                default -> {
+                    imprimirErro("Opção inválida.");
+                    return;
+                }
+            }
+
+            imprimirAviso("Reserva alterada com sucesso!");
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Operação cancelada.");
+        }
+    }
+
+    private static void tratarConverterReserva() {
+        try {
+            ArrayList<Reserva> reservas = empresa.getReservas();
+            if (reservas.isEmpty()) {
+                imprimirAviso("Não existem reservas para converter.");
+                return;
+            }
+
+            imprimirTitulo("CONVERTER RESERVA EM VIAGEM");
+            listarReservas(reservas);
+
+            int index = lerInteiroComCancelamento("Número da reserva a converter: ") - 1;
+
+            if (index < 0 || index >= reservas.size()) {
+                imprimirErro("Opção inválida.");
+                return;
+            }
+
+            Reserva reserva = reservas.get(index);
+            LocalDateTime inicio = reserva.getDataHoraInicio();
+            LocalDateTime fim = inicio.plusHours(1); // Duração estimada
+
+            Condutor condutor = selecionarCondutorDisponivel(inicio, fim);
             if (condutor == null) return;
 
-            Viatura viatura = selecionarViaturaDisponivel(reserva.getDataHoraInicio(), fimEstimado);
+            Viatura viatura = selecionarViaturaDisponivel(inicio, fim);
             if (viatura == null) return;
 
-            // 4. Custo final
-            double custo = lerDoubleComCancelamento("Custo Final (€): ");
+            double custo = lerDoubleComCancelamento("Custo final da viagem (€): ");
 
             if (empresa.converterReservaEmViagem(reserva, condutor, viatura, custo)) {
-                imprimirAviso("Reserva convertida com sucesso!");
+                imprimirAviso("Reserva convertida em viagem com sucesso!");
             } else {
-                imprimirErro("Não foi possível converter Reserva.");
+                imprimirErro("Não foi possível converter a reserva.");
             }
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Operação cancelada.");
         }
     }
 
-    /**
-     * Elimina uma reserva pendente.
-     */
     private static void tratarEliminarReserva() {
         try {
             ArrayList<Reserva> reservas = empresa.getReservas();
@@ -1405,20 +1229,17 @@ public class Menu {
                 return;
             }
 
-            imprimirTitulo("Reservas a eliminar");
-            for (int i = 0; i < reservas.size(); i++) {
-                System.out.println((i + 1) + ". " + reservas.get(i));
-            }
+            imprimirTitulo("ELIMINAR RESERVA");
+            listarReservas(reservas);
 
-            exibirMsgCancelar();
-            int index = lerInteiroComCancelamento("\nNúmero da reserva a apagar: ") - 1;
+            int index = lerInteiroComCancelamento("Número da reserva a eliminar: ") - 1;
 
             if (index >= 0 && index < reservas.size()) {
                 Reserva reserva = reservas.get(index);
                 if (empresa.removerReserva(reserva)) {
-                    imprimirAviso("Reserva removida com sucesso!");
+                    imprimirAviso("Reserva eliminada com sucesso!");
                 } else {
-                    imprimirErro("Não foi possível remover a Reserva.");
+                    imprimirErro("Não foi possível eliminar a reserva.");
                 }
             } else {
                 imprimirErro("Opção inválida.");
@@ -1428,373 +1249,260 @@ public class Menu {
         }
     }
 
-// =======================================================
-//           SELEÇÃO DE RECURSOS DISPONÍVEIS
-// =======================================================
+    private static void verificarConflitosHorario(){
+        try {
+            imprimirCabecalho("VERIFICAR DISPONIBILIDADE");
+            exibirMsgCancelar();
 
-    /**
-     * Seleciona condutor disponível num intervalo de tempo.
-     *
-     * @param inicio Data/hora de início do intervalo.
-     * @param fim    Data/hora de fim do intervalo.
-     * @return Condutor disponível, ou {@code null} se nenhum disponível.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Condutor selecionarCondutorDisponivel(LocalDateTime inicio, LocalDateTime fim)
-            throws OperacaoCanceladaException {
+            LocalDateTime inicio = lerDataComCancelamento("Início (dd-MM-yyyy HH:mm): ");
+            LocalDateTime fim = lerDataComCancelamento("Fim (dd-MM-yyyy HH:mm): ");
 
-        ArrayList<Condutor> condutoresLivres = empresa.getCondutoresDisponiveis(inicio, fim);
-
-        if (condutoresLivres.isEmpty()) {
-            imprimirAviso("Sem condutores disponíveis para este horário.");
-            return null;
-        }
-
-        mostrarListaCondutores(condutoresLivres);
-        return pedirCondutorValido(condutoresLivres);
-    }
-
-    /**
-     * Mostra lista de condutores disponíveis.
-     *
-     * @param condutores Lista de condutores disponíveis.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static void mostrarListaCondutores(ArrayList<Condutor> condutores)
-            throws OperacaoCanceladaException {
-
-        System.out.println("\n>> Existem " + condutores.size() + " condutores livres.");
-        String verLista = lerTextoComCancelamento("Ver lista? (S/N): ");
-
-        if (verLista.equalsIgnoreCase("S")) {
-            for (Condutor condutor : condutores) {
-                System.out.println("[ID: " + condutor.getNumeroIdentificacao() + " | Nome:" + condutor.getNome() + " | NIF: " + condutor.getNif() + "]");
+            if (fim.isBefore(inicio)) {
+                imprimirErro("Data de fim anterior à data de início.");
+                return;
             }
+            System.out.println("| 1 - Verificar Disponibilidade de Condutor        |");
+            System.out.println("| 2 - Verificar Disponibilidade de Viatura         |");
+            System.out.println("| 0 - Voltar                                       |");
+            imprimirLinha();
+
+            int opcao = lerOpcaoMenu("Opção: ");
+
+            switch (opcao) {
+                case 1 -> {
+                    int id = lerInteiroComCancelamento("ID do Condutor: ");
+                    Condutor condutor = empresa.procurarCondutorPorId(id);
+                    if (condutor == null) {
+                        imprimirErro("Condutor não encontrado.");
+                        return;
+                    }
+
+                    ArrayList<Condutor> disponiveis = empresa.getCondutoresDisponiveis(inicio, fim);
+                    boolean disponivel = false;
+
+                    for (int i = 0; i < disponiveis.size(); i++) {
+                        if (disponiveis.get(i).equals(condutor)) {
+                            disponivel = true;
+                            break;
+                        }
+                    }
+
+                    if (disponivel) {
+                        imprimirAviso("STATUS: O condutor " + condutor.getNome() + " está DISPONÍVEL.");
+                    }else {
+                        imprimirErro("STATUS: O condutor " + condutor.getNome() + " está OCUPADO neste horário.");
+                    }
+                }
+                case 2 -> {
+                    String matricula = lerTextoComCancelamento("Matrícula da Viatura: ");
+                    Viatura viatura = empresa.procurarViatura(matricula);
+                    if (viatura == null) {
+                        imprimirErro("Viatura não encontrada.");
+                        return;
+                    }
+
+                    ArrayList<Viatura> disponiveis = empresa.getViaturasDisponiveis(inicio, fim);
+                    boolean disponivel = false;
+
+                    for (int i = 0; i < disponiveis.size(); i++) {
+                        if (disponiveis.get(i).equals(viatura)) {
+                            disponivel = true;
+                            break;
+                        }
+                    }
+
+                    if (disponivel) {
+                        imprimirAviso("STATUS: A viatura " + viatura.getMatricula() + " está DISPONÍVEL.");
+                    } else {
+                        imprimirErro("STATUS: A viatura " + viatura.getMatricula() + " está OCUPADA neste horário.");
+                    }
+                }
+                case 0 -> {
+                    return;
+                }
+                default -> imprimirErro("Opção inválida.");
+            }
+        } catch (OperacaoCanceladaException e){
+            imprimirAviso("Operação cancelada.");
         }
     }
 
-    /**
-     * Pede condutor válido da lista de disponíveis.
-     *
-     * @param condutoresLivres Lista de condutores disponíveis.
-     * @return Condutor selecionado.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Condutor pedirCondutorValido(ArrayList<Condutor> condutoresLivres)
-            throws OperacaoCanceladaException {
+    private static void verificarConflitoReserva() {
+        try{
+            imprimirTitulo("VERIFICAR DISPONIBILIDADE DE CLIENTE");
+            exibirMsgCancelar();
 
-        while (true) {
-            int numeroId = lerInteiroComCancelamento("Número de identificação do Condutor: ");
+            int nif = lerInteiroComCancelamento("NIF do Cliente: ");
+            Cliente cliente = empresa.procurarCliente(nif);
+
+            if (cliente == null) {
+                imprimirErro("Cliente não encontrado.");
+                return;
+            }
+            LocalDateTime inicio = lerDataComCancelamento("Início (dd-MM-yyyy HH:mm): ");
+            LocalDateTime fim = lerDataComCancelamento("Fim (dd-MM-yyyy HH:mm): ");
+
+            ArrayList<Cliente> disponiveis = empresa.getClientesDisponiveis(inicio, fim);
+
+            boolean encontrado = false;
+
+            for (int i = 0; i < disponiveis.size(); i++) {
+                if (disponiveis.get(i).equals(cliente)) {
+                    encontrado = true;
+                    break;
+                }
+            }
+
+            if (encontrado) {
+                imprimirAviso("STATUS: O cliente " + cliente.getNome() + " está LIVRE para viajar neste horário.");
+            } else {
+                imprimirErro("STATUS: O cliente " + cliente.getNome() + " já tem viagem ou reserva sobreposta neste horário.");
+            }
+
+        }catch (OperacaoCanceladaException e){
+            imprimirAviso("Operação cancelada.");
+        }
+    }
+// =======================================================
+//                  ESTATÍSTICAS E RELATÓRIOS
+// =======================================================
+
+    private static void menuEstatisticas() {
+        int opcao;
+        do {
+            imprimirCabecalho("CONSULTAS E ESTATÍSTICAS");
+            System.out.println("| 1 - Pesquisar Viatura por Matrícula               |");
+            System.out.println("| 2 - Viagens de Cliente por Datas                  |");
+            System.out.println("| 3 - Clientes de uma Viatura                       |");
+            System.out.println("| 4 - Faturação por Motorista                       |");
+            System.out.println("| 5 - Distância Média das Viagens                   |");
+            System.out.println("| 6 - Destino Mais Solicitado                       |");
+            System.out.println("| 7 - Clientes por Intervalo de Kms                 |");
+            System.out.println("| 0 - Voltar                                        |");
+            imprimirLinha();
+
+            opcao = lerOpcaoMenu("Opção: ");
+            switch (opcao) {
+                case 1 -> pesquisarViaturaMatricula();
+                case 2 -> estatHistoricoCliente();
+                case 3 -> estatClientesViatura();
+                case 4 -> estatFaturacaoCondutor();
+                case 5 -> estatDistanciaMedia();
+                case 6 -> estatDestinoMaisSolicitado();
+                case 7 -> estatClientesPorIntervaloKms();
+                case 0 -> {
+                    return;
+                }
+                default -> imprimirErro("Opção inválida.");
+            }
+        } while (true);
+    }
+
+    private static void estatFaturacaoCondutor() {
+        try {
+            imprimirTitulo("FATURAÇÃO POR CONDUTOR");
+            exibirMsgCancelar();
+
+            String verLista = lerSimNaoCancelamento("Ver lista de condutores? (S/N): ");
+            if (verLista.equalsIgnoreCase("S")) {
+                listarCondutores(empresa.getCondutores());
+            }
+
+            int numeroId = lerInteiroComCancelamento("Número de identificação do condutor: ");
             Condutor condutor = empresa.procurarCondutorPorId(numeroId);
 
             if (condutor == null) {
-                imprimirErro("Nenhum condutor encontrado.");
-            } else if (!condutoresLivres.contains(condutor)) {
-                imprimirAviso("Condutor " + condutor.getNome() + " já tem uma viagem nesse horário.");
-            } else {
-                return condutor;
-            }
-        }
-    }
-
-    /**
-     * Seleciona cliente disponível num intervalo de tempo.
-     *
-     * @param inicio Data/hora de início do intervalo.
-     * @param fim    Data/hora de fim do intervalo.
-     * @return Cliente disponível, ou {@code null} se nenhum disponível.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Cliente selecionarClienteDisponivel(LocalDateTime inicio, LocalDateTime fim)
-            throws OperacaoCanceladaException {
-
-        ArrayList<Cliente> clientesLivres = empresa.getClientesDisponiveis(inicio, fim);
-
-        if (clientesLivres.isEmpty()) {
-            imprimirAviso("Sem clientes disponíveis.");
-            return null;
-        }
-
-        mostrarListaClientes(clientesLivres);
-        return pedirClienteValido(clientesLivres);
-    }
-
-
-    /**
-     * Mostra lista de clientes disponíveis.
-     *
-     * @param clientes Lista de clientes disponíveis.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static void mostrarListaClientes(ArrayList<Cliente> clientes)
-            throws OperacaoCanceladaException {
-
-        System.out.println("\n>> Existem " + clientes.size() + " clientes livres.");
-        String verLista = lerTextoComCancelamento("Ver lista? (S/N): ");
-
-        if (verLista.equalsIgnoreCase("S")) {
-            for (Cliente cliente : clientes) {
-                System.out.println("[Cliente: " + cliente.getNome() + " | NIF: " + cliente.getNif() + "]");
-            }
-        }
-    }
-
-    /**
-     * Pede cliente válido da lista de disponíveis.
-     *
-     * @param clientesLivres Lista de clientes disponíveis.
-     * @return Cliente selecionado.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Cliente pedirClienteValido(ArrayList<Cliente> clientesLivres)
-            throws OperacaoCanceladaException {
-
-        while (true) {
-            int nifCliente = lerInteiroComCancelamento("NIF do Cliente: ");
-            Cliente cliente = empresa.procurarCliente(nifCliente);
-
-            if (cliente == null) {
-                imprimirErro("Nenhum cliente encontrado.");
-            } else if (!clientesLivres.contains(cliente)) {
-                imprimirErro(cliente.getNome() + " já tem uma viagem nesse horário.");
-            } else {
-                return cliente;
-            }
-        }
-    }
-
-    /**
-     * Seleciona viatura disponível num intervalo de tempo.
-     *
-     * @param inicio Data/hora de início do intervalo.
-     * @param fim    Data/hora de fim do intervalo.
-     * @return Viatura disponível, ou {@code null} se nenhuma disponível.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Viatura selecionarViaturaDisponivel(LocalDateTime inicio, LocalDateTime fim)
-            throws OperacaoCanceladaException {
-
-        ArrayList<Viatura> viaturasLivres = empresa.getViaturasDisponiveis(inicio, fim);
-
-        if (viaturasLivres.isEmpty()) {
-            imprimirAviso("Sem viaturas disponíveis para este horário.");
-            return null;
-        }
-
-        mostrarListaViaturas(viaturasLivres);
-        return pedirViaturaValida(viaturasLivres);
-    }
-
-    /**
-     * Mostra lista de viaturas disponíveis.
-     *
-     * @param viaturas Lista de viaturas disponíveis.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static void mostrarListaViaturas(ArrayList<Viatura> viaturas)
-            throws OperacaoCanceladaException {
-
-        System.out.println("\n>> Existem " + viaturas.size() + " viaturas livres.");
-        String verLista = lerTextoComCancelamento("Ver lista? (S/N): ");
-
-        if (verLista.equalsIgnoreCase("S")) {
-            for (Viatura viatura : viaturas) {
-                System.out.println("[Matrícula: " + viatura.getMatricula() +
-                        " | Marca: " + viatura.getMarca() +
-                        " | Modelo: " + viatura.getModelo() + "]");
-            }
-        }
-    }
-
-    /**
-     * Pede viatura válida da lista de disponíveis.
-     *
-     * @param viaturasLivres Lista de viaturas disponíveis.
-     * @return Viatura selecionada.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static Viatura pedirViaturaValida(ArrayList<Viatura> viaturasLivres)
-            throws OperacaoCanceladaException {
-
-        while (true) {
-            String matricula = lerTextoComCancelamento("Matrícula da Viatura: ");
-            Viatura viatura = empresa.procurarViatura(matricula);
-
-            if (viatura == null) {
-                imprimirErro("Nenhuma viatura encontrada.");
-            } else if (!viaturasLivres.contains(viatura)) {
-                imprimirErro("A viatura (Matrícula: " + viatura.getMatricula() + ") já tem uma viagem nesse horário.");
-            } else {
-                return viatura;
-            }
-        }
-    }
-
-    private static void mostrarLista(String tipo) throws OperacaoCanceladaException {
-        String resposta = lerTextoComCancelamento("\nDeseja consultar a lista de " + tipo + "? (S/N): ");
-
-        if (resposta.equalsIgnoreCase("S")) {
-            System.out.println();
-            switch (tipo) {
-                case "Viaturas" -> listarViaturas();
-                case "Condutores" -> listarCondutores();
-                case "Clientes" -> listarClientes();
-            }
-            System.out.println();
-        }
-    }
-
-// =======================================================
-//                       ESTATÍSTICAS
-// =======================================================
-
-    /**
-     * Calcula e mostra faturação de um condutor num intervalo de datas.
-     */
-    private static void estatFaturacaoCondutor() {
-        try {
-            exibirMsgCancelar();
-
-            // Mostrar lista se solicitado
-            String verLista = lerTextoComCancelamento("Deseja ver a lista de condutores? (S/N): ");
-            if (verLista.equalsIgnoreCase("S")) {
-                mostrarListaCondutoresCompleta();
-            }
-
-            int numeroId = lerInteiroComCancelamento("Número de identificação do Condutor a consultar: ");
-            Condutor condutor = empresa.procurarCondutorPorId(numeroId);
-
-            if (condutor != null) {
-                LocalDateTime inicio = lerDataComCancelamento("Data início (dd-MM-yyyy HH:mm): ");
-                LocalDateTime fim = lerDataComCancelamento("Data fim (dd-MM-yyyy HH:mm): ");
-
-                double total = empresa.calcularFaturacaoCondutor(numeroId, inicio, fim);
-                System.out.println("O Condutor " + condutor.getNome() + " faturou: " + total + " € nesse período.");
-            } else {
                 imprimirErro("Condutor não encontrado.");
-            }
-        } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
-        }
-    }
-
-    /**
-     * Mostra lista completa de condutores com seus IDs e NIFs.
-     */
-    private static void mostrarListaCondutoresCompleta() {
-        ArrayList<Condutor> condutores = empresa.getCondutores();
-        if (condutores.isEmpty()) {
-            imprimirAviso("Não existem condutores registados.");
-            return;
-        }
-        imprimirTitulo("Condutores Registados");
-        for (Condutor condutor : condutores) {
-            System.out.println("-> ID: " + condutor.getNumeroIdentificacao() +
-                    " | Nome: " + condutor.getNome() +
-                    " | NIF: " + condutor.getNif());
-        }
-    }
-
-    /**
-     * Mostra lista de clientes que viajaram numa viatura específica.
-     */
-    private static void estatClientesViatura() {
-        try {
-            exibirMsgCancelar();
-
-            // Mostrar lista se solicitado
-            String verLista = lerTextoComCancelamento("\nDeseja ver a lista de Viaturas? (S/N): ");
-            if (verLista.equalsIgnoreCase("S")) {
-                mostrarListaViaturasCompleta();
+                return;
             }
 
-            // Selecionar viatura
-            String matricula = lerTextoComCancelamento("\nMatrícula da Viatura: ");
-            Viatura viatura = empresa.procurarViatura(matricula);
-
-            if (viatura != null) {
-                ArrayList<Cliente> clientes = empresa.getClientesPorViatura(matricula);
-                if (clientes.isEmpty()) {
-                    imprimirAviso("Esta viatura ainda não transportou clientes.");
-                } else {
-                    imprimirTitulo("Clientes da viatura: " + viatura.getMatricula());
-                    for (Cliente cliente : clientes) {
-                        System.out.println("-> " + cliente.getNome());
-                    }
-                }
-            } else {
-                imprimirErro("Viatura não encontrada.");
-            }
-        } catch (OperacaoCanceladaException e) {
-            imprimirAviso("Operação cancelada.");
-        }
-    }
-
-    /**
-     * Mostra lista completa de viaturas registadas.
-     */
-    private static void mostrarListaViaturasCompleta() {
-        ArrayList<Viatura> viaturas = empresa.getViaturas();
-        if (viaturas.isEmpty()) {
-            imprimirAviso("Não existem viaturas registadas.");
-            return;
-        }
-        imprimirTitulo("Viaturas Registadas");
-        for (Viatura viatura : viaturas) {
-            System.out.println("-> " + viatura.getMarca() + " " + viatura.getModelo() +
-                    " | Matrícula: " + viatura.getMatricula());
-        }
-    }
-
-    /**
-     * Mostra o destino mais solicitado num intervalo de datas.
-     */
-    private static void estatDestinoMaisSolicitado() {
-        try {
             LocalDateTime inicio = lerDataComCancelamento("Data início (dd-MM-yyyy HH:mm): ");
             LocalDateTime fim = lerDataComCancelamento("Data fim (dd-MM-yyyy HH:mm): ");
 
-            String topDestino = empresa.getDestinoMaisSolicitado(inicio, fim);
-            System.out.println("O destino mais popular nesse período é: " + topDestino);
+            double faturacao = empresa.calcularFaturacaoCondutor(numeroId, inicio, fim);
+            System.out.println(">> O condutor " + condutor.getNumeroIdentificacao() + "| Nome: " + condutor.getNome() +
+                    " | faturou: " + faturacao);
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Operação cancelada.");
         }
     }
 
-    /**
-     * Calcula e mostra a distância média das viagens num intervalo de datas.
-     */
+    private static void estatClientesViatura() {
+        try {
+            imprimirTitulo("CLIENTES POR VIATURA");
+            exibirMsgCancelar();
+
+            String verLista = lerSimNaoCancelamento("Ver lista de viaturas? (S/N): ");
+            if (verLista.equalsIgnoreCase("S")) {
+                listarViaturas(empresa.getViaturas());
+            }
+
+            String matricula = lerTextoComCancelamento("Matrícula da viatura: ");
+            Viatura viatura = empresa.procurarViatura(matricula);
+
+            if (viatura == null) {
+                imprimirErro("Viatura não encontrada.");
+                return;
+            }
+
+            ArrayList<Cliente> clientes = empresa.getClientesPorViatura(matricula);
+            if (clientes.isEmpty()) {
+                imprimirAviso("Esta viatura ainda não transportou clientes.");
+            } else {
+                imprimirTitulo("Clientes da viatura: " + matricula);
+                listarClientes(clientes);
+            }
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Operação cancelada.");
+        }
+    }
+
+    private static void estatDestinoMaisSolicitado() {
+        try {
+            imprimirTitulo("DESTINO MAIS SOLICITADO");
+            exibirMsgCancelar();
+
+            LocalDateTime inicio = lerDataComCancelamento("Data início (dd-MM-yyyy HH:mm): ");
+            LocalDateTime fim = lerDataComCancelamento("Data fim (dd-MM-yyyy HH:mm): ");
+
+            String destino = empresa.getDestinoMaisSolicitado(inicio, fim);
+            System.out.println("\n>> Destino mais popular: " + destino);
+        } catch (OperacaoCanceladaException e) {
+            imprimirAviso("Operação cancelada.");
+        }
+    }
+
     private static void estatDistanciaMedia() {
         try {
+            imprimirTitulo("DISTÂNCIA MÉDIA DAS VIAGENS");
             exibirMsgCancelar();
+
             LocalDateTime inicio = lerDataComCancelamento("Data início (dd-MM-yyyy HH:mm): ");
             LocalDateTime fim = lerDataComCancelamento("Data fim (dd-MM-yyyy HH:mm): ");
 
             double media = empresa.calcularDistanciaMedia(inicio, fim);
-            System.out.println("A distância média das viagens foi: " + media + " Kms");
+            System.out.printf("\n>> Distância média: %.2f Kms\n", media);
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Operação cancelada.");
         }
     }
 
-    /**
-     * Mostra clientes cujas viagens estão dentro de um intervalo de quilómetros.
-     */
     private static void estatClientesPorIntervaloKms() {
         try {
+            imprimirTitulo("CLIENTES POR INTERVALO DE KMS");
             exibirMsgCancelar();
-            double minimo = lerDoubleComCancelamento("\nKms Mínimos: ");
-            double maximo = lerDoubleComCancelamento("Kms Máximos: ");
+
+            double minimo = lerDoubleComCancelamento("Kms mínimos: ");
+            double maximo = lerDoubleComCancelamento("Kms máximos: ");
 
             ArrayList<Cliente> clientes = empresa.getClientesPorIntervaloKms(minimo, maximo);
             if (clientes.isEmpty()) {
-                imprimirErro("Nenhum cliente encontrado nesse intervalo");
+                imprimirAviso("Nenhum cliente encontrado nesse intervalo.");
             } else {
                 imprimirTitulo("Clientes com viagens entre " + minimo + " e " + maximo + " Kms");
                 for (Cliente cliente : clientes) {
                     double totalKms = empresa.calcularTotalKmsCliente(cliente.getNif());
-                    System.out.println("[" + cliente.getNome() + " | Nif: " +
-                            cliente.getNif() + " | Total: " + totalKms + " Kms]");
+                    System.out.printf("-> " + cliente.getNome() + " | NIF: " + cliente.getNif() + " | Total: " + totalKms + " Kms.");
                 }
             }
         } catch (OperacaoCanceladaException e) {
@@ -1802,80 +1510,451 @@ public class Menu {
         }
     }
 
-    /**
-     * Mostra histórico de viagens de um cliente num intervalo de datas.
-     */
-    private static void estatHistoricoClientePorDatas() {
+    private static void estatHistoricoCliente() {
         try {
+            imprimirTitulo("HISTÓRICO DE CLIENTE");
             exibirMsgCancelar();
 
-            // Mostrar lista se solicitado
-            String verLista = lerTextoComCancelamento("\nDeseja ver a lista de Clientes? (S/N): ");
+            String verLista = lerSimNaoCancelamento("Ver lista de clientes? (S/N): ");
             if (verLista.equalsIgnoreCase("S")) {
-                mostrarListaClientesCompleta();
+                listarClientes(empresa.getClientes());
             }
 
-            // Selecionar cliente
-            int nif = lerInteiroComCancelamento("NIF do Cliente: ");
+            int nif = lerInteiroComCancelamento("NIF do cliente: ");
             Cliente cliente = empresa.procurarCliente(nif);
 
-            if (cliente != null) {
-                LocalDateTime inicio = lerDataComCancelamento("Data início (dd-MM-yyyy HH:mm): ");
-                LocalDateTime fim = lerDataComCancelamento("Data fim (dd-MM-yyyy HH:mm): ");
+            if (cliente == null) {
+                imprimirErro("Cliente não encontrado.");
+                return;
+            }
 
-                ArrayList<Viagem> viagens = empresa.getViagensClientePorDatas(nif, inicio, fim);
-                if (viagens.isEmpty()) {
-                    imprimirAviso("Nenhuma viagem registada nesse intervalo");
-                } else {
-                    imprimirTitulo("Histórico de " + cliente.getNome());
-                    for (Viagem viagem : viagens) {
-                        System.out.println(viagem);
-                    }
-                }
+            LocalDateTime inicio = lerDataComCancelamento("Data início (dd-MM-yyyy HH:mm): ");
+            LocalDateTime fim = lerDataComCancelamento("Data fim (dd-MM-yyyy HH:mm): ");
+
+            ArrayList<Viagem> viagens = empresa.getViagensClientePorDatas(nif, inicio, fim);
+            if (viagens.isEmpty()) {
+                imprimirAviso("Nenhuma viagem registada nesse intervalo.");
             } else {
-                imprimirErro("Nenhum cliente encontrado com esse NIF.");
+                imprimirTitulo("Histórico de " + cliente.getNome());
+                listarViagens(viagens);
             }
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Operação cancelada.");
         }
     }
 
-    /**
-     * Mostra lista completa de clientes.
-     */
-    private static void mostrarListaClientesCompleta() {
-        ArrayList<Cliente> clientes = empresa.getClientes();
-        if (clientes.isEmpty()) {
-            imprimirAviso("Não existem clientes registados.");
-            return;
-        }
-        imprimirTitulo("Clientes Registados");
-        for (Cliente cliente : clientes) {
-            System.out.println("[" + cliente.getNome() + " | NIF: " + cliente.getNif() + "]");
+    private static void pesquisarViaturaMatricula() {
+        try {
+            imprimirTitulo("PESQUISAR VIATURA POR MATRÍCULA");
+            String verLista = lerSimNaoCancelamento("Deseja ver a lista de viaturas? (S/N): ");
+            if (verLista.equalsIgnoreCase("S")) {
+                listarViaturas(empresa.getViaturas());
+            }
+            String matricula = lerTextoComCancelamento("Matricula: ");
+            Viatura viatura = empresa.procurarViatura(matricula);
+
+            if (viatura == null) {
+                imprimirAviso("Nenhuma viatura encontrada.");
+            } else {
+                imprimirTitulo("VIATURA ENCONTRADA");
+                System.out.println("Matrícula: " + viatura.getMatricula());
+                System.out.println("Marca: " + viatura.getMarca());
+                System.out.println("Modelo: " + viatura.getModelo());
+                System.out.println("Ano: " + viatura.getAnoFabrico());
+
+                ArrayList<Viagem> viagens = empresa.getViagensPorViatura(matricula);
+
+                if (!viagens.isEmpty()) {
+                    System.out.println("Viagens Associadas: " + viagens.size());
+                    for (Viagem viagem : viagens) {
+                        System.out.println(" -> "+ viagem.toString());
+                    }
+                }
+            }
+        }catch (OperacaoCanceladaException e){
+            imprimirErro("Operação cancelada.");
         }
     }
 
 // =======================================================
-//           ENCERRAMENTO DA APLICAÇÃO
+//           SELEÇÃO DE RECURSOS DISPONÍVEIS
 // =======================================================
 
-    /**
-     * Encerra a aplicação com gravação opcional de dados.
-     * <p>
-     * Pergunta ao utilizador se deseja gravar as alterações antes de sair.
-     * Se confirmar, chama o método {@link Empresa#gravarDados()}.
-     * </p>
-     *
-     * @param nomeEmpresa Nome da empresa para referência na mensagem.
-     */
+    private static Condutor selecionarCondutorDisponivel(LocalDateTime inicio, LocalDateTime fim)
+            throws OperacaoCanceladaException {
+
+        ArrayList<Condutor> disponiveis = empresa.getCondutoresDisponiveis(inicio, fim);
+
+        if (disponiveis.isEmpty()) {
+            imprimirAviso("Nenhum condutor disponível neste horário.");
+            return null;
+        }
+
+        System.out.println("\n>> Condutores disponíveis: " + disponiveis.size());
+        String verLista = lerSimNaoCancelamento("Ver lista? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarCondutores(disponiveis);
+        }
+
+        while (true) {
+            int numeroId = lerInteiroComCancelamento("Número de identificação do condutor: ");
+            Condutor condutor = empresa.procurarCondutorPorId(numeroId);
+
+            if (condutor == null) {
+                imprimirErro("Condutor não encontrado.");
+            } else {
+
+                boolean encontrado = false;
+
+                for (int i = 0; i < disponiveis.size(); i++) {
+                    if (disponiveis.get(i).equals(condutor)) {
+                        encontrado = true;
+                        break;
+                    }
+                }
+
+                if (!encontrado) {
+                    imprimirErro("Condutor não disponível neste horário.");
+                } else {
+                    return condutor;
+                }
+            }
+
+        }
+    }
+
+    private static Cliente selecionarClienteDisponivel(LocalDateTime inicio, LocalDateTime fim)
+            throws OperacaoCanceladaException {
+
+        ArrayList<Cliente> disponiveis = empresa.getClientesDisponiveis(inicio, fim);
+
+        if (disponiveis.isEmpty()) {
+            imprimirAviso("Nenhum cliente disponível neste horário.");
+            return null;
+        }
+
+        System.out.println("\n>> Clientes disponíveis: " + disponiveis.size());
+        String verLista = lerSimNaoCancelamento("Ver lista? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarClientes(disponiveis);
+        }
+
+        while (true) {
+            int nif = lerInteiroComCancelamento("NIF do cliente: ");
+            Cliente cliente = empresa.procurarCliente(nif);
+
+            if (cliente == null) {
+                imprimirErro("Cliente não encontrado.");
+            } else {
+
+                boolean encontrado = false;
+
+                for (int i = 0; i < disponiveis.size(); i++) {
+                    if (disponiveis.get(i).equals(cliente)) {
+                        encontrado = true;
+                        break;
+                    }
+                }
+
+                if (!encontrado) {
+                    imprimirErro("Cliente não disponível neste horário.");
+                } else {
+                    return cliente;
+                }
+            }
+        }
+
+    }
+
+    private static Viatura selecionarViaturaDisponivel(LocalDateTime inicio, LocalDateTime fim)
+            throws OperacaoCanceladaException {
+
+        ArrayList<Viatura> disponiveis = empresa.getViaturasDisponiveis(inicio, fim);
+
+        if (disponiveis.isEmpty()) {
+            imprimirAviso("Nenhuma viatura disponível neste horário.");
+            return null;
+        }
+
+        System.out.println("\n>> Viaturas disponíveis: " + disponiveis.size());
+        String verLista = lerSimNaoCancelamento("Ver lista? (S/N): ");
+        if (verLista.equalsIgnoreCase("S")) {
+            listarViaturas(disponiveis);
+        }
+
+        while (true) {
+            String matricula = lerTextoComCancelamento("Matrícula da viatura: ");
+            Viatura viatura = empresa.procurarViatura(matricula);
+
+            if (viatura == null) {
+                imprimirErro("Viatura não encontrada.");
+            } else {
+
+                boolean encontrado = false;
+
+                for (int i = 0; i < disponiveis.size(); i++) {
+                    if (disponiveis.get(i).equals(viatura)) {
+                        encontrado = true;
+                        break;
+                    }
+                }
+
+                if (!encontrado) {
+                    imprimirErro("Viatura não disponível neste horário.");
+                } else {
+                    return viatura;
+                }
+            }
+        }
+    }
+
+
+// =======================================================
+//           MÉTODOS AUXILIARES E GENÉRICOS
+// =======================================================
+
+    private static void listarViaturas(ArrayList<Viatura> viaturas) {
+        if (viaturas.isEmpty()) {
+            imprimirAviso("Nenhuma viatura encontrada.");
+            return;
+        }
+
+        imprimirTitulo("VIATURAS");
+        for (int i = 0; i < viaturas.size(); i++) {
+            System.out.println((i + 1) + ". " + viaturas.get(i).toString());
+        }
+    }
+
+    private static void listarClientes(ArrayList<Cliente> clientes) {
+        if (clientes.isEmpty()) {
+            imprimirAviso("Nenhum cliente encontrado.");
+            return;
+        }
+        imprimirTitulo("CLIENTES");
+        for (int i = 0; i < clientes.size(); i++) {
+            System.out.println((i + 1) + ". " + clientes.get(i).toString());
+        }
+    }
+
+    private static void listarCondutores(ArrayList<Condutor> condutores) {
+        if (condutores.isEmpty()) {
+            imprimirAviso("Nenhum condutor encontrado.");
+            return;
+        }
+        imprimirTitulo("CONDUTORES");
+        for (int i = 0; i < condutores.size(); i++) {
+            System.out.println((i + 1) + ". " + condutores.get(i).toString());
+        }
+    }
+
+    private static void listarViagens(ArrayList<Viagem> viagens) {
+        if (viagens.isEmpty()) {
+            imprimirAviso("Nenhuma Viagem encontrada.");
+            return;
+        }
+        imprimirTitulo("VIAGENS");
+        for (int i = 0; i < viagens.size(); i++) {
+            System.out.println((i + 1) + ". " + viagens.get(i).toString());
+        }
+    }
+
+    private static void listarReservas(ArrayList<Reserva> reservas) {
+        if (reservas.isEmpty()) {
+            imprimirAviso("Nenhuma reserva encontrada.");
+            return;
+        }
+        imprimirTitulo("RESERVAS");
+        for (int i = 0; i < reservas.size(); i++) {
+            System.out.println((i + 1) + ". " + reservas.get(i).toString());
+        }
+    }
+
+// =======================================================
+//           MÉTODOS DE LEITURA DE INPUTS
+// =======================================================
+
+    private static int lerOpcaoMenu(String msg) {
+        System.out.print(msg);
+        while (!scanner.hasNextInt()) {
+            imprimirErro("Valor inválido. Tente novamente.");
+            scanner.next();
+            System.out.print(msg);
+        }
+        int valor = scanner.nextInt();
+        scanner.nextLine();
+        return valor;
+    }
+
+    private static String lerTextoComCancelamento(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("0")) {
+                System.out.print("Deseja cancelar a operação? (S/N): ");
+                String confirmacao = scanner.nextLine().trim();
+                if (confirmacao.equalsIgnoreCase("S")) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    imprimirAviso("Operação anulada.");
+                    continue;
+                }
+            }
+            return input;
+        }
+    }
+
+    private static String lerTextoOpcional(String msg) {
+        System.out.print(msg);
+        String input = scanner.nextLine();
+
+        if (input.trim().isEmpty()) {
+            return "";
+        }
+        return input.trim();
+    }
+
+    private static int lerInteiroComCancelamento(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("0")) {
+                System.out.println("Deseja cancelar a operação? (S/N): ");
+                String confirmacao = scanner.nextLine().trim();
+                if (confirmacao.equalsIgnoreCase("S")) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    imprimirAviso("Operação anulada.");
+                }
+            }
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                imprimirErro("Insira um número inteiro válido.");
+            }
+        }
+    }
+
+    private static double lerDoubleComCancelamento(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("0")) {
+                System.out.println("Deseja cancelar a operação? (S/N): ");
+                String confirmacao = scanner.nextLine().trim();
+                if (confirmacao.equalsIgnoreCase("S")) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    imprimirAviso("Operação anulada.");
+                }
+            }
+
+            try {
+                return Double.parseDouble(input);
+            } catch (NumberFormatException e) {
+                imprimirErro("Número inválido. Tente novamente.");
+            }
+        }
+    }
+
+    private static LocalDateTime lerDataComCancelamento(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("0")) {
+
+                System.out.println("Deseja cancelar a operação? (S/N): ");
+                String confirmacao = scanner.nextLine().trim();
+                if (confirmacao.equalsIgnoreCase("S")) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    imprimirAviso("Operação anulada.");
+                }
+            }
+
+            try {
+                return LocalDateTime.parse(input, dateTimeFormatter);
+            } catch (DateTimeParseException e) {
+                imprimirErro("Formato inválido. Use: dd-MM-yyyy HH:mm");
+            }
+        }
+    }
+
+
+    private static String lerSimNao(String msg) {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine().trim();
+            if (input.isEmpty()) {
+                return "S";
+            }
+            if (input.equalsIgnoreCase("S") || input.equalsIgnoreCase("N")) {
+                return input.toUpperCase();
+            }
+            System.out.println("Insira 'S' (Sim) ou 'N' (Não).");
+        }
+    }
+
+    private static String lerSimNaoCancelamento(String msg) throws OperacaoCanceladaException {
+        while (true) {
+            System.out.print(msg);
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("0")) {
+                System.out.println("Deseja cancelar a Operação? (S/N): ");
+                String confirmacao = scanner.nextLine().trim();
+
+                if (confirmacao.equalsIgnoreCase("S")) {
+                    throw new OperacaoCanceladaException();
+                } else {
+                    continue;
+                }
+            }
+            if (input.equalsIgnoreCase("S") || input.equalsIgnoreCase("N")) {
+                return input.toUpperCase();
+            } else if (input.isEmpty()) {
+                return "S";
+            } else {
+                imprimirErro("Insira S (Sim) ou N (Não).");
+            }
+        }
+    }
+
+    private static int lerAnoValido() throws OperacaoCanceladaException {
+        int anoAtual = 2026;
+        int anoMinimo = 1886;
+
+        while (true) {
+            try {
+                int ano = lerInteiroComCancelamento("Ano de Fabrico (" + anoMinimo + "-" + anoAtual + "): ");
+                if (ano >= anoMinimo && ano <= anoAtual) {
+                    return ano;
+                } else {
+                    imprimirErro("Ano inválido! Deve estar entre " + anoMinimo + " e " + anoAtual + ".");
+                }
+            } catch (NumberFormatException e) {
+                imprimirErro("Insira um ano válido.");
+            }
+        }
+    }
+
+// =======================================================
+//           ENCERRAR A APLICAÇÃO
+// =======================================================
+
     private static void encerrarAplicacao(String nomeEmpresa) {
         try {
-            String resposta = lerTextoComCancelamento("Deseja gravar os dados antes de sair? (S/N): ");
+            imprimirCabecalho("SAIR DO SISTEMA - " + nomeEmpresa);
+            String resposta = lerSimNaoCancelamento("Deseja gravar os dados antes de sair? (S/N): ");
             if (resposta.equalsIgnoreCase("S")) {
-                System.out.println("A gravar alterações em Logs_" + nomeEmpresa + "...");
                 empresa.gravarDados();
+                imprimirAviso("Dados gravados com sucesso.");
             } else {
-                imprimirErro("As alterações não foram guardadas.");
+                imprimirAviso("As alterações não foram guardadas.");
             }
         } catch (OperacaoCanceladaException e) {
             imprimirAviso("Saída forçada. As alterações não foram guardadas.");
@@ -1884,181 +1963,9 @@ public class Menu {
     }
 
 // =======================================================
-//           MÉTODOS DE LEITURA DE INPUTS
+//           FORMATAÇÃO VISUAL
 // =======================================================
 
-    /**
-     * Lê uma opção do menu (inteiro).
-     * <p>
-     * Valida que a entrada é um número inteiro.
-     * Limpa o buffer após a leitura.
-     * </p>
-     *
-     * @param msg Mensagem a mostrar ao utilizador.
-     * @return Opção inteira selecionada.
-     */
-    private static int lerOpcaoMenu(String msg) {
-        System.out.print(msg);
-        while (!scanner.hasNextInt()) {
-            imprimirErro("Valor inválido. Tente novamente.");
-            scanner.next(); // Limpa input inválido
-        }
-        int valor = scanner.nextInt();
-        scanner.nextLine(); // Limpa newline
-        return valor;
-    }
-
-    /**
-     * Lê texto com possibilidade de cancelamento.
-     * <p>
-     * Permite ao utilizador cancelar a operação pressionando "0".
-     * Valida que o campo não está vazio.
-     * </p>
-     *
-     * @param msg Mensagem a mostrar ao utilizador.
-     * @return Texto inserido pelo utilizador.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static String lerTextoComCancelamento(String msg) throws OperacaoCanceladaException {
-        while (true) {
-            System.out.print(msg);
-            String input = scanner.nextLine();
-
-            // Verifica se é "0" para cancelamento COM confirmação
-            if (input.trim().equals("0")) {
-                System.out.print("\n>> Deseja cancelar a operação? (S/N): ");
-                String confirmacao = scanner.nextLine();
-                if (confirmacao.equalsIgnoreCase("S")) {
-                    throw new OperacaoCanceladaException();
-                }
-                imprimirAviso("Operação retomada. Continue a inserir dados.");
-                continue; // Continua pedindo input
-            }
-
-            if (input.isEmpty()) {
-                imprimirErro("O campo não pode estar vazio.");
-                continue;
-            }
-
-            return input;
-        }
-    }
-
-    /**
-     * Lê inteiro com possibilidade de cancelamento.
-     * <p>
-     * Valida que a entrada é um número inteiro válido.
-     * Permite cancelamento com "0".
-     * </p>
-     *
-     * @param msg Mensagem a mostrar ao utilizador.
-     * @return Inteiro inserido pelo utilizador.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static int lerInteiroComCancelamento(String msg) throws OperacaoCanceladaException {
-        while (true) {
-            System.out.print(msg);
-            String input = scanner.nextLine();
-
-            if (input.trim().equals("0")) {
-                System.out.print("\n>> Deseja cancelar a operação? (S/N): ");
-                if (scanner.nextLine().equalsIgnoreCase("S")) {
-                    throw new OperacaoCanceladaException();
-                }
-                imprimirAviso("Operação retomada. Continue a inserir dados.");
-                continue; // Continua pedindo input
-            }
-
-            try {
-                return Integer.parseInt(input.trim());
-            } catch (NumberFormatException e) {
-                imprimirErro("Valor inválido. Insira um número inteiro.");
-            }
-        }
-    }
-
-    /**
-     * Lê número decimal com possibilidade de cancelamento.
-     * <p>
-     * Valida que a entrada é um número decimal válido.
-     * Permite cancelamento com "0".
-     * </p>
-     *
-     * @param msg Mensagem a mostrar ao utilizador.
-     * @return Número decimal inserido pelo utilizador.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static double lerDoubleComCancelamento(String msg) throws OperacaoCanceladaException {
-        while (true) {
-            System.out.print(msg);
-            String input = scanner.nextLine();
-
-            // Verifica se é "0" para cancelamento COM confirmação
-            if (input.trim().equals("0")) {
-                System.out.print("\n>> Deseja cancelar a operação? (S/N): ");
-                if (scanner.nextLine().equalsIgnoreCase("S")) {
-                    throw new OperacaoCanceladaException();
-                }
-                imprimirAviso("Operação retomada. Continue a inserir dados.");
-                continue; // Continua pedindo input
-            }
-
-            try {
-                return Double.parseDouble(input);
-            } catch (NumberFormatException e) {
-                imprimirErro("Valor inválido.");
-            }
-        }
-    }
-
-    /**
-     * Lê data/hora com possibilidade de cancelamento.
-     * <p>
-     * Valida que a entrada está no formato correto (dd-MM-yyyy HH:mm).
-     * Permite cancelamento com "0".
-     * </p>
-     *
-     * @param msg Mensagem a mostrar ao utilizador.
-     * @return Data/hora inserida pelo utilizador.
-     * @throws OperacaoCanceladaException Se o utilizador cancelar a operação.
-     */
-    private static LocalDateTime lerDataComCancelamento(String msg) throws OperacaoCanceladaException {
-        while (true) {
-            System.out.print(msg);
-            String input = scanner.nextLine();
-
-            // Verifica se é "0" para cancelamento COM confirmação
-            if (input.trim().equals("0")) {
-                System.out.print("\n>> Deseja cancelar a operação? (S/N): ");
-                if (scanner.nextLine().equalsIgnoreCase("S")) {
-                    throw new OperacaoCanceladaException();
-                }
-                imprimirAviso("Operação retomada. Continue a inserir dados.");
-                continue; // Continua pedindo input
-            }
-
-            try {
-                return LocalDateTime.parse(input, dateTimeFormatter);
-            } catch (DateTimeParseException e) {
-                imprimirErro("Formato inválido! Use: dd-MM-yyyy HH:mm");
-            }
-        }
-    }
-
-
-// =======================================================
-//           MÉTODOS DE FORMATAÇÃO VISUAL
-// =======================================================
-
-    /**
-     * Imprime cabeçalho formatado com título centralizado.
-     * <p>
-     * Cria uma caixa de texto com o título centrado.
-     * Tamanho fixo de 50 caracteres.
-     * </p>
-     *
-     * @param titulo Título a mostrar no cabeçalho.
-     */
     private static void imprimirCabecalho(String titulo) {
         int tamanhoFixo = 50;
 
@@ -2070,131 +1977,96 @@ public class Menu {
         int direita = espacos - esquerda;
 
         System.out.print("|");
-        for (int i = 0; i < esquerda; i++) {
-            System.out.print(" ");
-        }
+        for (int i = 0; i < esquerda; i++) System.out.print(" ");
         System.out.print(titulo.toUpperCase());
-        for (int i = 0; i < direita; i++) {
-            System.out.print(" ");
-        }
+        for (int i = 0; i < direita; i++) System.out.print(" ");
         System.out.println("|");
 
         imprimirLinha();
     }
 
-    /**
-     * Imprime linha separadora.
-     * <p>
-     * Cria uma linha de 50 traços dentro de uma caixa.
-     * </p>
-     */
     private static void imprimirLinha() {
         System.out.print("|");
-        for (int i = 0; i < 50; i++) {
-            System.out.print("-");
-        }
+        for (int i = 0; i < 50; i++) System.out.print("-");
         System.out.println("|");
     }
 
-    /**
-     * Imprime linha separadora.
-     * <p>
-     * Cria uma linha de 50 traços dentro de uma caixa.
-     * </p>
-     */
     private static void imprimirTitulo(String titulo) {
-        System.out.println("--- " + titulo.toUpperCase() + " ---");
+        System.out.println("\n--- " + titulo.toUpperCase() + " ---");
     }
 
-    /**
-     * Exibe mensagem de cancelamento.
-     * <p>
-     * Informa o utilizador que pode pressionar "0" para cancelar.
-     * </p>
-     */
     private static void exibirMsgCancelar() {
-        System.out.println("Prima 0 em qualquer momento para cancelar a operação.");
+        System.out.println("(Prima 0 em qualquer momento para cancelar)");
     }
 
-    /**
-     * Imprime mensagem de erro formatada.
-     *
-     * @param mensagem Mensagem de erro a mostrar.
-     */
     private static void imprimirErro(String mensagem) {
-        System.out.println(">> Erro: " + mensagem);
+        System.out.println(">> ERRO: " + mensagem);
     }
 
-    /**
-     * Imprime mensagem de aviso formatada.
-     *
-     * @param mensagem Mensagem de aviso a mostrar.
-     */
     private static void imprimirAviso(String mensagem) {
         System.out.println(">> " + mensagem);
     }
 
 // =======================================================
-//                   DADOS DE TESTE
+//           DADOS DE TESTE
 // =======================================================
 
-    /**
-     * Preenche o sistema com dados de teste.
-     * <p>
-     * Cria viaturas, clientes, condutores e viagens de exemplo
-     * para facilitar testes e demonstração do sistema.
-     * </p>
-     */
     public static void inicializarDadosTeste() {
-        System.out.println("A gerar dados de teste completos...");
         try {
             // Viaturas
-            Viatura viatura1 = new Viatura("AA-00-BB", "Toyota", "Corolla", 2020);
-            Viatura viatura2 = new Viatura("XX-99-ZZ", "Tesla", "Model 3", 2024);
-            Viatura viatura3 = new Viatura("CC-11-DD", "Renault", "Clio", 2018);
+            int anoAtual = 2026;
+            Viatura v1 = new Viatura("AA-00-AA", "Toyota", "Corolla", anoAtual - 3);
+            Viatura v2 = new Viatura("BB-11-BB", "Tesla", "Model 3", anoAtual - 1);
+            Viatura v3 = new Viatura("CC-22-CC", "Renault", "Clio", anoAtual - 5);
 
-            empresa.adicionarViatura(viatura1);
-            empresa.adicionarViatura(viatura2);
-            empresa.adicionarViatura(viatura3);
+            empresa.adicionarViatura(v1);
+            empresa.adicionarViatura(v2);
+            empresa.adicionarViatura(v3);
 
             // Clientes
-            Cliente cliente1 = new Cliente("Joao Silva", 100000001, 910000001, "Porto", 11111111);
-            Cliente cliente2 = new Cliente("Ana Pereira", 100000002, 910000002, "Lisboa", 22222222);
-            Cliente cliente3 = new Cliente("Carlos Sousa", 100000003, 910000003, "Braga", 33333333);
+            Cliente c1 = new Cliente("João Silva", 100000001, 910000001, "Porto", 11111111);
+            Cliente c2 = new Cliente("Ana Pereira", 100000002, 910000002, "Lisboa", 22222222);
+            Cliente c3 = new Cliente("Carlos Santos", 100000003, 910000003, "Braga", 33333333);
 
-            empresa.adicionarCliente(cliente1);
-            empresa.adicionarCliente(cliente2);
-            empresa.adicionarCliente(cliente3);
+            empresa.adicionarCliente(c1);
+            empresa.adicionarCliente(c2);
+            empresa.adicionarCliente(c3);
 
-            // Condutores com números de identificação únicos
-            Condutor motorista1 = new Condutor(1001, "Maria Santos", 200000001, 930000001, "Porto", 44444444, "C-001", 12345);
-            Condutor motorista2 = new Condutor(1002, "Pedro Gomes", 200000002, 930000002, "Gaia", 55555555, "C-002", 67890);
-            Condutor motorista3 = new Condutor(1003, "Luisa Lima", 200000003, 930000003, "Matosinhos", 66666666, "C-003", 11223);
+            // Condutores
+            Condutor d1 = new Condutor(1001, "Maria Costa", 200000001, 920000001,
+                    "Porto", 44444444, "C-001", 111111);
+            Condutor d2 = new Condutor(1002, "Pedro Alves", 200000002, 920000002,
+                    "Gaia", 55555555, "C-002", 222222);
+            Condutor d3 = new Condutor(1003, "Luísa Mendes", 200000003, 920000003,
+                    "Matosinhos", 66666666, "C-003", 333333);
 
-            empresa.adicionarCondutor(motorista1);
-            empresa.adicionarCondutor(motorista2);
-            empresa.adicionarCondutor(motorista3);
+            empresa.adicionarCondutor(d1);
+            empresa.adicionarCondutor(d2);
+            empresa.adicionarCondutor(d3);
 
-            // Viagens históricas
+            // Viagens de exemplo
             LocalDateTime ontem = LocalDateTime.now().minusDays(1);
-
-            Viagem v1 = new Viagem(motorista1, cliente1, viatura1,
+            Viagem viagem1 = new Viagem(d1, c1, v1,
                     ontem.withHour(10).withMinute(0),
                     ontem.withHour(10).withMinute(30),
-                    "Casa da Música", "Ribeira", 5.5, 8.50);
+                    "Casa da Música", "Aeroporto", 15.5, 12.50);
 
-            Viagem v2 = new Viagem(motorista2, cliente2, viatura2,
+            Viagem viagem2 = new Viagem(d2, c2, v2,
                     ontem.withHour(14).withMinute(0),
                     ontem.withHour(15).withMinute(0),
-                    "Aeroporto", "Hotel", 20.0, 25.00);
+                    "Centro", "Shopping", 8.2, 9.80);
 
-            empresa.adicionarViagem(v1);
-            empresa.adicionarViagem(v2);
+            empresa.adicionarViagem(viagem1);
+            empresa.adicionarViagem(viagem2);
 
-            imprimirAviso("Dados carregados: 3 Viaturas, 3 Clientes, 3 Condutores, 2 Viagens");
+            // Reservas de exemplo
+            Reserva r1 = new Reserva(c3, LocalDateTime.now().plusDays(1).withHour(9),
+                    "Hotel", "Estação", 5.0);
+            empresa.adicionarReserva(r1);
 
+            imprimirAviso("Dados de teste carregados: 3 Viaturas, 3 Clientes, 3 Condutores, 2 Viagens, 1 Reserva");
         } catch (Exception e) {
-            imprimirErro("Não é possível carregar dados de teste: " + e.getMessage());
+            imprimirErro("Erro ao carregar dados de teste: " + e.getMessage());
         }
     }
 
@@ -2202,17 +2074,7 @@ public class Menu {
 //           EXCEÇÃO PERSONALIZADA
 // =======================================================
 
-    /**
-     * Exceção para operações canceladas pelo utilizador.
-     * <p>
-     * Usada para controlar o fluxo quando o utilizador cancela
-     * uma operação a meio do preenchimento de dados.
-     * </p>
-     */
     private static class OperacaoCanceladaException extends Exception {
-        /**
-         * Construtor padrão da exceção.
-         */
         public OperacaoCanceladaException() {
             super("Operação cancelada pelo utilizador");
         }

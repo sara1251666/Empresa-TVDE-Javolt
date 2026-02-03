@@ -62,7 +62,8 @@ public class Viatura {
             throw new IllegalArgumentException("Ano de fabrico inválido");
         }
 
-        this.matricula = matricula.trim();
+        //this.matricula = matricula.trim();
+        setMatricula(matricula);    // <-- Isto obriga o "asd" a passar pelo teste do Regex
         this.marca = marca.trim();
         this.modelo = modelo.trim();
         this.anoFabrico = anoFabrico;
@@ -87,7 +88,23 @@ public class Viatura {
         if (matricula == null || matricula.trim().isEmpty()) {
             throw new IllegalArgumentException("Matrícula não pode ser vazia");
         }
-        this.matricula = matricula.trim().toUpperCase();
+        String matriculaFormatada = matricula.trim().toUpperCase();
+
+        boolean formatoValido = matriculaFormatada.matches(
+                "([A-Z]{2}-?[0-9]{2}-?[0-9]{2})|" + // Formato AA-00-00
+                        "([0-9]{2}-?[0-9]{2}-?[A-Z]{2})|" + // Formato 00-00-AA
+                        "([0-9]{2}-?[A-Z]{2}-?[0-9]{2})|" + // Formato 00-AA-00
+                        "([A-Z]{2}-?[0-9]{2}-?[A-Z]{2})|" /*+ // Formato AA-00-AA
+                        "([A-Z0-9]{6})"     */              // Formato compacto (sem traços)
+        );
+        if (!formatoValido){
+            throw new IllegalArgumentException(
+                    "Formato inválido! Use:\n" +
+                            "- Formato antigo: AA-00-AA (ex: AB-12-CD)\n" +
+                            "- Formato novo: AABB00 (ex: AB12CD)"
+            );
+        }
+        this.matricula = matriculaFormatada;
     }
 
     /**

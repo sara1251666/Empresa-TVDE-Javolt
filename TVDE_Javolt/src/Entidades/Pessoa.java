@@ -117,7 +117,7 @@ public abstract class Pessoa {
         if (nifTexto.length() == 9) {
             this.nif = nif;
         } else {
-            throw new IllegalArgumentException("NIF invalido! tem de ter exatamente 9 digitos (recebido: " + nif + ").");
+            throw new IllegalArgumentException("NIF invalido! tem de ter exatamente 9 digitos (recebido: " + nif + ")." );
         }
     }
 
@@ -138,13 +138,15 @@ public abstract class Pessoa {
     public void setTel(int tel) {
         String telTexto = String.valueOf(tel);
 
-        if (telTexto.length() == 9) {
-            this.tel = tel;
-        } else {
-            throw new IllegalArgumentException(
-                    "Telemóvel inválido! Deve ter 9 dígitos (recebido: " + tel + ")."
-            );
+        if (telTexto.length() != 9) {
+            throw new IllegalArgumentException( "Telemóvel inválido! Deve ter 9 dígitos (recebido: " + tel + ").");
         }
+
+        String telNove = String.valueOf("9");
+        if (!telNove.startsWith("9")) {
+            throw new IllegalArgumentException("Telemóvel deve começar com 9 (recebido: " + tel + ").");
+        }
+        this.tel = tel;
     }
 
     /**
@@ -191,7 +193,7 @@ public abstract class Pessoa {
      *
      * @return String formatada com informações básicas da pessoa.
      */
-    public String toString(){
+    public String toString() {
         return "Nome: " + nome + " | NIF: " + nif + " | Tel: " + tel;
     }
 }
